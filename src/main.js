@@ -1,11 +1,15 @@
-import {Convention} from './convention/convention';
+// Copyright 2017 Peter Beverloo. All rights reserved.
+// Use of this source code is governed by the MIT license, a copy of which can
+// be found in the LICENSE file.
+
+import {App} from './app';
 import environment from './environment';
 
 export function configure(aurelia) {
-    const convention = new Convention('Anime 2018');
+    const application = new App();
 
     aurelia.use.standardConfiguration();
-    aurelia.container.registerInstance(Convention, convention);
+    aurelia.container.registerInstance(App, application);
 
     if (environment.debug)
         aurelia.use.developmentLogging();
@@ -13,7 +17,9 @@ export function configure(aurelia) {
     if (environment.testing)
         aurelia.use.plugin('aurelia-testing');
 
-    convention.load()
-        .then(() => aurelia.start())
-        .then(() => aurelia.setRoot());
+    application.load().then(identified => {
+        // TODO(peter): Implement a login screen for |!identified|.
+        return aurelia.start();
+
+    }).then(() => aurelia.setRoot());
 }

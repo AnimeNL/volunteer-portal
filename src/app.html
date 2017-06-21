@@ -1,9 +1,9 @@
 <template>
   <header>
-    <h1>Anime 2018</h1>
+    <h1 textcontent.bind="title"></h1>
   </header>
   <div class="content">
-    <router-view></router-view>
+    <router-view swap-order="with"></router-view>
   </div>
   <nav>
     <ol>

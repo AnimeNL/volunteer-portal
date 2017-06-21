@@ -1,3 +1,15 @@
 <template>
-  <router-view></router-view>
+  <header>
+    <h1>Anime 2018</h1>
+  </header>
+  <div class="content">
+    <router-view></router-view>
+  </div>
+  <nav>
+    <ol>
+      <li><a route-href="route: overview">Overview</a>
+      <li><a route-href="route: volunteers">Volunteers</a>
+      <li><a route-href="route: volunteerSchedule">Schedule</a>
+    </ol>
+  </nav>
 </template>

@@ -5,11 +5,5 @@
   <div class="content">
     <router-view swap-order="with"></router-view>
   </div>
-  <nav>
-    <ol>
-      <li><a route-href="route: overview">Overview</a>
-      <li><a route-href="route: volunteers">Volunteers</a>
-      <li><a route-href="route: volunteerSchedule">Schedule</a>
-    </ol>
-  </nav>
+  <compose view-model="components/navigation" model.bind="[convention, user]"></compose>
 </template>

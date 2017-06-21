@@ -1,0 +1,4 @@
+aurelia_project/
+node_modules/
+scripts/
+karma.conf.js

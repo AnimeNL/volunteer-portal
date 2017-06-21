@@ -1,0 +1,5 @@
+<template>
+  <p repeat.for="volunteer of convention.volunteers">
+    <a route-href="route: volunteerSchedule; params.bind: { name: volunteer }">${volunteer}</a>
+  </p>
+</template>

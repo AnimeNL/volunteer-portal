@@ -5,8 +5,12 @@
 import { hot } from 'react-hot-loader';
 import React from 'react';
 
+import { ConfigurationImpl } from './base/ConfigurationImpl';
+
+const config = new ConfigurationImpl();
+
 const App = () => {
-  return <h2>Hello, world!</h2>;
+  return <h2>hi {config.getContentEndpoint()}</h2>;
 };
 
 export default hot(module)(App);

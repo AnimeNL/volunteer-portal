@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
     entry: './src/index.tsx',
@@ -38,6 +39,7 @@ module.exports = {
     },
 
     plugins: [
+        new webpack.EnvironmentPlugin({ 'REACT_APP_API_HOST': '' }),
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: 'src/index.html',

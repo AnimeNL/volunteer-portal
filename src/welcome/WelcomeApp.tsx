@@ -4,6 +4,14 @@
 
 import { h } from 'preact';
 
+import { ContentLayout } from '../ContentLayout';
+
+// The "welcome" application is a generic content page that allows the user to either sign in to
+// their account, granting portal access, or refer the user to one of the other pages or components.
 export function WelcomeApp() {
-    return <p>Welcome!</p>;
+    return (
+        <ContentLayout>
+            <p>Hello, world!</p>
+        </ContentLayout>
+    );
 }

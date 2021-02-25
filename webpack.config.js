@@ -2,7 +2,9 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+const childProcess = require('child_process');
 const path = require('path');
+
 const webpack = require('webpack');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
@@ -12,6 +14,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 function createCopyDestinationFn(prefix) {
     return ({ context, absoluteFilename }) =>
         prefix + path.basename(absoluteFilename);
+}
+
+function getGitCommitHash() {
+    return childProcess.execSync(`git describe --always`, { encoding: 'utf8' }).trim();
 }
 
 module.exports = {
@@ -72,7 +78,10 @@ module.exports = {
     },
 
     plugins: [
-        new webpack.EnvironmentPlugin({ 'REACT_APP_API_HOST': '' }),
+        new webpack.EnvironmentPlugin({
+            'REACT_APP_API_HOST': '',
+            'REACT_APP_GIT_VERSION': getGitCommitHash(),
+        }),
 
         new CleanWebpackPlugin(),
 

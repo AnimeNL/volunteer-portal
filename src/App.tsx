@@ -6,9 +6,7 @@ import { Component, h } from 'preact';
 
 import { AppContext, IAppContext } from './AppContext';
 import { AppError } from './AppError';
-import { Configuration } from './base/Configuration';
 import { ConfigurationImpl } from './base/ConfigurationImpl';
-import { Environment } from './base/Environment';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
 
 import { LoadingApp } from './loading/LoadingApp';

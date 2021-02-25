@@ -4,7 +4,7 @@
   "description": "AnimeCon Volunteer Portal",
   "scripts": {
     "build": "webpack --mode production",
-    "serve": "cross-env REACT_APP_API_HxOST=https://stewards.team webpack serve",
+    "serve": "cross-env REACT_APP_API_HOST=https://stewards.team webpack serve",
     "test": "jest"
   },
   "author": "Peter Beverloo <peter@animecon.nl>",
@@ -18,6 +18,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.57",
     "preact": "^10.5.12",
     "preact-render-to-string": "^5.1.12"
   },

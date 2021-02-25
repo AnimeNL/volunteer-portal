@@ -5,25 +5,28 @@
 import { Component, h } from 'preact';
 
 import { AppContext, IAppContext } from './AppContext';
+import { AppError } from './AppError';
 import { Configuration } from './base/Configuration';
 import { ConfigurationImpl } from './base/ConfigurationImpl';
 import { Environment } from './base/Environment';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
 
 import { LoadingApp } from './loading/LoadingApp';
+import { WelcomeApp } from './welcome/WelcomeApp';
 
 // High-level state of the application. We care about two primary properties: whether the user is
 // authenticated, and which sub-application should be loaded.
 interface AppState {
     app: 'loading' | 'portal' | 'registration' | 'welcome';
     authenticated: boolean;
+    error?: string;
 }
 
 // Main component of the Volunteer Portal application, which creates the app context and switches
 // between the four main sub-applications: Portal, Registration and Welcome.
 export class App extends Component<{}, AppState> {
-    private configuration: Configuration;
-    private environment: Environment;
+    private configuration: ConfigurationImpl;
+    private environment: EnvironmentImpl;
 
     public state: AppState;
 
@@ -45,7 +48,19 @@ export class App extends Component<{}, AppState> {
     // Loading routines.
     // ---------------------------------------------------------------------------------------------
 
-    // TODO: Initialize the environment, user and other objects.
+    // Initializes the main application state. This is an asynchronous process that may include
+    // several network fetches. Generally this is not encouraged.
+    async componentWillMount() {
+        if (!await this.environment.initialize()) {
+            this.setState({ error: 'Unable to initialize the environment.' });
+            return;
+        }
+
+        // TODO: We need some basic-level routing here for the application(s) that can be accessed,
+        // although there is some overlap between them. (For example the main page.)
+
+        this.setState({ app: 'welcome' });
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Display routines.
@@ -65,7 +80,10 @@ export class App extends Component<{}, AppState> {
     render() {
         return (
             <AppContext.Provider value={ this.composeAppContext() }>
+                { this.state.error && <AppError error={this.state.error} /> }
+
                 { this.state.app === 'loading' && <LoadingApp /> }
+                { this.state.app === 'welcome' && <WelcomeApp /> }
             </AppContext.Provider>
         );
     }

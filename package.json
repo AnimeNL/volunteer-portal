@@ -16,8 +16,9 @@
   "homepage": "https://github.com/AnimeNL/volunteer-portal#readme",
   "sideEffects": false,
   "dependencies": {
+    "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
     "preact": "^10.5.12",
-    "preact-compat": "^3.19.0",
     "preact-render-to-string": "^5.1.12"
   },
   "devDependencies": {

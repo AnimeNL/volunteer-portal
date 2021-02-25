@@ -2,9 +2,9 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import React from 'react';
-import { render } from 'react-dom';
+import { render } from 'preact';
+
 import App from './App';
 
-const root = document.getElementById("root");
+const root = document.getElementById('root')!;
 render(<App />, root);

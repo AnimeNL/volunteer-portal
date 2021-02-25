@@ -8,24 +8,26 @@ const webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-// Whether the WebPack configuration should run in production mode.
-const prod = true;//process.env.NODE_ENV === 'production';
-
 module.exports = {
     entry: './src/index.tsx',
 
     devtool: 'source-map',
-    mode: prod ? 'production' : 'development',
+    mode: 'development',
 
     module: {
         rules: [
             {
                 test: /\.js$/,
-                use: { loader: 'babel-loader' },
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-envv'],
+                    }
+                },
                 exclude: /node_modules/,
             },
             {
-                test: /\.(ts|tsx)?$/,
+                test: /\.tsx?$/,
                 loader: 'awesome-typescript-loader',
                 exclude: /node_modules/,
             },
@@ -33,7 +35,11 @@ module.exports = {
     },
 
     resolve: {
-        extensions: [ '.ts', '.tsx', '.js', '.json' ]
+        extensions: [ '.ts', '.tsx', '.js', '.json' ],
+        alias: {
+            'react': 'preact-compat',
+            'react-dom': 'preact-compat',
+        }
     },
 
     optimization: {
@@ -49,7 +55,7 @@ module.exports = {
     },
 
     output: {
-        filename: prod ? '[name].[chunkhash:8].js' : '[name].js',
+        filename: '[name].[chunkhash:8].js',
         path: path.resolve(__dirname, 'dist'),
     },
 

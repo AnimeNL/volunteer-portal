@@ -2,8 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { hot } from 'react-hot-loader';
-import React from 'react';
+import { h } from 'preact';
 
 import { ConfigurationImpl } from './base/ConfigurationImpl';
 
@@ -13,4 +12,4 @@ const App = () => {
   return <h2>hi {config.getContentEndpoint()}</h2>;
 };
 
-export default hot(module)(App);
+export default App;

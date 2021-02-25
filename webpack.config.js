@@ -6,7 +6,13 @@ const path = require('path');
 const webpack = require('webpack');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+function createCopyDestinationFn(prefix) {
+    return ({ context, absoluteFilename }) =>
+        prefix + path.basename(absoluteFilename);
+}
 
 module.exports = {
     entry: './src/index.tsx',
@@ -69,6 +75,22 @@ module.exports = {
         new webpack.EnvironmentPlugin({ 'REACT_APP_API_HOST': '' }),
 
         new CleanWebpackPlugin(),
+
+        new CopyWebpackPlugin({
+            patterns: [
+                { from: 'static/**/*', to: '' },
+
+                // Duplicate common image resources to both environments.
+                { from: 'static/images/*.*', to: createCopyDestinationFn('static/images/gophers/') },
+                { from: 'static/images/*.*', to: createCopyDestinationFn('static/images/stewards/') },
+
+                // Copy the Steward environment for development. This should not be deployed.
+                // Instead, the server should be configured to forward requests to the right place.
+                { from: 'static/images/stewards/*.*', to: createCopyDestinationFn('images/') },
+                { from: 'static/images/*.*', to: createCopyDestinationFn('images/') },
+            ],
+        }),
+
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: 'src/index.html',

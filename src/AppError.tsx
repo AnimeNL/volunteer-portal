@@ -5,7 +5,7 @@
 import { Fragment, h } from 'preact';
 import { useState } from 'preact/hooks';
 
-import Alert from '@material-ui/lab/Alert';
+import Alert from '@material-ui/core/Alert';
 import CloseIcon from '@material-ui/icons/Close';
 import IconButton from '@material-ui/core/IconButton';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -29,7 +29,7 @@ export function AppError(props: AppErrorProps) {
     }
 
     return (
-        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} open={open}>
+        <Snackbar open={open}>
             <Alert elevation={6}
                    severity="error"
                    variant="filled"

@@ -12,7 +12,7 @@ A `GET` request with no additional payload.
 | Property         | Type      | Description |
 | :---             | :---      | :--- |
 | `contactName`    | `string`  | Name of the person who can be contacted for questions. |
-| `contactNumber`  | `string?` | Phone number of the person who can be contacted for questions. |
+| `contactTarget`  | `string?` | Link target (phone number / e-mail address) of the person who can be contacted for questions. |
 | `events`         | `IEnvironmentResponseEvent[]` | Array of the events that are supported by this portal. |
 | `title`          | `string`  | Name of the Volunteer Portal instance, e.g. _Volunteer Portal_. |
 

@@ -102,7 +102,7 @@ export class EnvironmentImpl implements Environment {
         }
 
         return validateString(environment, kInterfaceName, 'contactName') &&
-               validateOptionalString(environment, kInterfaceName, 'contactNumber') &&
+               validateOptionalString(environment, kInterfaceName, 'contactTarget') &&
                validateString(environment, kInterfaceName, 'title');
     }
 
@@ -131,11 +131,11 @@ export class EnvironmentImpl implements Environment {
         return this.data.contactName;
     }
 
-    get contactNumber(): undefined | Readonly<string> {
+    get contactTarget(): undefined | Readonly<string> {
         if (!this.data)
             throw new Error(kExceptionMessage);
 
-        return this.data.contactNumber;
+        return this.data.contactTarget;
     }
 
     get events(): Readonly<Array<EnvironmentEvent>> {

@@ -13,9 +13,9 @@ export interface Environment {
     contactName: Readonly<string>;
 
     /**
-     * Phone number of the person who can be contacted for questions.
+     * Link target (phone number / e-mail address) of the person who can be contacted for questions.
      */
-    contactNumber?: Readonly<string>;
+    contactTarget?: Readonly<string>;
 
     /**
      * Array of the events that are supported by this portal.

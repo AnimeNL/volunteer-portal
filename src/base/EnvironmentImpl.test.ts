@@ -36,7 +36,7 @@ describe('EnvironmentImpl', () => {
     it('should reflect the values of a valid environment from the network', async () => {
         const environment = createInstance(200, {
             contactName: 'Peter',
-            contactNumber: undefined,
+            contactTarget: undefined,
             events: [
                 {
                     name: 'Event Name',
@@ -52,7 +52,7 @@ describe('EnvironmentImpl', () => {
         expect(await environment.initialize()).toBeTruthy();
 
         expect(environment.contactName).toEqual('Peter');
-        expect(environment.contactNumber).toBeUndefined();
+        expect(environment.contactTarget).toBeUndefined();
         expect(environment.title).toEqual('Volunteer Portal');
 
         expect(environment.events).toHaveLength(1);
@@ -69,7 +69,7 @@ describe('EnvironmentImpl', () => {
     it('should reflect the values of a valid environment from session storage', async () => {
         sessionStorage.setItem(EnvironmentImpl.kCacheName, JSON.stringify({
             contactName: 'Ferdi',
-            contactNumber: '0000-00-000',
+            contactTarget: '0000-00-000',
             events: [
                 {
                     name: 'Event Name',
@@ -87,7 +87,7 @@ describe('EnvironmentImpl', () => {
         expect(await environment.initialize()).toBeTruthy();
 
         expect(environment.contactName).toEqual('Ferdi');
-        expect(environment.contactNumber).toEqual('0000-00-000');
+        expect(environment.contactTarget).toEqual('0000-00-000');
         expect(environment.title).toEqual('Volunteer Portal');
 
         expect(environment.events).toHaveLength(1);
@@ -128,7 +128,7 @@ describe('EnvironmentImpl', () => {
         const restoreConsole = mockConsole();
 
         expect(() => environment.contactName).toThrowError();
-        expect(() => environment.contactNumber).toThrowError();
+        expect(() => environment.contactTarget).toThrowError();
         expect(() => environment.events).toThrowError();
         expect(() => environment.title).toThrowError();
 

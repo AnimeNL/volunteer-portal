@@ -7,7 +7,7 @@
  */
 export interface IEnvironmentResponse {
     contactName: string;
-    contactNumber?: string;
+    contactTarget?: string;
     events: IEnvironmentResponseEvent[];
     title: string;
 }

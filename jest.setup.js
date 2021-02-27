@@ -9,9 +9,18 @@ const mockFetch = require('jest-fetch-mock');
 mockFetch.enableMocks();
 
 mockFetch.mockIf(/\/api\/environment$/, async request => JSON.stringify({
-    eventName: 'Example event',
-    portalTitle: 'Volunteer Portal',
-    seniorTitle: 'Senior Volunteer',
-    timezone: 'Europe/London',
-    year: 2021,
+    contactName: 'Peter',
+    /* contactNumber: omitted */
+
+    events: [
+        {
+            name: 'Volunteer Event',
+            enablePortal: true,
+            enableRegistration: true,
+            timezone: 'Europe/London',
+            /* website: omitted */
+        }
+    ],
+
+    title: 'Volunteer Portal',
 }));

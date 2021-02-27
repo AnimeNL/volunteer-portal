@@ -5,10 +5,20 @@
 /**
  * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apienvironment
  */
-export interface IEnvironment {
-    eventName: string;
-    portalTitle: string;
-    seniorTitle: string;
+export interface IEnvironmentResponse {
+    contactName: string;
+    contactNumber?: string;
+    events: IEnvironmentResponseEvent[];
+    title: string;
+}
+
+/**
+ * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apienvironment
+ */
+export interface IEnvironmentResponseEvent {
+    name: string;
+    enablePortal: boolean;
+    enableRegistration: boolean;
     timezone: string;
-    year: number;
+    website?: string;
 }

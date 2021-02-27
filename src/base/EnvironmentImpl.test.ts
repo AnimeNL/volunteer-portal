@@ -35,20 +35,32 @@ describe('EnvironmentImpl', () => {
 
     it('should reflect the values of a valid environment from the network', async () => {
         const environment = createInstance(200, {
-            eventName: 'Example Event',
-            portalTitle: 'Example Title',
-            seniorTitle: 'Example Senior',
-            timezone: 'Europe/London',
-            year: 2019
+            contactName: 'Peter',
+            contactNumber: undefined,
+            events: [
+                {
+                    name: 'Event Name',
+                    enablePortal: true,
+                    enableRegistration: false,
+                    timezone: 'Europe/London',
+                    website: 'https://example.com/'
+                }
+            ],
+            title: 'Volunteer Portal',
         });
 
         expect(await environment.initialize()).toBeTruthy();
 
-        expect(environment.getEventName()).toEqual('Example Event');
-        expect(environment.getPortalTitle()).toEqual('Example Title');
-        expect(environment.getSeniorTitle()).toEqual('Example Senior');
-        expect(environment.getTimezone()).toEqual('Europe/London');
-        expect(environment.getYear()).toEqual(2019);
+        expect(environment.contactName).toEqual('Peter');
+        expect(environment.contactNumber).toBeUndefined();
+        expect(environment.title).toEqual('Volunteer Portal');
+
+        expect(environment.events).toHaveLength(1);
+        expect(environment.events[0].name).toEqual('Event Name');
+        expect(environment.events[0].enablePortal).toBeTruthy();
+        expect(environment.events[0].enableRegistration).toBeFalsy();
+        expect(environment.events[0].timezone).toEqual('Europe/London');
+        expect(environment.events[0].website).toEqual('https://example.com/');
 
         expect(sessionStorage.getItem).toHaveBeenCalledTimes(1);
         expect(sessionStorage.setItem).toHaveBeenCalledTimes(1);
@@ -56,22 +68,34 @@ describe('EnvironmentImpl', () => {
 
     it('should reflect the values of a valid environment from session storage', async () => {
         sessionStorage.setItem(EnvironmentImpl.kCacheName, JSON.stringify({
-            eventName: 'Example Event',
-            portalTitle: 'Example Title',
-            seniorTitle: 'Example Senior',
-            timezone: 'Europe/London',
-            year: 2019
+            contactName: 'Ferdi',
+            contactNumber: '0000-00-000',
+            events: [
+                {
+                    name: 'Event Name',
+                    enablePortal: false,
+                    enableRegistration: true,
+                    timezone: 'Europe/Amsterdam',
+                    /* website: omitted */
+                }
+            ],
+            title: 'Volunteer Portal',
         }));
 
         const environment = createInstance(404, {});
 
         expect(await environment.initialize()).toBeTruthy();
 
-        expect(environment.getEventName()).toEqual('Example Event');
-        expect(environment.getPortalTitle()).toEqual('Example Title');
-        expect(environment.getSeniorTitle()).toEqual('Example Senior');
-        expect(environment.getTimezone()).toEqual('Europe/London');
-        expect(environment.getYear()).toEqual(2019);
+        expect(environment.contactName).toEqual('Ferdi');
+        expect(environment.contactNumber).toEqual('0000-00-000');
+        expect(environment.title).toEqual('Volunteer Portal');
+
+        expect(environment.events).toHaveLength(1);
+        expect(environment.events[0].name).toEqual('Event Name');
+        expect(environment.events[0].enablePortal).toBeFalsy();
+        expect(environment.events[0].enableRegistration).toBeTruthy();
+        expect(environment.events[0].timezone).toEqual('Europe/Amsterdam');
+        expect(environment.events[0].website).toBeUndefined();
 
         expect(sessionStorage.getItem).toHaveBeenCalledTimes(2);
         expect(sessionStorage.setItem).toHaveBeenCalledTimes(2);
@@ -103,11 +127,10 @@ describe('EnvironmentImpl', () => {
         const environment = createInstance(404, {});
         const restoreConsole = mockConsole();
 
-        expect(() => environment.getEventName()).toThrowError();
-        expect(() => environment.getPortalTitle()).toThrowError();
-        expect(() => environment.getSeniorTitle()).toThrowError();
-        expect(() => environment.getTimezone()).toThrowError();
-        expect(() => environment.getYear()).toThrowError();
+        expect(() => environment.contactName).toThrowError();
+        expect(() => environment.contactNumber).toThrowError();
+        expect(() => environment.events).toThrowError();
+        expect(() => environment.title).toThrowError();
 
         restoreConsole();
     });

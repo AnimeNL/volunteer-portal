@@ -3,33 +3,59 @@
 // found in the LICENSE file.
 
 /**
- * Defines the Environment object that's available to all applications. It will be loaded prior to
- * application dispatch by the ApplicationLoader.
+ * Defines the Environment object, which is the interface through which the results of the
+ * IEnvironment API responses are exposed. All properties are immutable for users.
  */
 export interface Environment {
     /**
-     * Returns the name of the event this portal is running for.
+     * Name of the person who can be contacted for questions.
      */
-    getEventName(): string;
+    contactName: Readonly<string>;
 
     /**
-     * Returns the title of the portal.
+     * Phone number of the person who can be contacted for questions.
      */
-    getPortalTitle(): string;
+    contactNumber?: Readonly<string>;
 
     /**
-     * Returns the title that should be given to a senior volunteer.
+     * Array of the events that are supported by this portal.
      */
-    getSeniorTitle(): string;
+    events: Readonly<Array<EnvironmentEvent>>;
 
     /**
-     * Returns the timezone name (per the tz database) the portal should be running in.
+     * Name of the Volunteer Portal instance, e.g. _Volunteer Portal_.
+     */
+    title: Readonly<string>;
+}
+
+/**
+ * Defines the EnvironmentEvent interface, through which the details about a particular event are
+ * shared. This is a data-only object, implementing the IEnvironmentResponseEvent calls.
+ */
+export interface EnvironmentEvent {
+    /**
+     * Name of the event, e.g. _PortalCon 2021_.
+     */
+    name: Readonly<string>;
+
+    /**
+     * Whether the portal should be enabled for registered volunteers.
+     */
+    enablePortal: Readonly<boolean>;
+
+    /**
+     * Whether volunteer registrations should be accepted.
+     */
+    enableRegistration: Readonly<boolean>;
+
+    /**
+     * Timezone in which the event takes place, e.g. _Europe/London_.
      * @see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
      */
-    getTimezone(): string;
+    timezone: Readonly<string>;
 
     /**
-     * Returns the year in which the portal's event will be taking place.
+     * URL to the website of the broader event.
      */
-    getYear(): number;
+    website?: Readonly<string>;
 }

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 import { Configuration } from './Configuration';
-import { Environment } from './Environment';
-import { IEnvironment } from '../api/IEnvironment';
+import { Environment, EnvironmentEvent } from './Environment';
+import { IEnvironmentResponse, IEnvironmentResponseEvent } from '../api/IEnvironment';
 
-import { validateNumber, validateString } from './TypeValidators';
+import { validateArray, validateBoolean, validateOptionalString, validateString } from './TypeValidators';
 
 /**
  * Message to include with the exception thrown when data is being accessed before the Environment
@@ -19,7 +19,7 @@ const kExceptionMessage = 'The Environment object has not been successfully init
  */
 export class EnvironmentImpl implements Environment {
     private configuration: Configuration;
-    private data?: IEnvironment;
+    private data?: IEnvironmentResponse;
 
     /**
      * Name of the session storage cache in which the environment data will be recorded.
@@ -68,12 +68,12 @@ export class EnvironmentImpl implements Environment {
 
     /**
      * Attempts to initialize the environment based on the given |unverifiedInput| string. It is
-     * expected to be in a JSON format, conforming to the definition of IEnvironment.
+     * expected to be in a JSON format, conforming to the definition of IEnvironmentResponse.
      */
     initializeFromUnverifiedSource(errorPrefix: string, unverifiedInput: string): boolean {
         try {
             const unverifiedEnvironment = JSON.parse(unverifiedInput);
-            if (!this.validateEnvironment(unverifiedEnvironment))
+            if (!this.validateEnvironmentResponse(unverifiedEnvironment))
                 return false;
 
             this.data = unverifiedEnvironment;
@@ -87,53 +87,68 @@ export class EnvironmentImpl implements Environment {
     }
 
     /**
-     * Validates the given |environment| as data given in the IEnvironment format. Error messages
-     * will be sent to the console's error buffer if the data could not be verified.
+     * Validates the given |environment| as data given in the IEnvironment response format. Error
+     * messages will be sent to the console's error buffer if the data could not be verified.
      */
-    validateEnvironment(environment: any) : environment is IEnvironment {
-        const kInterfaceName = 'IEnvironment';
+    validateEnvironmentResponse(environment: any): environment is IEnvironmentResponse {
+        const kInterfaceName = 'IEnvironmentResponse';
 
-        return validateString(environment, kInterfaceName, 'eventName') &&
-               validateString(environment, kInterfaceName, 'portalTitle') &&
-               validateString(environment, kInterfaceName, 'seniorTitle') &&
-               validateString(environment, kInterfaceName, 'timezone') &&
-               validateNumber(environment, kInterfaceName, 'year');
+        if (!validateArray(environment, kInterfaceName, 'events'))
+            return false;
+
+        for (const event of environment.events) {
+            if (!this.validateEnvironmentResponseEvent(event))
+                return false;
+        }
+
+        return validateString(environment, kInterfaceName, 'contactName') &&
+               validateOptionalString(environment, kInterfaceName, 'contactNumber') &&
+               validateString(environment, kInterfaceName, 'title');
     }
 
-    // Environment implementation:
+    /**
+     * Validates whether the given |event| is a valid IEnvironmentResponseEvent structure. This data
+     * will generally have been sourced from untrusted input, i.e. the network.
+     */
+    validateEnvironmentResponseEvent(event: any): event is IEnvironmentResponseEvent {
+        const kInterfaceName = 'IEnvironmentResponseEvent';
 
-    getEventName(): string {
+        return validateString(event, kInterfaceName, 'name') &&
+               validateBoolean(event, kInterfaceName, 'enablePortal') &&
+               validateBoolean(event, kInterfaceName, 'enableRegistration') &&
+               validateString(event, kInterfaceName, 'timezone') &&
+               validateOptionalString(event, kInterfaceName, 'website');
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Environment interface implementation
+    // ---------------------------------------------------------------------------------------------
+
+    get contactName(): Readonly<string> {
         if (!this.data)
             throw new Error(kExceptionMessage);
 
-        return this.data.eventName;
+        return this.data.contactName;
     }
 
-    getPortalTitle(): string {
+    get contactNumber(): undefined | Readonly<string> {
         if (!this.data)
             throw new Error(kExceptionMessage);
 
-        return this.data.portalTitle;
+        return this.data.contactNumber;
     }
 
-    getSeniorTitle(): string {
+    get events(): Readonly<Array<EnvironmentEvent>> {
         if (!this.data)
             throw new Error(kExceptionMessage);
 
-        return this.data.seniorTitle;
+        return this.data.events;
     }
 
-    getTimezone(): string {
+    get title(): Readonly<string> {
         if (!this.data)
             throw new Error(kExceptionMessage);
 
-        return this.data.timezone;
-    }
-
-    getYear(): number {
-        if (!this.data)
-            throw new Error(kExceptionMessage);
-
-        return this.data.year;
+        return this.data.title;
     }
 }

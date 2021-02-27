@@ -8,6 +8,9 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
+import { AppContext } from './AppContext';
+import { useContext } from 'preact/hooks';
+
 // CSS customizations applied to the <ContentLayout> component. The page will have a background
 // image that depends on the device's form factor, with centered contents.
 const useStyles = makeStyles(theme => ({
@@ -71,6 +74,7 @@ interface ContentLayoutProps {
 // which should be included as the children of this component.
 export function ContentLayout(props: ContentLayoutProps) {
     const classes = useStyles();
+    const { environment } = useContext(AppContext);
     const year = (new Date()).getFullYear();
 
     return (
@@ -82,7 +86,7 @@ export function ContentLayout(props: ContentLayoutProps) {
                     {props.children}
                 </Paper>
                 <Typography variant="body2" className={classes.footer}>
-                    AnimeCon Volunteer Portal (
+                    {environment.title} (
                     <a href="https://github.com/AnimeNL/volunteer-portal">
                         {process.env.REACT_APP_GIT_VERSION}
                     </a>) — © 2015–{year}

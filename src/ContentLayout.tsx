@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => ({
         backgroundPosition: 'bottom right',
         backgroundSize: 'cover',
 
-        [theme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('sm')]: {
             backgroundImage: 'url(/images/background-mobile.jpg)',
         },
 

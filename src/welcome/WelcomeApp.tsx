@@ -43,10 +43,9 @@ export function WelcomeApp() {
                 {environment.title}
             </ContentHeader>
             <Typography className={classes.intro}>
-                Welcome to the {environment.title}. This site allows you to learn more about the
-                perks and responsibilities of volunteering during one of our events, to register
-                your interest to become a volunteer, and to get direct access to your personal
-                schedule.
+                This site allows you to learn more about the perks and responsibilities of
+                volunteering during one of our events, to register your interest to become a
+                volunteer, and to get direct access to your personal schedule.
             </Typography>
             <Divider />
             <List className={classes.list}>

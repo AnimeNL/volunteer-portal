@@ -72,6 +72,18 @@ module.exports = {
     },
 
     devServer: {
+        historyApiFallback: {
+            rewrites: [
+                // Rewrites image requests to the stewards configuration. The actual webserver will
+                // rewrite paths based on the hostname, which is included in nginx.conf.
+                {
+                    from: /^\/images\/.*$/,
+                    to: context =>
+                        '/static/images/stewards/' + path.basename(context.parsedUrl.pathname)
+                }
+            ],
+        },
+
         port: 4000,
         open: true,
         hot: true
@@ -92,11 +104,6 @@ module.exports = {
                 // Duplicate common image resources to both environments.
                 { from: 'static/images/*.*', to: createCopyDestinationFn('static/images/gophers/') },
                 { from: 'static/images/*.*', to: createCopyDestinationFn('static/images/stewards/') },
-
-                // Copy the Steward environment for development. This should not be deployed.
-                // Instead, the server should be configured to forward requests to the right place.
-                { from: 'static/images/stewards/*.*', to: createCopyDestinationFn('images/') },
-                { from: 'static/images/*.*', to: createCopyDestinationFn('images/') },
             ],
         }),
 

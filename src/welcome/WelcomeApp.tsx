@@ -53,7 +53,7 @@ export function WelcomeApp() {
                 {environment.events.map(event =>
                     <Fragment>
                         { event.enableRegistration &&
-                            <ListItem component={Link} href="/registration" divider button>
+                            <ListItem component={Link} href={`/registration/${event.slug}/`} divider button>
                                 <ListItemIcon>
                                     <InfoIcon />
                                 </ListItemIcon>

@@ -19,6 +19,7 @@ export interface IEnvironmentResponseEvent {
     name: string;
     enablePortal: boolean;
     enableRegistration: boolean;
+    slug: string;
     timezone: string;
     website?: string;
 }

@@ -116,6 +116,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: 'src/index.html',
+            base: '/',  // Enables relative URLs to work painlessly
             hash: true, // This is useful for cache busting
         })
     ],

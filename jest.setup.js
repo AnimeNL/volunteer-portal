@@ -17,6 +17,7 @@ mockFetch.mockIf(/\/api\/environment$/, async request => JSON.stringify({
             name: 'Volunteer Event',
             enablePortal: true,
             enableRegistration: true,
+            slug: 'volunteer-event',
             timezone: 'Europe/London',
             /* website: omitted */
         }

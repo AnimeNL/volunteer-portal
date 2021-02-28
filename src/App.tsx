@@ -81,10 +81,10 @@ export class App extends Component<{}, AppState> {
                 { this.state.error && <AppError error={this.state.error} /> }
                 { this.state.loaded &&
                     <Router>
-                        <Route path="/registration" component={RegistrationApp} />
+                        <Route path="/registration/:event*" component={RegistrationApp} />
 
-                        { this.state.authenticated && <Route path="/" component={PortalApp} /> }
-                        { !this.state.authenticated && <Route path="/" component={WelcomeApp} /> }
+                        { this.state.authenticated && <Route default component={PortalApp} /> }
+                        { !this.state.authenticated && <Route default component={WelcomeApp} /> }
                     </Router>
                 }
                 { !this.state.loaded && <LoadingApp /> }

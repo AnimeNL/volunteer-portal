@@ -42,6 +42,7 @@ describe('EnvironmentImpl', () => {
                     name: 'Event Name',
                     enablePortal: true,
                     enableRegistration: false,
+                    slug: 'event-name',
                     timezone: 'Europe/London',
                     website: 'https://example.com/'
                 }
@@ -59,6 +60,7 @@ describe('EnvironmentImpl', () => {
         expect(environment.events[0].name).toEqual('Event Name');
         expect(environment.events[0].enablePortal).toBeTruthy();
         expect(environment.events[0].enableRegistration).toBeFalsy();
+        expect(environment.events[0].slug).toEqual('event-name');
         expect(environment.events[0].timezone).toEqual('Europe/London');
         expect(environment.events[0].website).toEqual('https://example.com/');
 
@@ -75,6 +77,7 @@ describe('EnvironmentImpl', () => {
                     name: 'Event Name',
                     enablePortal: false,
                     enableRegistration: true,
+                    slug: 'event-name',
                     timezone: 'Europe/Amsterdam',
                     /* website: omitted */
                 }
@@ -94,6 +97,7 @@ describe('EnvironmentImpl', () => {
         expect(environment.events[0].name).toEqual('Event Name');
         expect(environment.events[0].enablePortal).toBeFalsy();
         expect(environment.events[0].enableRegistration).toBeTruthy();
+        expect(environment.events[0].slug).toEqual('event-name');
         expect(environment.events[0].timezone).toEqual('Europe/Amsterdam');
         expect(environment.events[0].website).toBeUndefined();
 

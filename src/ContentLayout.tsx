@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 import { ComponentChildren, Fragment, h } from 'preact';
+import { useContext } from 'preact/hooks';
 
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { AppContext } from './AppContext';
-import { useContext } from 'preact/hooks';
+import { Link } from './Link';
 
 // CSS customizations applied to the <ContentLayout> component. The page will have a background
 // image that depends on the device's form factor, with centered contents.
@@ -81,7 +82,9 @@ export function ContentLayout(props: ContentLayoutProps) {
         <Fragment>
             <div className={classes.background}></div>
             <div className={classes.container}>
-                <img className={classes.logo} src="/images/logo-portal.png" alt="J-POP Logo" />
+                <Link href="/">
+                    <img className={classes.logo} src="/images/logo-portal.png" alt="J-POP Logo" />
+                </Link>
                 <Paper className={classes.content}>
                     {props.children}
                 </Paper>

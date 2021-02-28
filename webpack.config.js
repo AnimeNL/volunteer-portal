@@ -74,6 +74,12 @@ module.exports = {
     devServer: {
         historyApiFallback: {
             rewrites: [
+                // Rewrites the paths part of the SPA back to index.html
+                {
+                    from: /^\/registration\/?.*$/,
+                    to: '/index.html',
+                },
+
                 // Rewrites image requests to the stewards configuration. The actual webserver will
                 // rewrite paths based on the hostname, which is included in nginx.conf.
                 {

@@ -19,6 +19,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { AppContext } from '../AppContext';
 import { ContentHeader } from '../ContentHeader';
 import { ContentLayout } from '../ContentLayout';
+import { Link } from '../Link';
 
 // Customized styling for the <WelcomeApp> component.
 const useStyles = makeStyles(theme => ({
@@ -52,7 +53,7 @@ export function WelcomeApp() {
                 {environment.events.map(event =>
                     <Fragment>
                         { event.enableRegistration &&
-                            <ListItem divider button>
+                            <ListItem component={Link} href="/registration" divider button>
                                 <ListItemIcon>
                                     <InfoIcon />
                                 </ListItemIcon>
@@ -71,7 +72,7 @@ export function WelcomeApp() {
                     </Fragment>
                 )}
                 { environment.contactName &&
-                    <ListItem component="a" href={environment.contactTarget} button>
+                    <ListItem component={Link} href={environment.contactTarget} button>
                         <ListItemIcon>
                             <ContactSupportIcon />
                         </ListItemIcon>

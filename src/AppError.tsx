@@ -10,7 +10,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import IconButton from '@material-ui/core/IconButton';
 import Snackbar from '@material-ui/core/Snackbar';
 
-// Properties accepted by the <AppError /> component.
+// Properties accepted by the <AppError> component.
 export interface AppErrorProps {
     // The message that should be displayed as the application error.
     error: string;

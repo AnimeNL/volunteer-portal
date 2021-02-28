@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import { Component, h } from 'preact';
+import { Router, Route } from 'preact-router';
 
 import { AppContext, IAppContext } from './AppContext';
 import { AppError } from './AppError';
@@ -10,14 +11,16 @@ import { ConfigurationImpl } from './base/ConfigurationImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
 
 import { LoadingApp } from './loading/LoadingApp';
+import { PortalApp } from './portal/PortalApp';
+import { RegistrationApp } from './registration/RegistrationApp';
 import { WelcomeApp } from './welcome/WelcomeApp';
 
-// High-level state of the application. We care about two primary properties: whether the user is
-// authenticated, and which sub-application should be loaded.
+// High-level state of the application. We primarily care about whether the user has authenticated,
+// as routing will enable navigation to take place otherwise.
 interface AppState {
-    app: 'loading' | 'portal' | 'registration' | 'welcome';
     authenticated: boolean;
     error?: string;
+    loaded: boolean;
 }
 
 // Main component of the Volunteer Portal application, which creates the app context and switches
@@ -37,8 +40,8 @@ export class App extends Component<{}, AppState> {
         // Initial state of the application. The actual state will be loaded and processed when the
         // component gets mounted. Once finished, a re-render will be requested as appropriate.
         this.state = {
-            app: /* do not render anything= */ 'loading',
             authenticated: false,
+            loaded: false,
         };
     }
 
@@ -54,10 +57,7 @@ export class App extends Component<{}, AppState> {
             return;
         }
 
-        // TODO: We need some basic-level routing here for the application(s) that can be accessed,
-        // although there is some overlap between them. (For example the main page.)
-
-        this.setState({ app: 'welcome' });
+        this.setState({ loaded: true });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -79,9 +79,15 @@ export class App extends Component<{}, AppState> {
         return (
             <AppContext.Provider value={ this.composeAppContext() }>
                 { this.state.error && <AppError error={this.state.error} /> }
+                { this.state.loaded &&
+                    <Router>
+                        <Route path="/registration" component={RegistrationApp} />
 
-                { this.state.app === 'loading' && <LoadingApp /> }
-                { this.state.app === 'welcome' && <WelcomeApp /> }
+                        { this.state.authenticated && <Route path="/" component={PortalApp} /> }
+                        { !this.state.authenticated && <Route path="/" component={WelcomeApp} /> }
+                    </Router>
+                }
+                { !this.state.loaded && <LoadingApp /> }
             </AppContext.Provider>
         );
     }

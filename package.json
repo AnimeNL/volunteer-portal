@@ -18,16 +18,16 @@
   "dependencies": {
     "@emotion/react": "^11.1.5",
     "@emotion/styled": "^11.1.5",
-    "@material-ui/core": "^5.0.0-alpha.25",
-    "@material-ui/icons": "^5.0.0-alpha.24",
-    "@material-ui/lab": "^5.0.0-alpha.25",
+    "@material-ui/core": "^5.0.0-alpha.26",
+    "@material-ui/icons": "^5.0.0-alpha.26",
+    "@material-ui/lab": "^5.0.0-alpha.26",
     "preact": "^10.5.12",
     "preact-render-to-string": "^5.1.12",
     "preact-router": "^3.2.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.1",
-    "@babel/preset-env": "^7.13.5",
+    "@babel/core": "^7.13.8",
+    "@babel/preset-env": "^7.13.8",
     "@types/jest": "^26.0.20",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.2.2",
@@ -41,7 +41,7 @@
     "jest-mock-console": "^1.0.1",
     "ts-jest": "^26.5.2",
     "typescript": "^4.2.2",
-    "webpack": "^5.24.1",
+    "webpack": "^5.24.2",
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^3.11.2"
   },

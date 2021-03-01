@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import { Cache } from './Cache';
+import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
 import { Environment, EnvironmentEvent } from './Environment';
 import { IEnvironmentResponse, IEnvironmentResponseEvent } from '../api/IEnvironment';
@@ -19,18 +20,16 @@ const kExceptionMessage = 'The Environment object has not been successfully init
  * Implementation of the Environment interface, shared across the entire Volunteer Portal.
  */
 export class EnvironmentImpl implements Environment {
-    private cache: Cache;
-    private configuration: Configuration;
-    private data?: IEnvironmentResponse;
-
-    /**
-     * Name of the session storage cache in which the environment data will be recorded.
-     */
     public static kCacheKey: string = 'portal-environment';
 
+    private configuration: Configuration;
+    private loader: CachedLoader;
+
+    private data?: IEnvironmentResponse;
+
     constructor(cache: Cache, configuration: Configuration) {
-        this.cache = cache;
         this.configuration = configuration;
+        this.loader = new CachedLoader(cache);
     }
 
     /**
@@ -39,63 +38,17 @@ export class EnvironmentImpl implements Environment {
      * which it will be loaded from the server.
      */
     async initialize(): Promise<boolean> {
-        return Promise.any([
-            // (1) Initialize the environment from the cache, when available. This will finish first
-            // when the cache has been populated, so be careful not to override existing data.
-            this.initializeFromCache().then(environment => {
-                if (!this.data)
-                    this.data = environment;
+        const environment = await this.loader.initialize({
+            cacheKey: EnvironmentImpl.kCacheKey,
+            url: this.configuration.getEnvironmentEndpoint(),
+            validationFn: EnvironmentImpl.prototype.validateEnvironmentResponse.bind(this),
+        });
 
-                return true;
-            }),
+        if (!environment)
+            return false;
 
-            // (2) Initialize the environment from the network, when possible. Will override the
-            // cached version, but will likely take more time to become available.
-            this.initializeFromNetwork().then(async environment => {
-                // (a) Store the obtained |environment| information in the cache. This gives us
-                //     stale-while-revalidate behaviour already.
-                await this.cache.set(EnvironmentImpl.kCacheKey, environment);
-
-                // (b) Activate the obtained |environment| data for the current session.
-                // TODO: Should we force a refresh of the page if it changed from the cached value?
-                this.data = environment;
-                return true;
-            }),
-
-        // (3) If both fail, then we're offline and don't have a cached variant. The application
-        // requires the environment to be known, so consider this a fatal error.
-        ]).catch(aggregateException => false);
-    }
-
-    /**
-     * Initializes environment information from the cache. As long as it's been cached once, this
-     * will continue to work even without network connectivity.
-     */
-    async initializeFromCache(): Promise<IEnvironmentResponse> {
-        const environment = await this.cache.get(EnvironmentImpl.kCacheKey);
-
-        if (!this.validateEnvironmentResponse(environment)) {
-            await this.cache.delete(EnvironmentImpl.kCacheKey);
-            throw new Error(`Cannot validate environment data stored in the cache.`);
-        }
-
-        return environment;
-    }
-
-    /**
-     * Initializes environment information from the network. This will most likely take longer to
-     * load than cached information (when it exists), but has the ability to update it.
-     */
-    async initializeFromNetwork(): Promise<IEnvironmentResponse> {
-        const response = await fetch(this.configuration.getEnvironmentEndpoint());
-        if (!response.ok)
-            throw new Error(`Cannot fetch environment data from the server (${response.status}).`);
-
-        const environment = await response.json();
-        if (!this.validateEnvironmentResponse(environment))
-            throw new Error(`Cannot validate environment data received from the server.`);
-
-        return environment;
+        this.data = environment;
+        return true;
     }
 
     /**

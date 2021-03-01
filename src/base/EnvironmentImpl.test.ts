@@ -100,9 +100,6 @@ describe('EnvironmentImpl', () => {
         });
 
         expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeTruthy();
-
-        restoreConsole!();
-
         expect(await environment.initialize()).toBeTruthy();
 
         expect(environment.contactName).toEqual('Ferdi');

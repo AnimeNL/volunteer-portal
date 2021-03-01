@@ -25,3 +25,6 @@ mockFetch.mockIf(/\/api\/environment$/, async request => JSON.stringify({
 
     title: 'Volunteer Portal',
 }));
+
+// Enables IndexedDB to be used in Jest tests, which we depend on for caching.
+require('fake-indexeddb/auto');

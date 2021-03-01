@@ -18,6 +18,7 @@ export interface IEnvironmentResponse {
 export interface IEnvironmentResponseEvent {
     name: string;
     enablePortal: boolean;
+    enableReferences: boolean;
     enableRegistration: boolean;
     slug: string;
     timezone: string;

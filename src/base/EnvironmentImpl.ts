@@ -2,6 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import { Cache } from './Cache';
 import { Configuration } from './Configuration';
 import { Environment, EnvironmentEvent } from './Environment';
 import { IEnvironmentResponse, IEnvironmentResponseEvent } from '../api/IEnvironment';
@@ -18,15 +19,17 @@ const kExceptionMessage = 'The Environment object has not been successfully init
  * Implementation of the Environment interface, shared across the entire Volunteer Portal.
  */
 export class EnvironmentImpl implements Environment {
+    private cache: Cache;
     private configuration: Configuration;
     private data?: IEnvironmentResponse;
 
     /**
      * Name of the session storage cache in which the environment data will be recorded.
      */
-    public static kCacheName: string = 'portal-environment';
+    public static kCacheKey: string = 'portal-environment';
 
-    constructor(configuration: Configuration) {
+    constructor(cache: Cache, configuration: Configuration) {
+        this.cache = cache;
         this.configuration = configuration;
     }
 
@@ -36,54 +39,63 @@ export class EnvironmentImpl implements Environment {
      * which it will be loaded from the server.
      */
     async initialize(): Promise<boolean> {
-        const kErrorPrefix = 'Unable to fetch the environment data: ';
+        return Promise.any([
+            // (1) Initialize the environment from the cache, when available. This will finish first
+            // when the cache has been populated, so be careful not to override existing data.
+            this.initializeFromCache().then(environment => {
+                if (!this.data)
+                    this.data = environment;
 
-        try {
-            if (navigator.cookieEnabled) {
-                const cachedInput = sessionStorage.getItem(EnvironmentImpl.kCacheName);
-                if (cachedInput && this.initializeFromUnverifiedSource(kErrorPrefix, cachedInput))
-                    return true;
-            }
+                return true;
+            }),
 
-            const result = await fetch(this.configuration.getEnvironmentEndpoint());
-            if (!result.ok) {
-                console.error(kErrorPrefix + ` status ${result.status}`);
-                return false;
-            }
+            // (2) Initialize the environment from the network, when possible. Will override the
+            // cached version, but will likely take more time to become available.
+            this.initializeFromNetwork().then(async environment => {
+                // (a) Store the obtained |environment| information in the cache. This gives us
+                //     stale-while-revalidate behaviour already.
+                await this.cache.set(EnvironmentImpl.kCacheKey, environment);
 
-            if (!this.initializeFromUnverifiedSource(kErrorPrefix, await result.text()))
-                return false;
-            
-            if (navigator.cookieEnabled)
-                sessionStorage.setItem(EnvironmentImpl.kCacheName, JSON.stringify(this.data));
+                // (b) Activate the obtained |environment| data for the current session.
+                // TODO: Should we force a refresh of the page if it changed from the cached value?
+                this.data = environment;
+                return true;
+            }),
 
-            return true;
-
-        } catch (exception) {
-            console.error(kErrorPrefix, exception);
-        }
-
-        return false;
+        // (3) If both fail, then we're offline and don't have a cached variant. The application
+        // requires the environment to be known, so consider this a fatal error.
+        ]).catch(aggregateException => false);
     }
 
     /**
-     * Attempts to initialize the environment based on the given |unverifiedInput| string. It is
-     * expected to be in a JSON format, conforming to the definition of IEnvironmentResponse.
+     * Initializes environment information from the cache. As long as it's been cached once, this
+     * will continue to work even without network connectivity.
      */
-    initializeFromUnverifiedSource(errorPrefix: string, unverifiedInput: string): boolean {
-        try {
-            const unverifiedEnvironment = JSON.parse(unverifiedInput);
-            if (!this.validateEnvironmentResponse(unverifiedEnvironment))
-                return false;
+    async initializeFromCache(): Promise<IEnvironmentResponse> {
+        const environment = await this.cache.get(EnvironmentImpl.kCacheKey);
 
-            this.data = unverifiedEnvironment;
-            return true;
-
-        } catch (exception) {
-            console.error(errorPrefix, exception);
+        if (!this.validateEnvironmentResponse(environment)) {
+            await this.cache.delete(EnvironmentImpl.kCacheKey);
+            throw new Error(`Cannot validate environment data stored in the cache.`);
         }
 
-        return false;
+        return environment;
+    }
+
+    /**
+     * Initializes environment information from the network. This will most likely take longer to
+     * load than cached information (when it exists), but has the ability to update it.
+     */
+    async initializeFromNetwork(): Promise<IEnvironmentResponse> {
+        const response = await fetch(this.configuration.getEnvironmentEndpoint());
+        if (!response.ok)
+            throw new Error(`Cannot fetch environment data from the server (${response.status}).`);
+
+        const environment = await response.json();
+        if (!this.validateEnvironmentResponse(environment))
+            throw new Error(`Cannot validate environment data received from the server.`);
+
+        return environment;
     }
 
     /**

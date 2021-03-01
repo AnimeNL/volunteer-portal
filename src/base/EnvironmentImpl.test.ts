@@ -2,16 +2,18 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import 'jest-localstorage-mock';
-
-import mockConsole from 'jest-mock-console';
+import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 import mockFetch from 'jest-fetch-mock';
 
+import { Cache } from './Cache';
 import { ConfigurationImpl } from './ConfigurationImpl';
 import { EnvironmentImpl } from './EnvironmentImpl';
 
 describe('EnvironmentImpl', () => {
-    beforeEach(() => sessionStorage.clear());
+    let restoreConsole: RestoreConsole | undefined = undefined;
+
+    beforeEach(() => restoreConsole = mockConsole());
+    afterEach(() => restoreConsole!());
 
     /**
      * Creates an instance of the EnvironmentImpl object. The |environment| will be served through
@@ -20,8 +22,12 @@ describe('EnvironmentImpl', () => {
      * @param status The HTTP status code the mock server should respond with.
      * @param environment The environment that should be returned by the mock server.
      */
-    function createInstance(status: number, environment: object): EnvironmentImpl {
+    async function createInstance(status: number, environment: object) {
+        const cache = new Cache();
         const configuration = new ConfigurationImpl();
+
+        // Always clear the cache prior to creating a new instance.
+        await cache.delete(EnvironmentImpl.kCacheKey);
 
         mockFetch.mockOnceIf(configuration.getEnvironmentEndpoint(), async request => {
             return {
@@ -30,11 +36,14 @@ describe('EnvironmentImpl', () => {
             };
         });
 
-        return new EnvironmentImpl(configuration);
+        return {
+            cache,
+            environment: new EnvironmentImpl(cache, configuration)
+        };
     }
 
     it('should reflect the values of a valid environment from the network', async () => {
-        const environment = createInstance(200, {
+        const { cache, environment } = await createInstance(200, {
             contactName: 'Peter',
             contactTarget: undefined,
             events: [
@@ -51,6 +60,7 @@ describe('EnvironmentImpl', () => {
             title: 'Volunteer Portal',
         });
 
+        expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeFalsy();
         expect(await environment.initialize()).toBeTruthy();
 
         expect(environment.contactName).toEqual('Peter');
@@ -66,12 +76,13 @@ describe('EnvironmentImpl', () => {
         expect(environment.events[0].timezone).toEqual('Europe/London');
         expect(environment.events[0].website).toEqual('https://example.com/');
 
-        expect(sessionStorage.getItem).toHaveBeenCalledTimes(1);
-        expect(sessionStorage.setItem).toHaveBeenCalledTimes(1);
+        expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeTruthy();
     });
 
-    it('should reflect the values of a valid environment from session storage', async () => {
-        sessionStorage.setItem(EnvironmentImpl.kCacheName, JSON.stringify({
+    it('should reflect the values of a valid environment from the cache', async () => {
+        const { cache, environment } = await createInstance(404, {});
+
+        await cache.set(EnvironmentImpl.kCacheKey, {
             contactName: 'Ferdi',
             contactTarget: '0000-00-000',
             events: [
@@ -86,9 +97,11 @@ describe('EnvironmentImpl', () => {
                 }
             ],
             title: 'Volunteer Portal',
-        }));
+        });
 
-        const environment = createInstance(404, {});
+        expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeTruthy();
+
+        restoreConsole!();
 
         expect(await environment.initialize()).toBeTruthy();
 
@@ -104,42 +117,30 @@ describe('EnvironmentImpl', () => {
         expect(environment.events[0].slug).toEqual('event-name');
         expect(environment.events[0].timezone).toEqual('Europe/Amsterdam');
         expect(environment.events[0].website).toBeUndefined();
-
-        expect(sessionStorage.getItem).toHaveBeenCalledTimes(2);
-        expect(sessionStorage.setItem).toHaveBeenCalledTimes(2);
     });
 
     it('should fail when the API endpoint is unavailable', async () => {
-        const environment = createInstance(404, {});
-        const restoreConsole = mockConsole();
+        const { environment } = await createInstance(404, {});
 
         // Failure because fetching the API endpoint returns a 404 status.
         expect(await environment.initialize()).toBeFalsy();
-        expect(console.error).toHaveBeenCalledTimes(1);
-
-        restoreConsole();
+        expect(console.error).toHaveBeenCalledTimes(0);
     });
 
     it('should fail when the API endpoint returns invalid data', async () => {
-        const environment = createInstance(200, { fruit: 'banana' });
-        const restoreConsole = mockConsole();
+        const { environment } = await createInstance(200, { fruit: 'banana' });
 
         // Failure because data fetched from the API endpoint does not match to [[IEnvironment]].
         expect(await environment.initialize()).toBeFalsy();
         expect(console.error).toHaveBeenCalledTimes(1);
-
-        restoreConsole();
     });
 
-    it('should throw when accessing properties before a successful initialization', () => {
-        const environment = createInstance(404, {});
-        const restoreConsole = mockConsole();
+    it('should throw when accessing properties before a successful initialization', async () => {
+        const { environment } = await createInstance(404, {});
 
         expect(() => environment.contactName).toThrowError();
         expect(() => environment.contactTarget).toThrowError();
         expect(() => environment.events).toThrowError();
         expect(() => environment.title).toThrowError();
-
-        restoreConsole();
     });
 });

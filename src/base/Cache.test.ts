@@ -41,6 +41,21 @@ describe('Cache', () => {
         expect(await cache.get('my-string')).toEqual('Hello, world!');
     });
 
+    it('has the ability to delete stored data', async() => {
+        const cache = new Cache();
+
+        await cache.set('foo', 'bar');
+        expect(await cache.get('foo')).toEqual('bar');
+
+        await cache.delete('foo');
+
+        try {
+            await cache.get('foo');
+        } catch (exception) {
+            expect(exception.message).toMatch('No data has been cached for key "foo" yet.');
+        }
+    });
+
     it('has the ability to store content across instances', async() => {
         const firstCache = new Cache();
         const secondCache = new Cache();

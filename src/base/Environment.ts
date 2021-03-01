@@ -44,6 +44,11 @@ export interface EnvironmentEvent {
     enablePortal: Readonly<boolean>;
 
     /**
+     * Whether the event should be referred to on the portal at all.
+     */
+    enableReferences: Readonly<boolean>;
+
+    /**
      * Whether volunteer registrations should be accepted.
      */
     enableRegistration: Readonly<boolean>;

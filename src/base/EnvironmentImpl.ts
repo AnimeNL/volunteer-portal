@@ -115,6 +115,7 @@ export class EnvironmentImpl implements Environment {
 
         return validateString(event, kInterfaceName, 'name') &&
                validateBoolean(event, kInterfaceName, 'enablePortal') &&
+               validateBoolean(event, kInterfaceName, 'enableReferences') &&
                validateBoolean(event, kInterfaceName, 'enableRegistration') &&
                validateString(event, kInterfaceName, 'slug') &&
                validateString(event, kInterfaceName, 'timezone') &&

@@ -79,9 +79,9 @@ export class EnvironmentImpl implements Environment {
         const kInterfaceName = 'IEnvironmentResponseEvent';
 
         return validateString(event, kInterfaceName, 'name') &&
-               validateBoolean(event, kInterfaceName, 'enablePortal') &&
-               validateBoolean(event, kInterfaceName, 'enableReferences') &&
+               validateBoolean(event, kInterfaceName, 'enableContent') &&
                validateBoolean(event, kInterfaceName, 'enableRegistration') &&
+               validateBoolean(event, kInterfaceName, 'enableSchedule') &&
                validateString(event, kInterfaceName, 'slug') &&
                validateString(event, kInterfaceName, 'timezone') &&
                validateOptionalString(event, kInterfaceName, 'website');

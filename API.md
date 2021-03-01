@@ -20,9 +20,9 @@ A `GET` request with no additional payload.
 | Property             | Type      | Description |
 | :---                 | :---      | :--- |
 | `name`               | `string`  | Name of the event, e.g. _PortalCon 2021_. |
-| `enablePortal`       | `boolean` | Whether the portal should be enabled for registered volunteers. |
-| `enableReferences`   | `boolean` | Whether the event should be referred to on the portal at all. |
-| `enableRegistration` | `boolean` | Whether volunteer registrations should be accepted. |
+| `enableContent`      | `boolean` | Whether content pages for this event should be enabled. |
+| `enableRegistration` | `boolean` | Whether volunteer registrations should be accepted for this event. |
+| `enableSchedule`     | `boolean` | Whether access to the schedule should be enabled for this event. |
 | `slug`               | `string`  | URL-safe representation of the event's name, e.g. _portalcon-2021_. |
 | `timezone`           | `string`  | Timezone in which the event takes place, e.g. _Europe/London_. |
 | `website`            | `string?` | URL to the website of the broader event. |

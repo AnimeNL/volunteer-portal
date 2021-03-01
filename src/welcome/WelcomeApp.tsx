@@ -52,7 +52,7 @@ export function WelcomeApp() {
             <List className={classes.list}>
                 {environment.events.map(event =>
                     <Fragment>
-                        { (event.enableReferences && event.enableRegistration) &&
+                        { event.enableContent &&
                             <ListItem component={Link} href={`/registration/${event.slug}/`} divider button>
                                 <ListItemIcon>
                                     <InfoIcon />
@@ -60,12 +60,12 @@ export function WelcomeApp() {
                                 <ListItemText primary={`Interested in helping out during ${event.name}?`} />
                             </ListItem>
                         }
-                        { (event.enableReferences && !event.enableRegistration && event.website) &&
+                        { (!event.enableContent && event.website) &&
                             <ListItem component="a" href={event.website} divider button>
                                 <ListItemIcon>
                                     <LanguageIcon />
                                 </ListItemIcon>
-                                <ListItemText primary={`${event.name} registrations aren't accepted yet, visit the event website instead.`} />
+                                <ListItemText primary={`${event.name} isn't taking volunteer registrations yet. Visit the website instead.`} />
                             </ListItem>
                         }
                         { /* TODO: Enable sign-in when the portal for |event| has been enabled. */ }

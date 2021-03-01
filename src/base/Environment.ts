@@ -39,19 +39,19 @@ export interface EnvironmentEvent {
     name: Readonly<string>;
 
     /**
-     * Whether the portal should be enabled for registered volunteers.
+     * Whether content pages for this event should be enabled.
      */
-    enablePortal: Readonly<boolean>;
+    enableContent: Readonly<boolean>;
 
     /**
-     * Whether the event should be referred to on the portal at all.
-     */
-    enableReferences: Readonly<boolean>;
-
-    /**
-     * Whether volunteer registrations should be accepted.
+     * Whether volunteer registrations should be accepted for this event.
      */
     enableRegistration: Readonly<boolean>;
+
+    /**
+     * Whether access to the schedule should be enabled for this event.
+     */
+    enableSchedule: Readonly<boolean>;
 
     /**
      * URL-safe representation of the event's name, e.g. _portalcon-2021_.

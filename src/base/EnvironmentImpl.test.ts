@@ -49,9 +49,9 @@ describe('EnvironmentImpl', () => {
             events: [
                 {
                     name: 'Event Name',
-                    enablePortal: true,
-                    enableReferences: true,
-                    enableRegistration: false,
+                    enableContent: true,
+                    enableRegistration: true,
+                    enableSchedule: false,
                     slug: 'event-name',
                     timezone: 'Europe/London',
                     website: 'https://example.com/'
@@ -69,9 +69,9 @@ describe('EnvironmentImpl', () => {
 
         expect(environment.events).toHaveLength(1);
         expect(environment.events[0].name).toEqual('Event Name');
-        expect(environment.events[0].enablePortal).toBeTruthy();
-        expect(environment.events[0].enableReferences).toBeTruthy();
-        expect(environment.events[0].enableRegistration).toBeFalsy();
+        expect(environment.events[0].enableContent).toBeTruthy();
+        expect(environment.events[0].enableRegistration).toBeTruthy();
+        expect(environment.events[0].enableSchedule).toBeFalsy();
         expect(environment.events[0].slug).toEqual('event-name');
         expect(environment.events[0].timezone).toEqual('Europe/London');
         expect(environment.events[0].website).toEqual('https://example.com/');
@@ -88,9 +88,9 @@ describe('EnvironmentImpl', () => {
             events: [
                 {
                     name: 'Event Name',
-                    enablePortal: false,
-                    enableReferences: false,
-                    enableRegistration: true,
+                    enableContent: false,
+                    enableRegistration: false,
+                    enableSchedule: true,
                     slug: 'event-name',
                     timezone: 'Europe/Amsterdam',
                     /* website: omitted */
@@ -108,9 +108,9 @@ describe('EnvironmentImpl', () => {
 
         expect(environment.events).toHaveLength(1);
         expect(environment.events[0].name).toEqual('Event Name');
-        expect(environment.events[0].enablePortal).toBeFalsy();
-        expect(environment.events[0].enableReferences).toBeFalsy();
-        expect(environment.events[0].enableRegistration).toBeTruthy();
+        expect(environment.events[0].enableContent).toBeFalsy();
+        expect(environment.events[0].enableRegistration).toBeFalsy();
+        expect(environment.events[0].enableSchedule).toBeTruthy();
         expect(environment.events[0].slug).toEqual('event-name');
         expect(environment.events[0].timezone).toEqual('Europe/Amsterdam');
         expect(environment.events[0].website).toBeUndefined();

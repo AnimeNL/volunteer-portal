@@ -7,7 +7,9 @@ import { Router, Route } from 'preact-router';
 
 import { AppContext, IAppContext } from './AppContext';
 import { AppError } from './AppError';
+import { Cache } from './base/Cache';
 import { ConfigurationImpl } from './base/ConfigurationImpl';
+import { ContentImpl } from './base/ContentImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
 
 import { LoadingApp } from './loading/LoadingApp';
@@ -26,7 +28,9 @@ interface AppState {
 // Main component of the Volunteer Portal application, which creates the app context and switches
 // between the four main sub-applications: Portal, Registration and Welcome.
 export class App extends Component<{}, AppState> {
+    private cache: Cache;
     private configuration: ConfigurationImpl;
+    private content: ContentImpl;
     private environment: EnvironmentImpl;
 
     public state: AppState;
@@ -34,8 +38,10 @@ export class App extends Component<{}, AppState> {
     constructor() {
         super();
 
+        this.cache = new Cache();
         this.configuration = new ConfigurationImpl();
-        this.environment = new EnvironmentImpl(this.configuration);
+        this.content = new ContentImpl(this.cache, this.configuration);
+        this.environment = new EnvironmentImpl(this.cache, this.configuration);
 
         // Initial state of the application. The actual state will be loaded and processed when the
         // component gets mounted. Once finished, a re-render will be requested as appropriate.
@@ -52,12 +58,17 @@ export class App extends Component<{}, AppState> {
     // Initializes the main application state. This is an asynchronous process that may include
     // several network fetches. Generally this is not encouraged.
     async componentWillMount() {
-        if (!await this.environment.initialize()) {
-            this.setState({ error: 'Unable to initialize the environment.' });
-            return;
-        }
+        const [ contentInitialized, environmentInitialized ] = await Promise.all([
+            this.content.initialize(),
+            this.environment.initialize(),
+        ]);
 
-        this.setState({ loaded: true });
+        if (!environmentInitialized)
+            this.setState({ error: `Unable to initialize the portal's environment.` });
+        else if (!contentInitialized)
+            this.setState({ error: `Unable to initialize the portal's content.` });
+        else
+            this.setState({ loaded: true });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -69,6 +80,7 @@ export class App extends Component<{}, AppState> {
     composeAppContext(): IAppContext {
         return {
             configuration: this.configuration,
+            content: this.content,
             environment: this.environment,
         }
     }

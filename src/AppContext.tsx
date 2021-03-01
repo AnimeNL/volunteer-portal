@@ -5,6 +5,7 @@
 import { createContext } from 'preact';
 
 import { Configuration } from './base/Configuration';
+import { Content } from './base/Content';
 import { Environment } from './base/Environment';
 
 // Interface for the AppContext type. TypeScript's type inference is not being used because we want
@@ -12,6 +13,9 @@ import { Environment } from './base/Environment';
 export interface IAppContext {
     // Provides access to the application's global configuration.
     configuration: Configuration;
+
+    // Provides access to the content made available by the server.
+    content: Content;
 
     // Provides access to the environment the application is running under.
     environment: Environment;

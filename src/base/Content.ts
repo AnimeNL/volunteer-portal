@@ -17,6 +17,12 @@ export interface Content {
      * otherwise. All of the page's metadata will be included as well.
      */
     get(pathname: string): ContentPage | undefined;
+
+    /**
+     * Returns an array with all ContentPage entries whose pathname starts with |prefix|. Entries
+     * will be sorted by length in descending order, to ensure more specific pages go first.
+     */
+    getPrefixed(prefix: string): ContentPage[];
 }
 
 /**

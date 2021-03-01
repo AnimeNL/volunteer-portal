@@ -120,7 +120,45 @@ describe('ContentImpl', () => {
     it('should throw when accessing properties before a successful initialization', async () => {
         const { content } = await createInstance(404, {});
 
+        expect(await content.initialize()).toBeFalsy();
         expect(() => content.has('foo')).toThrowError();
         expect(() => content.get('baz')).toThrowError();
+    });
+
+    it('should be able to return prefixed paths in length order', async () => {
+        const { cache, content } = await createInstance(200, {
+            pages: [
+                {
+                    pathname: '/foo/',
+                    content: 'Foo Index',
+                    modified: 0,
+                },
+                {
+                    pathname: '/foo/bar.html',
+                    content: 'Bar!',
+                    modified: 42,
+                }
+            ]
+        });
+
+        expect(await cache.has(ContentImpl.kCacheKey)).toBeFalsy();
+        expect(await content.initialize()).toBeTruthy();
+
+        expect(content.has('/foo/')).toBeTruthy();
+        expect(content.has('/foo/bar.html')).toBeTruthy();
+
+        expect(content.getPrefixed('/foo/')).toHaveLength(2);
+        expect(content.getPrefixed('/foo/')).toStrictEqual([
+            {
+                pathname: '/foo/bar.html',
+                content: 'Bar!',
+                modified: 42,
+            },
+            {
+                pathname: '/foo/',
+                content: 'Foo Index',
+                modified: 0,
+            }
+        ]);
     });
 });

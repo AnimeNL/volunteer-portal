@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
-import { route } from 'preact-router';
+import { Router, Route, route } from 'preact-router';
 import { useContext } from 'preact/hooks';
 
 import { AppContext } from '../AppContext';
 import { ContentHeader } from '../ContentHeader';
 import { ContentLayout } from '../ContentLayout';
+import { ContentPage } from '../base/Content';
 import { EnvironmentEvent } from '../base/Environment';
+import { RegistrationContent } from './RegistrationContent';
 
 // Properties accepted by the <RegistrationApp> component.
 export interface RegistrationAppProps {
@@ -22,9 +24,10 @@ export interface RegistrationAppProps {
 // volunteering at the convention (as a CDN-like page system) while allowing them to register their
 // interest. Registration is controlled by the environment, access to these pages is not.
 export function RegistrationApp(props: RegistrationAppProps) {
-    const { environment } = useContext(AppContext);
+    const { content, environment } = useContext(AppContext);
 
     let event: EnvironmentEvent | undefined = undefined;
+
     for (const details of environment.events) {
         // (1) When no event has been specified in the slug, assume that the first mentioned event
         // part of the environment should be opened. Replace the current state to reflect this.
@@ -48,12 +51,19 @@ export function RegistrationApp(props: RegistrationAppProps) {
         return <Fragment />;
     }
 
+    // (4) Obtain all content pages that are available for this particular event. They will be added
+    // to the <RegistrationApp> component through preact-router.
+    const pages = content.getPrefixed(`/registration/${event.slug}/`);
+
     return (
         <ContentLayout>
             <ContentHeader>
                 {event.name}
             </ContentHeader>
-            <p>Hello</p>
+            <Router>
+                { pages.map(page =>
+                    <Route path={page.pathname} component={RegistrationContent} page={page} />) }
+            </Router>
         </ContentLayout>
     );
 }

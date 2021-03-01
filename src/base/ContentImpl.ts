@@ -102,4 +102,22 @@ export class ContentImpl implements Content {
 
         return this.content.get(pathname);
     }
+
+    getPrefixed(prefix: string): ContentPage[] {
+        if (!this.content)
+            throw new Error(kExceptionMessage);
+
+        const pages: ContentPage[] = [];
+        for (const [ pathname, page ] of this.content.entries()) {
+            if (pathname.startsWith(prefix))
+                pages.push(page);
+        }
+
+        return pages.sort((lhs, rhs) => {
+            if (lhs.pathname.length === rhs.pathname.length)
+                return 0;
+
+            return lhs.pathname.length > rhs.pathname.length ? -1 : 1;
+        });
+    }
 }

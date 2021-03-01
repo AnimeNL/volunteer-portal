@@ -47,6 +47,9 @@
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^3.11.2"
   },
+  "engines": {
+    "node": ">=15.0.0"
+  },
   "jest": {
     "transform": {
       ".(ts|tsx)": "ts-jest"

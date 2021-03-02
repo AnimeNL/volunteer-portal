@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import moment from 'moment-timezone';
+
 import { Cache } from './Cache';
 import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
@@ -49,8 +51,14 @@ export class ContentImpl implements Content {
             return false;
 
         this.content = new Map();
-        for (const page of content.pages)
-            this.content.set(page.pathname, page);
+        for (const page of content.pages) {
+            this.content.set(page.pathname, {
+                ...page,
+
+                // Store the |modified| time as a Moment instance in UTC, valid for UNIX timestamps.
+                modified: moment.utc(page.modified)
+            });
+        }
 
         return true;
     }

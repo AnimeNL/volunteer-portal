@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import moment from 'moment-timezone';
+
 /**
  * Defines the interface through which application content can be accessed. Such content is keyed
  * by its pathname and can be specific to the environment.
@@ -37,6 +39,5 @@ export interface ContentPage {
     content: Readonly<string>;
 
     // Last modification time of the page. Indicated as a UNIX timestamp.
-    // TODO: Change this to be a Moment instance once we include that library.
-    modified: Readonly<number>;
+    modified: Readonly<moment.Moment>;
 }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import moment from 'moment-timezone';
+
 import { Cache } from './Cache';
 import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
@@ -64,6 +66,11 @@ export class EnvironmentImpl implements Environment {
         for (const event of environment.events) {
             if (!this.validateEnvironmentResponseEvent(event))
                 return false;
+
+            if (!moment.tz.zone(event.timezone)) {
+                console.error(`Invalid timezone for event ${event.name}: ${event.timezone}.`);
+                return false;
+            }
         }
 
         return validateString(environment, kInterfaceName, 'contactName') &&

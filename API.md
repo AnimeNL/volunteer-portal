@@ -42,7 +42,7 @@ A `GET` request with no additional payload.
 | :---             | :---      | :--- |
 | `pathname`       | `string` | Full pathname through which this content can be identified. |
 | `content`        | `string` | Contents of the page. May contain [Markdown syntax](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet). |
-| `modified`       | `number` | Last modification time of the page. Indicated as a UNIX timestamp. |
+| `modified`       | `number` | Last modification time of the page. Indicated as a UNIX timestamp in UTC. |
 
   * **Note**: Where there are duplicated `pathname` values, the last one will be used.
   * **Note**: Directories represented as pages should have an index. If `/foo/bar.html` is a thing, then so should `/foo/` be.

@@ -40,9 +40,7 @@ export function WelcomeApp() {
 
     return (
         <ContentLayout>
-            <ContentHeader>
-                {environment.title}
-            </ContentHeader>
+            <ContentHeader title={environment.title} />
             <Typography className={classes.intro}>
                 This site allows you to learn more about the perks and responsibilities of
                 volunteering during one of our events, to register your interest to become a

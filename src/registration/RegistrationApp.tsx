@@ -57,9 +57,7 @@ export function RegistrationApp(props: RegistrationAppProps) {
 
     return (
         <ContentLayout>
-            <ContentHeader>
-                {event.name}
-            </ContentHeader>
+            <ContentHeader title={event.name} />
             <Router>
                 { pages.map(page =>
                     <Route path={page.pathname} component={RegistrationContent} page={page} />) }

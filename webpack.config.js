@@ -10,6 +10,8 @@ const webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
+const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin');
 
 function createCopyDestinationFn(prefix) {
     return ({ context, absoluteFilename }) =>
@@ -101,8 +103,13 @@ module.exports = {
             'REACT_APP_GIT_VERSION': getGitCommitHash(),
         }),
 
-        new CleanWebpackPlugin(),
+        new MomentLocalesPlugin({ localesToKeep: [ 'en' ] }),
+        new MomentTimezoneDataPlugin({
+            matchZones: /^Europe\//,
+            startYear: 2020,
+        }),
 
+        new CleanWebpackPlugin(),
         new CopyWebpackPlugin({
             patterns: [
                 { from: 'static/**/*', to: '' },

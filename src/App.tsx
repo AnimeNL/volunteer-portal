@@ -17,10 +17,6 @@ import { PortalApp } from './portal/PortalApp';
 import { RegistrationApp } from './registration/RegistrationApp';
 import { WelcomeApp } from './welcome/WelcomeApp';
 
-import moment from 'moment-timezone';
-
-moment().tz("America/Los_Angeles").format();
-
 // High-level state of the application. We primarily care about whether the user has authenticated,
 // as routing will enable navigation to take place otherwise.
 interface AppState {

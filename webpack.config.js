@@ -35,21 +35,31 @@ module.exports = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['@babel/preset-envv'],
+                        presets: ['@babel/preset-typescript'],
                     }
                 },
                 exclude: /node_modules/,
             },
             {
                 test: /\.tsx?$/,
-                loader: 'awesome-typescript-loader',
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-typescript'],
+                        }
+                    },
+                    {
+                        loader: 'ts-loader',
+                    }
+                ],
                 exclude: /node_modules/,
             },
         ]
     },
 
     resolve: {
-        extensions: [ '.ts', '.tsx', '.js', '.json' ],
+        extensions: [ '.ts', '.tsx', '.js' ],
         alias: {
             'react': 'preact/compat',
             'react-dom': 'preact/compat',

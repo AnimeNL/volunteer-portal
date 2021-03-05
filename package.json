@@ -27,13 +27,13 @@
     "preact": "^10.5.12",
     "preact-markdown": "^2.0.0",
     "preact-render-to-string": "^5.1.12",
-    "preact-router": "^3.2.1"
+    "preact-router": "^3.2.1",
+    "ts-loader": "^8.0.17"
   },
   "devDependencies": {
     "@babel/core": "^7.13.8",
-    "@babel/preset-env": "^7.13.8",
+    "@babel/preset-typescript": "^7.13.0",
     "@types/jest": "^26.0.20",
-    "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.2.2",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^7.0.0",

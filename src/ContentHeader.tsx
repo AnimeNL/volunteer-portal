@@ -4,8 +4,6 @@
 
 import { h } from 'preact';
 
-import Chip from '@material-ui/core/Chip';
-import FaceIcon from '@material-ui/icons/Face';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -22,8 +20,6 @@ const useStyles = makeStyles(theme => ({
         margin: '0px',
         padding: theme.spacing(1, 2),
     },
-    loginLabel: { paddingRight: '0 !important' },
-    login: { backgroundColor: '#6D4C41 !important' },
     text: {
         flex: 1,
         paddingRight: theme.spacing(2),
@@ -47,12 +43,6 @@ export function ContentHeader(props: ContentHeaderProps) {
             <Typography className={classes.text} variant="h5" component="h1" noWrap>
                 {title}
             </Typography>
-            <Chip className={classes.login}
-                  classes={{ label: classes.loginLabel }}
-                  clickable
-                  color="secondary"
-                  /// @ts-ignore
-                  icon={ <FaceIcon /> } />
         </div>
     );
 }

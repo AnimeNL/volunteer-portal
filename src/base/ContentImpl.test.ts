@@ -5,6 +5,8 @@
 import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 import mockFetch from 'jest-fetch-mock';
 
+import moment from 'moment-timezone';
+
 import { Cache } from './Cache';
 import { ConfigurationImpl } from './ConfigurationImpl';
 import { ContentImpl } from './ContentImpl';
@@ -64,12 +66,12 @@ describe('ContentImpl', () => {
         expect(content.has('/foo')).toBeTruthy();
         expect(content.get('/foo')?.pathname).toEqual('/foo');
         expect(content.get('/foo')?.content).toEqual('Foo!');
-        expect(content.get('/foo')?.modified).toEqual(0);
+        expect(content.get('/foo')?.modified).toEqual(moment.utc(0));
 
         expect(content.has('/bar')).toBeTruthy();
         expect(content.get('/bar')?.pathname).toEqual('/bar');
         expect(content.get('/bar')?.content).toEqual('Bar?');
-        expect(content.get('/bar')?.modified).toEqual(42);
+        expect(content.get('/bar')?.modified).toEqual(moment.utc(42));
 
         expect(content.has('/baz')).toBeFalsy();
 
@@ -84,7 +86,7 @@ describe('ContentImpl', () => {
                 {
                     pathname: '/baz',
                     content: 'Baz!',
-                    modified: 0,
+                    modified: 42,
                 }
             ]
         });
@@ -98,7 +100,7 @@ describe('ContentImpl', () => {
         expect(content.has('/baz')).toBeTruthy();
         expect(content.get('/baz')?.pathname).toEqual('/baz');
         expect(content.get('/baz')?.content).toEqual('Baz!');
-        expect(content.get('/baz')?.modified).toEqual(0);
+        expect(content.get('/baz')?.modified).toEqual(moment.utc(42));
     });
 
     it('should fail when the API endpoint is unavailable', async () => {
@@ -152,12 +154,12 @@ describe('ContentImpl', () => {
             {
                 pathname: '/foo/bar.html',
                 content: 'Bar!',
-                modified: 42,
+                modified: moment.utc(42),
             },
             {
                 pathname: '/foo/',
                 content: 'Foo Index',
-                modified: 0,
+                modified: moment.utc(0),
             }
         ]);
     });

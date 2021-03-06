@@ -6,6 +6,7 @@ import { Component, h } from 'preact';
 import { useContext } from 'preact/hooks';
 
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Collapse from '@material-ui/core/Collapse';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -18,7 +19,6 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import { AppContext } from './AppContext';
 import { Link } from './Link';
-import { CircularProgress } from '@material-ui/core';
 
 // CSS customizations applied to the <UserLoginDialog> component.
 const useStyles = makeStyles(theme => ({

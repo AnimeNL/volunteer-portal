@@ -7,6 +7,7 @@ const path = require('path');
 
 const webpack = require('webpack');
 
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -135,6 +136,12 @@ module.exports = {
             template: 'src/index.html',
             base: '/',  // Enables relative URLs to work painlessly
             hash: true, // This is useful for cache busting
-        })
+        }),
+
+        new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            openAnalyzer: false,
+            reportFilename: 'index-sizes.html',
+        }),
     ],
 }

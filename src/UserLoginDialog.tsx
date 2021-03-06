@@ -120,6 +120,11 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
         const { onClose, open } = props;
         const { environment, user } = useContext(AppContext);
 
+        const handleClose = () => {
+            this.setState(kDefaultState);
+            onClose();
+        };
+
         const handleLogin = async() => {
             const { emailAddress, accessCode } = this.state;
 
@@ -138,18 +143,15 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
             this.setState({ authenticating: true });
 
             const success = await user.authenticate(emailAddress, accessCode);
-            if (success) {
-                this.setState({ authenticating: false, authenticationError: false });
-                onClose();
-
-            } else {
+            if (success)
+                handleClose();
+            else
                 this.setState({ authenticating: false, authenticationError: true });
-            }
         }
 
         const classes = useStyles();
         return (
-            <Dialog open={open} onClose={onClose}>
+            <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Sign in to your account</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -185,7 +187,7 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
                                required />
                 </DialogContent>
                 <DialogActions className={classes.buttons}>
-                    <Button onClick={onClose}>Close</Button>
+                    <Button onClick={handleClose}>Close</Button>
                     <div className={classes.loginButtonWrapper}>
                         <Button disabled={this.state.authenticating}
                                 endIcon={ <LoginIcon /> }

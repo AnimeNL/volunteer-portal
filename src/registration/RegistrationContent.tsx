@@ -53,17 +53,23 @@ const useStyles = makeStyles(theme => ({
 
 // Properties accepted by the <RegistrationContent> component.
 export interface RegistrationContentProps {
-    page: ContentPage;
+    // The page entry that should be rendered within this component.
+    contentPage: ContentPage;
+
+    // Slug for the event, which provides the base URL for linkable content.
+    eventSlug: string;
 }
 
 // Responsible for displaying a single page of content on the registration app, specifically one
 // that is powered through server-provided content to be displayed using Markdown.
 export function RegistrationContent(props: RegistrationContentProps) {
+    const { contentPage, eventSlug } = props;
+
     const classes = useStyles();
     const markdown = Markdown({
-        markdown: props.page.content,
+        markdown: contentPage.content,
         markdownOpts: {
-            baseUrl: `/registration/2020-classic/`,
+            baseUrl: `/registration/${eventSlug}/`,
         },
         markupOpts: {
             components: {

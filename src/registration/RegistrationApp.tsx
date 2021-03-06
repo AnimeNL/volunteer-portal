@@ -9,7 +9,6 @@ import { useContext } from 'preact/hooks';
 import { AppContext } from '../AppContext';
 import { ContentHeader } from '../ContentHeader';
 import { ContentLayout } from '../ContentLayout';
-import { ContentPage } from '../base/Content';
 import { EnvironmentEvent } from '../base/Environment';
 import { RegistrationContent } from './RegistrationContent';
 
@@ -57,10 +56,13 @@ export function RegistrationApp(props: RegistrationAppProps) {
 
     return (
         <ContentLayout>
-            <ContentHeader title={event.name} />
+            <ContentHeader personalize title={event.name} />
             <Router>
                 { pages.map(page =>
-                    <Route path={page.pathname} component={RegistrationContent} page={page} />) }
+                    <Route path={page.pathname}
+                           component={RegistrationContent}
+                           contentPage={page}
+                           eventSlug={event!.slug} />) }
             </Router>
         </ContentLayout>
     );

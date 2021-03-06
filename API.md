@@ -10,8 +10,8 @@ A `POST` request containing the following HTML form encoded fields.
 
 | Property         | Type     | Description |
 | :---             | :---     | :--- |
-| `emailAddress`   | `string` | The e-mail address  |
-| `authCode`       | `string` | Link target (phone number / e-mail address) of the person who can be contacted for questions. |
+| `emailAddress`   | `string` | The e-mail address associated to authenticate with. |
+| `accessCode`     | `string` | Access code given to the person who owns this e-mail address. |
 
 ### Response (`IAuthResponse`)
 | Property  | Type      | Description |

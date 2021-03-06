@@ -19,6 +19,22 @@ const kExceptionMessage = 'The user has not authenticated to their account yet.'
 export class UserImpl implements User {
     private auth?: IAuthSuccessResponse;
 
+    // Initializes the user interface. This is an operation that cannot fail: either we are able to
+    // initialize the user state, which means that the user is authenticated, or we cannot, which
+    // means that the user is not authenticated. State will be cached for a server-defined period.
+    async initialize(): Promise<void> {
+
+    }
+
+    /**
+     * Authenticates the user based on the given credentials. Returns a promise that will resolve
+     * with a boolean indicating whether the authentication has succeeded.
+     */
+    async authenticate(emailAddress: string, accessCode: string): Promise<boolean> {
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        return false;
+    }
+
     // ---------------------------------------------------------------------------------------------
     // User interface implementation
     // ---------------------------------------------------------------------------------------------

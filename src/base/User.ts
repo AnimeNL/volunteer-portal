@@ -8,6 +8,12 @@
  */
 export interface User {
     /**
+     * Authenticates the user based on the given credentials. Returns a promise that will resolve
+     * with a boolean indicating whether the authentication has succeeded.
+     */
+    authenticate(emailAddress: string, accessCode: string): Promise<boolean>;
+
+    /**
      * Whether the user has been authenticated to an account.
      */
     authenticated: boolean;

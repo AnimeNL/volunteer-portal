@@ -7,7 +7,7 @@
  */
 export interface IAuthRequest {
     emailAddress: string;
-    authCode: string;
+    accessCode: string;
 }
 
 /**

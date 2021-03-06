@@ -61,9 +61,10 @@ export class App extends Component<{}, AppState> {
     // Initializes the main application state. This is an asynchronous process that may include
     // several network fetches. Generally this is not encouraged.
     async componentWillMount() {
-        const [ contentInitialized, environmentInitialized ] = await Promise.all([
+        const [ contentInitialized, environmentInitialized, _ ] = await Promise.all([
             this.content.initialize(),
             this.environment.initialize(),
+            this.user.initialize(),
         ]);
 
         if (!environmentInitialized)

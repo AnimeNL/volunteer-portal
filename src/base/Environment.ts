@@ -20,7 +20,7 @@ export interface Environment {
     /**
      * Array of the events that are supported by this portal.
      */
-    events: Readonly<Array<EnvironmentEvent>>;
+    events: ReadonlyArray<EnvironmentEvent>;
 
     /**
      * Name of the Volunteer Portal instance, e.g. _Volunteer Portal_.

@@ -112,7 +112,7 @@ export class EnvironmentImpl implements Environment {
         return this.data.contactTarget;
     }
 
-    get events(): Readonly<Array<EnvironmentEvent>> {
+    get events(): ReadonlyArray<EnvironmentEvent> {
         if (!this.data)
             throw new Error(kExceptionMessage);
 

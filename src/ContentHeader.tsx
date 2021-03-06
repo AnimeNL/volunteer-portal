@@ -2,13 +2,15 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
+import { useState } from 'preact/hooks';
 
 import FaceIcon from '@material-ui/icons/Face';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { ContentHeaderChip } from './ContentHeaderChip';
+import { UserLoginDialog } from './UserLoginDialog';
 
 // CSS customizations applied to the <ContentHeader> component.
 const useStyles = makeStyles(theme => {
@@ -48,16 +50,29 @@ export function ContentHeader(props: ContentHeaderProps) {
     const classes = useStyles();
     const { personalize, title } = props;
 
+    const [ open, setOpen ] = useState(false);
+
+    const handleClose = setOpen.bind(null, false);
+    const handleOpen = setOpen.bind(null, true);
+
     return (
         <div className={classes.header}>
             <Typography className={classes.text} variant="h5" component="h1" noWrap>
                 {title}
             </Typography>
             { personalize &&
-                <ContentHeaderChip clickable
-                                   /// @ts-ignore
-                                   icon={ <FaceIcon /> }
-                                   label="Sign in" /> }
+                <Fragment>
+
+                    <ContentHeaderChip clickable
+                                       /// @ts-ignore
+                                       icon={ <FaceIcon /> }
+                                       label="Sign in"
+                                       onClick={handleOpen} />
+
+                    <UserLoginDialog onClose={handleClose}
+                                     open={open} />
+
+                </Fragment> }
         </div>
     );
 }

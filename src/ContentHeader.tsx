@@ -13,13 +13,10 @@ import { ContentHeaderChip } from './ContentHeaderChip';
 import { UserLoginDialog } from './UserLoginDialog';
 
 // CSS customizations applied to the <ContentHeader> component.
-const useStyles = makeStyles(theme => {
-    const headerBackground = theme.palette.background.contentHeader!;
-
-    return {
+const useStyles = makeStyles(theme => ({
         header: {
-            backgroundColor: headerBackground,
-            color: theme.palette.getContrastText(headerBackground),
+            backgroundColor: theme.palette.primary.dark,
+            color: theme.palette.getContrastText(theme.palette.primary.dark),
             display: 'flex',
 
             borderTopLeftRadius: theme.shape.borderRadius,
@@ -33,7 +30,7 @@ const useStyles = makeStyles(theme => {
             paddingRight: theme.spacing(2),
         }
     }
-});
+));
 
 // Properties accepted by the <ContentHeader> component.
 export interface ContentHeaderProps {

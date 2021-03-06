@@ -2,9 +2,10 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { Fragment, h } from 'preact';
+import { h } from 'preact';
 import Markdown from 'preact-markdown';
 
+import { lighten } from '@material-ui/core/styles';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { ContentPage } from '../base/Content';
@@ -15,13 +16,9 @@ const useStyles = makeStyles(theme => ({
     container: {
         margin: theme.spacing(0, 2),
 
-        '& a': {
-            color: '#4e342e',
-        },
-
         '& blockquote': {
-            backgroundColor: '#FFEBEE',
-            border: '1px solid #F44336',
+            backgroundColor: lighten(theme.palette.error.main, .8),
+            border: '1px solid ' + theme.palette.error.main,
             borderRadius: theme.shape.borderRadius,
             margin: 0,
 

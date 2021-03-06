@@ -8,8 +8,7 @@ import Chip from '@material-ui/core/Chip';
 import { lighten, withStyles } from '@material-ui/core/styles';
 
 export const ContentHeaderChip = withStyles(theme => {
-    const headerBackground = theme.palette.background.contentHeader!;
-    const chipBackground = lighten(headerBackground, 0.1);
+    const chipBackground = theme.palette.primary.main;
 
     return {
         root: {

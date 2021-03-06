@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { ComponentChildren, Fragment, h } from 'preact';
+import { ComponentChildren, h } from 'preact';
 import { useContext } from 'preact/hooks';
 
 import Paper from '@material-ui/core/Paper';
@@ -10,6 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { AppContext } from './AppContext';
+import { ContentTheme } from './ContentTheme';
 import { Link } from './Link';
 
 // CSS customizations applied to the <ContentLayout> component. The page will have a background
@@ -52,10 +53,6 @@ const useStyles = makeStyles(theme => ({
 
     footer: {
         paddingBottom: '125px',
-
-        '& a': {
-            color: '#4e342e',
-        }
     },
 
     logo: {
@@ -79,7 +76,7 @@ export function ContentLayout(props: ContentLayoutProps) {
     const year = (new Date()).getFullYear();
 
     return (
-        <Fragment>
+        <ContentTheme>
             <div className={classes.background}></div>
             <div className={classes.container}>
                 <Link href="/">
@@ -90,11 +87,11 @@ export function ContentLayout(props: ContentLayoutProps) {
                 </Paper>
                 <Typography variant="body2" className={classes.footer}>
                     {environment.title} (
-                    <a href="https://github.com/AnimeNL/volunteer-portal">
+                    <Link variant="inherit" href="https://github.com/AnimeNL/volunteer-portal">
                         {process.env.REACT_APP_GIT_VERSION}
-                    </a>) — © 2015–{year}
+                    </Link>) — © 2015–{year}
                 </Typography>
             </div>
-        </Fragment>
+        </ContentTheme>
     );
 }

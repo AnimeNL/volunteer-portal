@@ -6,36 +6,17 @@ import { Ref, h } from 'preact';
 import { forwardRef } from 'preact/compat';
 import { route } from 'preact-router';
 
-// Properties accepted by the <Link> component.
-export type LinkProps = h.JSX.HTMLAttributes<HTMLAnchorElement> & {
-    // Destination of the link. Can be any value accepted by the HTML <a> element.
-    href?: string;
+import { TypographyProps, default as Typography } from '@material-ui/core/Typography';
 
-    // Event handler that should be called when the link gets activated. Takes precedence over the
-    // built-in navigation handler. Exceptions thrown are fatal.
-    onClick?: h.JSX.MouseEventHandler<HTMLAnchorElement>;
-}
+// Properties accepted by the <Link> component.
+export type LinkProps = h.JSX.HTMLAttributes<HTMLAnchorElement> & TypographyProps;
 
 // Implementation of a <Link> component, backed by a regular anchor elements, that supports both
 // internal and external navigations without having to consider that at input time.
 export const Link = forwardRef((props: LinkProps, forwardedRef: Ref<any>) => {
-    const { href, onClick, target, ...rest } = props;
+    const { color, href, onClick, target, ...rest } = props;
 
-    const internalClickHandler = (event: h.JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
-        try {
-            if (onClick)
-                onClick.call((event.currentTarget || event.target) as HTMLAnchorElement, event);
-
-        } catch (exception) {
-            event.stopImmediatePropagation();
-            event.preventDefault();
-
-            throw exception;
-        }
-
-        if (event.defaultPrevented)
-            return;  // the higher-level onClick handler canceled the event
-
+    const internalClickHandler: React.MouseEventHandler<HTMLAnchorElement> = event => {
         for (const exception of ['http://', 'https://', 'mailto:', 'tel:']) {
             if (href?.startsWith(exception))
                 return;
@@ -47,16 +28,18 @@ export const Link = forwardRef((props: LinkProps, forwardedRef: Ref<any>) => {
         if (event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
             return;  // ignore clicks that include modifier keys
 
-        event.stopImmediatePropagation();
-        event.preventDefault();
+        event.nativeEvent.stopImmediatePropagation();
+        event.nativeEvent.preventDefault();
 
         if (href)
             route(href);
     };
 
-    return <a ref={forwardedRef}
-              href={href}
-              target={target}
-              onClick={internalClickHandler}
-              {...rest} />;
+    return <Typography color={color || 'primary'}
+                       component="a"
+                       href={href}
+                       ref={forwardedRef}
+                       target={target}
+                       onClick={internalClickHandler}
+                       {...rest} />;
 });

@@ -15,13 +15,14 @@ import TextField from '@material-ui/core/TextField';
 import { makeStyles } from '@material-ui/core/styles';
 
 // CSS customizations applied to the <UserLoginDialog> component.
-const useStyles = makeStyles(theme => {
-    return {
-        formField: {
-            margin: theme.spacing(1, 0),
-        }
-    };
-});
+const useStyles = makeStyles(theme => ({
+    buttons: {
+        padding: theme.spacing(0, 3, 2, 0),
+    },
+    formField: {
+        margin: theme.spacing(1, 0),
+    }
+}));
 
 // Properties accepted by the <UserLoginDialog> component.
 export interface UserLoginDialogProps {
@@ -57,7 +58,7 @@ export function UserLoginDialog(props: UserLoginDialogProps) {
                            label="Access code"
                            required />
             </DialogContent>
-            <DialogActions>
+            <DialogActions className={classes.buttons}>
                 <Button onClick={onClose}>Close</Button>
                 <Button endIcon={ <LoginIcon /> }
                         onClick={onClose}

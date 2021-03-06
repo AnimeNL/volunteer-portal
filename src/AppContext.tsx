@@ -7,6 +7,7 @@ import { createContext } from 'preact';
 import { Configuration } from './base/Configuration';
 import { Content } from './base/Content';
 import { Environment } from './base/Environment';
+import { User } from './base/User';
 
 // Interface for the AppContext type. TypeScript's type inference is not being used because we want
 // the exported types to be limited versions of the actual implementations.
@@ -19,6 +20,9 @@ export interface IAppContext {
 
     // Provides access to the environment the application is running under.
     environment: Environment;
+
+    // Provides access to the user's authentication and state.
+    user: User;
 }
 
 // Export the AppContext context. The default value will be provided by the App component, the code

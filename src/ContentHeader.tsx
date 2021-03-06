@@ -3,34 +3,40 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
-import { useState } from 'preact/hooks';
+import { useContext, useState } from 'preact/hooks';
 
+import Avatar from '@material-ui/core/Avatar';
 import FaceIcon from '@material-ui/icons/Face';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
+import { AppContext } from './AppContext';
 import { ContentHeaderChip } from './ContentHeaderChip';
 import { UserLoginDialog } from './UserLoginDialog';
+import { firstName, initial } from './base/NameUtilities';
 
 // CSS customizations applied to the <ContentHeader> component.
 const useStyles = makeStyles(theme => ({
-        header: {
-            backgroundColor: theme.palette.primary.dark,
-            color: theme.palette.getContrastText(theme.palette.primary.dark),
-            display: 'flex',
+    avatar: {
+        backgroundColor: theme.palette.primary.light,
+        color: `${theme.palette.getContrastText(theme.palette.primary.light)} !important`,
+    },
+    header: {
+        backgroundColor: theme.palette.primary.dark,
+        color: theme.palette.getContrastText(theme.palette.primary.dark),
+        display: 'flex',
 
-            borderTopLeftRadius: theme.shape.borderRadius,
-            borderTopRightRadius: theme.shape.borderRadius,
+        borderTopLeftRadius: theme.shape.borderRadius,
+        borderTopRightRadius: theme.shape.borderRadius,
 
-            margin: '0px',
-            padding: theme.spacing(1, 2),
-        },
-        text: {
-            flex: 1,
-            paddingRight: theme.spacing(2),
-        }
+        margin: '0px',
+        padding: theme.spacing(1, 2),
+    },
+    text: {
+        flex: 1,
+        paddingRight: theme.spacing(2),
     }
-));
+}));
 
 // Properties accepted by the <ContentHeader> component.
 export interface ContentHeaderProps {
@@ -44,13 +50,29 @@ export interface ContentHeaderProps {
 // The <ContentHeader> component, which is the canonical header element for <ContentLayout>-based
 // pages. It accepts properties to manipulate content shown within the header.
 export function ContentHeader(props: ContentHeaderProps) {
-    const classes = useStyles();
     const { personalize, title } = props;
 
     const [ open, setOpen ] = useState(false);
+    const { user } = useContext(AppContext);
 
     const handleClose = setOpen.bind(null, false);
     const handleOpen = setOpen.bind(null, true);
+
+    const classes = useStyles();
+
+    let avatar: React.ReactElement | undefined;
+    let icon: React.ReactElement | undefined;
+    let label: string | undefined;
+
+    if (user.authenticated) {
+        /// @ts-ignore
+        avatar = <Avatar className={classes.avatar} src={user.avatar}>{initial(user.name)}</Avatar>;
+        label = firstName(user.name);
+    } else {
+        /// @ts-ignore
+        icon = <FaceIcon />;
+        label = 'Sign in';
+    }
 
     return (
         <div className={classes.header}>
@@ -61,9 +83,9 @@ export function ContentHeader(props: ContentHeaderProps) {
                 <Fragment>
 
                     <ContentHeaderChip clickable
-                                       /// @ts-ignore
-                                       icon={ <FaceIcon /> }
-                                       label="Sign in"
+                                       avatar={avatar}
+                                       icon={icon}
+                                       label={label}
                                        onClick={handleOpen} />
 
                     <UserLoginDialog onClose={handleClose}

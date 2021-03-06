@@ -3,6 +3,30 @@ The volunteer portal requires a number of API calls in order to work properly. T
 by any back-end, as long as the returned data matches the specification below. Both request and
 response structures must be given as JSON.
 
+## /api/auth
+
+### Request (`IAuthRequest`)
+A `POST` request containing the following HTML form encoded fields.
+
+| Property         | Type     | Description |
+| :---             | :---     | :--- |
+| `emailAddress`   | `string` | The e-mail address  |
+| `authCode`       | `string` | Link target (phone number / e-mail address) of the person who can be contacted for questions. |
+
+### Response (`IAuthResponse`)
+| Property  | Type      | Description |
+| :---      | :---      | :--- |
+| `success` | `boolean` | Whether the auth request was successful. |
+
+If, and only if `success` is set to `true`, the following fields will be made available as well:
+
+| Property              | Type      | Description |
+| :---                  | :---      | :--- |
+| `authToken`           | `string`  | Unique token which can be used to fetch protected content. |
+| `authTokenExpiration` | `number?` | Time at which the authentication token expires. Indicated as a UNIX timestamp in UTC. |
+| `avatar`              | `string?` | URL to the avatar representing the authenticated person. |
+| `name`                | `string`  | Full name of the authenticated person. |
+
 ## /api/environment
 
 ### Request

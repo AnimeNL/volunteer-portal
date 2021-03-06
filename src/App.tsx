@@ -11,6 +11,7 @@ import { Cache } from './base/Cache';
 import { ConfigurationImpl } from './base/ConfigurationImpl';
 import { ContentImpl } from './base/ContentImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
+import { UserImpl } from './base/UserImpl';
 
 import { LoadingApp } from './loading/LoadingApp';
 import { PortalApp } from './portal/PortalApp';
@@ -32,6 +33,7 @@ export class App extends Component<{}, AppState> {
     private configuration: ConfigurationImpl;
     private content: ContentImpl;
     private environment: EnvironmentImpl;
+    private user: UserImpl;
 
     public state: AppState;
 
@@ -42,6 +44,7 @@ export class App extends Component<{}, AppState> {
         this.configuration = new ConfigurationImpl();
         this.content = new ContentImpl(this.cache, this.configuration);
         this.environment = new EnvironmentImpl(this.cache, this.configuration);
+        this.user = new UserImpl();
 
         // Initial state of the application. The actual state will be loaded and processed when the
         // component gets mounted. Once finished, a re-render will be requested as appropriate.
@@ -82,6 +85,7 @@ export class App extends Component<{}, AppState> {
             configuration: this.configuration,
             content: this.content,
             environment: this.environment,
+            user: this.user,
         }
     }
 

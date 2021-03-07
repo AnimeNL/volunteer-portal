@@ -24,6 +24,17 @@ function hasExpired(authTokenExpiration?: number): boolean {
 const kExceptionMessage = 'The user has not authenticated to their account yet.';
 
 /**
+ * Interface available to objects that want to observe the UserImpl for state changes.
+ */
+export interface UserImplObserver {
+    /**
+     * Called when the authentication state has changed, ergo the user either signed in to their
+     * account or signed out. This should generally request a full update.
+     */
+    onAuthenticationStateChanged(): void;
+}
+
+/**
  * Implements the user state for the application. It's not required for people to be logged in while
  * using it, but being authenticated provides access to real-time registration updates and the
  * volunteer's personal schedule. This class implements the //api/auth behaviour.
@@ -35,6 +46,7 @@ export class UserImpl implements User {
     private cache: Cache;
     private configuration: Configuration;
     private loader: CachedLoader;
+    private observers: Set<UserImplObserver>;
 
     private userAuthToken?: string;
     private userResponse?: IUserResponse;
@@ -43,6 +55,7 @@ export class UserImpl implements User {
         this.cache = cache;
         this.configuration = configuration;
         this.loader = new CachedLoader(cache);
+        this.observers = new Set();
     }
 
     // Initializes the user interface. This is an operation that cannot fail: either we are able to
@@ -120,6 +133,10 @@ export class UserImpl implements User {
 
         return this.initialize(authToken, authTokenExpiration).then(async success => {
             await this.cache.set(UserImpl.kAuthCacheKey, { authToken, authTokenExpiration });
+
+            for (const observer of this.observers)
+                observer.onAuthenticationStateChanged();
+
             return success;
         });
     }
@@ -133,6 +150,24 @@ export class UserImpl implements User {
 
         return validateOptionalString(userResponse, kInterfaceName, 'avatar') &&
                validateString(userResponse, kInterfaceName, 'name');
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Observer management
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Adds the given |observer| to the list of state observers. Safe to call multiple times.
+     */
+    addObserver(observer: UserImplObserver) {
+        this.observers.add(observer);
+    }
+
+    /**
+     * Removes the given |observer| from the list of state observers. Safe to call multiple times.
+     */
+    removeObserver(observer: UserImplObserver) {
+        this.observers.delete(observer);
     }
 
     // ---------------------------------------------------------------------------------------------

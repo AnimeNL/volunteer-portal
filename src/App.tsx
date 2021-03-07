@@ -11,7 +11,7 @@ import { Cache } from './base/Cache';
 import { ConfigurationImpl } from './base/ConfigurationImpl';
 import { ContentImpl } from './base/ContentImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
-import { UserImpl } from './base/UserImpl';
+import { UserImpl, UserImplObserver } from './base/UserImpl';
 
 import { LoadingApp } from './loading/LoadingApp';
 import { PortalApp } from './portal/PortalApp';
@@ -28,7 +28,7 @@ interface AppState {
 
 // Main component of the Volunteer Portal application, which creates the app context and switches
 // between the four main sub-applications: Portal, Registration and Welcome.
-export class App extends Component<{}, AppState> {
+export class App extends Component<{}, AppState> implements UserImplObserver {
     private cache: Cache;
     private configuration: ConfigurationImpl;
     private content: ContentImpl;
@@ -67,12 +67,29 @@ export class App extends Component<{}, AppState> {
             this.user.initialize(),
         ]);
 
+        this.user.addObserver(this);
+
         if (!environmentInitialized)
             this.setState({ error: `Unable to initialize the portal's environment.` });
         else if (!contentInitialized)
             this.setState({ error: `Unable to initialize the portal's content.` });
         else
             this.setState({ loaded: true });
+    }
+
+    // Called when the <App> component is being removed. Stops observing the UserImpl object.
+    componentWillUnmount() {
+        this.user.removeObserver(this);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // State observers.
+    // ---------------------------------------------------------------------------------------------
+
+    onAuthenticationStateChanged() {
+        this.setState({
+            authenticated: this.user.authenticated
+        });
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -26,8 +26,8 @@ export interface Configuration {
     getEnvironmentEndpoint(): string;
 
     /**
-     * Returns a URL to the endpoint where the Registration API can be used.
-     * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apiregistration
+     * Returns a URL to the endpoint where the User API can be used.
+     * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apiuser
      */
-    getRegistrationEndpoint(): string;
+    getUserEndpoint(): string;
 }

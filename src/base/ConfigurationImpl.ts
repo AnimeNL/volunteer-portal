@@ -7,9 +7,9 @@ import { Configuration } from './Configuration';
 /**
  * Default endpoint URLs as defined in the documentation.
  */
+ const kAuthenticationEndpoint = '/api/auth';
 const kContentEndpoint = '/api/content';
 const kEnvironmentEndpoint = '/api/environment';
-const kLoginEndpoint = '/api/login';
 const kRegistrationEndpoint = '/api/registration';
 
 /**
@@ -26,13 +26,21 @@ export class ConfigurationImpl implements Configuration {
     /**
      * Override variables that can be set for testing purposes.
      */
+    authenticationOverride?: string;
     contentOverride?: string;
     environmentOverride?: string;
-    loginOverride?: string;
     registrationOverride?: string;
 
     constructor() {
         this.hostname = process.env.REACT_APP_API_HOST || '';
+    }
+
+    getAuthenticationEndpoint(): string {
+        return this.authenticationOverride || (this.hostname + kAuthenticationEndpoint);
+    }
+
+    setAuthenticationEndpointForTesting(endpoint: string): void {
+        this.authenticationOverride = endpoint;
     }
 
     getContentEndpoint(): string {
@@ -49,14 +57,6 @@ export class ConfigurationImpl implements Configuration {
 
     setEnvironmentEndpointForTesting(endpoint: string): void {
         this.environmentOverride = endpoint;
-    }
-
-    getLoginEndpoint(): string {
-        return this.loginOverride || (this.hostname + kLoginEndpoint);
-    }
-
-    setLoginEndpointForTesting(endpoint: string): void {
-        this.loginOverride = endpoint;
     }
 
     getRegistrationEndpoint(): string {

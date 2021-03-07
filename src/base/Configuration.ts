@@ -8,6 +8,12 @@
  */
 export interface Configuration {
     /**
+     * Returns a URL to the endpoint where the Authentication API can be used.
+     * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apiauth
+     */
+    getAuthenticationEndpoint(): string;
+
+    /**
      * Returns a URL to the endpoint where data of the Content API can be obtained.
      * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apicontent
      */
@@ -18,12 +24,6 @@ export interface Configuration {
      * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apienvironment
      */
     getEnvironmentEndpoint(): string;
-
-    /**
-     * Returns a URL to the endpoint where the Login API can be used.
-     * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apilogin
-     */
-    getLoginEndpoint(): string;
 
     /**
      * Returns a URL to the endpoint where the Registration API can be used.

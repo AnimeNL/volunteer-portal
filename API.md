@@ -15,17 +15,9 @@ A `POST` request containing the following HTML form encoded fields.
 
 ### Response (`IAuthResponse`)
 | Property  | Type      | Description |
-| :---      | :---      | :--- |
-| `success` | `boolean` | Whether the auth request was successful. |
-
-If, and only if `success` is set to `true`, the following fields will be made available as well:
-
-| Property              | Type      | Description |
-| :---                  | :---      | :--- |
-| `authToken`           | `string`  | Unique token which can be used to fetch protected content. |
-| `authTokenExpiration` | `number?` | Time at which the authentication token expires. Indicated as a UNIX timestamp in UTC. |
-| `avatar`              | `string?` | URL to the avatar representing the authenticated person. |
-| `name`                | `string`  | Full name of the authenticated person. |
+| :---      | :---      | :---        |
+| `authToken`           | `string?`   | Unique token which can be used to fetch protected content. Omitted on failure. |
+| `authTokenExpiration` | `number?`   | Time at which the authentication token expires. Indicated as a UNIX timestamp in UTC. |
 
 ## /api/environment
 

@@ -44,7 +44,7 @@ export class App extends Component<{}, AppState> {
         this.configuration = new ConfigurationImpl();
         this.content = new ContentImpl(this.cache, this.configuration);
         this.environment = new EnvironmentImpl(this.cache, this.configuration);
-        this.user = new UserImpl();
+        this.user = new UserImpl(this.cache, this.configuration);
 
         // Initial state of the application. The actual state will be loaded and processed when the
         // component gets mounted. Once finished, a re-render will be requested as appropriate.

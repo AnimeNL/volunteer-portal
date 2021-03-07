@@ -18,12 +18,11 @@ export class Cache {
     }
 
     /**
-     * Returns the value associated with the given |key|. An exception will be thrown when no data
-     * has been associated with the given |key|.
+     * Returns the value associated with the given |key|.
      */
-    async get(key: string): Promise<any> {
+    async get(key: string, allowUndefined: boolean = false): Promise<any> {
         const value = await get(key);
-        if (value === undefined)
+        if (!allowUndefined && value === undefined)
             throw new Error(`No data has been cached for key "${key}" yet.`);
 
         return value;

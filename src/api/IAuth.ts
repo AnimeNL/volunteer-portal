@@ -14,12 +14,6 @@ export interface IAuthRequest {
  * @see https://github.com/AnimeNL/volunteer-portal/blob/main/API.md#response-iauthresponse
  */
 export interface IAuthResponse {
-    success: boolean;
-}
-
-export interface IAuthSuccessResponse extends IAuthResponse {
-    authToken: string;
+    authToken?: string;
     authTokenExpiration?: number;
-    avatar?: string;
-    name: string;
 }

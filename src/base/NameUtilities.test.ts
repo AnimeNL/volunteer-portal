@@ -5,7 +5,7 @@
 import { firstName, initial } from './NameUtilities';
 
 describe('NameUtilities', () => {
-    it('should be able to distinguish a first name', test => {
+    it('should be able to distinguish a first name', async () => {
         expect(firstName('Foo Bar')).toStrictEqual('Foo');
         expect(firstName('Foo Bar Baz')).toStrictEqual('Foo');
         expect(firstName('Foo ')).toStrictEqual('Foo');
@@ -18,7 +18,7 @@ describe('NameUtilities', () => {
         expect(initial(/* fullName= */ undefined)).toStrictEqual('');
     });
 
-    it('should be able to provide the initial of a name', test => {
+    it('should be able to provide the initial of a name', async () => {
         expect(initial('Foo Bar')).toStrictEqual('F');
         expect(initial('Foo')).toStrictEqual('F');
         expect(initial('foo Bar')).toStrictEqual('F');

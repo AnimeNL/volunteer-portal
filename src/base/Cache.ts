@@ -20,12 +20,8 @@ export class Cache {
     /**
      * Returns the value associated with the given |key|.
      */
-    async get(key: string, allowUndefined: boolean = false): Promise<any> {
-        const value = await get(key);
-        if (!allowUndefined && value === undefined)
-            throw new Error(`No data has been cached for key "${key}" yet.`);
-
-        return value;
+    async get(key: string): Promise<any> {
+        return get(key);
     }
 
     /**

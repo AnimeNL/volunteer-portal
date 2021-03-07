@@ -5,16 +5,8 @@
 import { Cache } from './Cache';
 
 describe('Cache', () => {
-    it('throws when attempting to read non-existing content', async() => {
-        const cache = new Cache();
-
-        expect.assertions(1);
-        try {
-            await cache.get('non-existing-key');
-        } catch (exception) {
-            expect(exception.message).toMatch(
-                'No data has been cached for key "non-existing-key" yet.');
-        }
+    it('returns undefined when attempting to read non-existing content', async() => {
+        expect(await (new Cache).get('non-existing-key')).toBeUndefined()
     });
 
     it('has the ability to store any type of content, and reflect it', async() => {
@@ -49,11 +41,7 @@ describe('Cache', () => {
 
         await cache.delete('foo');
 
-        try {
-            await cache.get('foo');
-        } catch (exception) {
-            expect(exception.message).toMatch('No data has been cached for key "foo" yet.');
-        }
+        expect(await cache.get('foo')).toBeUndefined()
     });
 
     it('has the ability to store content across instances', async() => {

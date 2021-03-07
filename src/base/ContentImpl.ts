@@ -104,7 +104,7 @@ export class ContentImpl implements Content {
         return this.content.has(pathname);
     }
 
-    get (pathname: string): ContentPage | undefined {
+    get(pathname: string): ContentPage | undefined {
         if (!this.content)
             throw new Error(kExceptionMessage);
 

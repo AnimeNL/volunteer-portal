@@ -57,6 +57,8 @@ export class CachedLoader {
      */
     async initializeFromCache<T>(request: CachedLoaderRequest<T>): Promise<T> {
         const data = await this.cache.get(request.cacheKey);
+        if (data === undefined)
+            throw new TypeError( /* the data does not exist in the cache */ );
 
         if (!request.validationFn(data)) {
             await this.cache.delete(request.cacheKey);

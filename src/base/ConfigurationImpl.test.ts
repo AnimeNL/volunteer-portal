@@ -18,4 +18,14 @@ describe('ConfigurationImpl', () => {
         expect(environmentConfiguration.getEnvironmentEndpoint()).not.toEqual(
             defaultConfiguration.getEnvironmentEndpoint());
     });
+
+    it('has the ability to safely append request parameters', () => {
+        if (process.env.hasOwnProperty('REACT_APP_API_HOST'))
+            delete process.env.REACT_APP_API_HOST;
+
+        const configuration = new ConfigurationImpl();
+
+        expect(configuration.getUserEndpoint('bar')).toEqual('/api/user?authToken=bar');
+        expect(configuration.getUserEndpoint('%& :D')).toEqual('/api/user?authToken=%25%26+%3AD');
+    });
 });

@@ -11,9 +11,9 @@ import { Configuration } from './Configuration';
 export class ConfigurationImpl implements Configuration {
     /**
      * The portal will, by default, use the hostname included in the HTTP request. This can be
-     * overridden by setting the REACT_APP_API_HOST environmental variable at build time.
+     * overridden by setting the `REACT_APP_API_HOST` environmental variable at build time.
      */
-    hostname: string;
+    private hostname: string;
 
     constructor() {
         this.hostname = process.env.REACT_APP_API_HOST || '';
@@ -31,7 +31,7 @@ export class ConfigurationImpl implements Configuration {
         return this.hostname + '/api/environment';
     }
 
-    getUserEndpoint(): string {
-        return this.hostname + '/api/registration';
+    getUserEndpoint(authToken: string): string {
+        return `${this.hostname}/api/user?${new URLSearchParams({ authToken })}`;
     }
 }

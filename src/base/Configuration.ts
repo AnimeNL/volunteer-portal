@@ -29,5 +29,5 @@ export interface Configuration {
      * Returns a URL to the endpoint where the User API can be used.
      * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apiuser
      */
-    getUserEndpoint(): string;
+    getUserEndpoint(authToken: string): string;
 }

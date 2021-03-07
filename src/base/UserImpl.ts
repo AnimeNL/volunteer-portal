@@ -3,8 +3,12 @@
 // found in the LICENSE file.
 
 import { Cache } from './Cache';
+import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
+import { IUserResponse } from '../api/IUser';
 import { User } from './User';
+
+import { validateOptionalString, validateString } from './TypeValidators';
 
 /**
  * Returns whether the given |authTokenExpiration| details a date in the past.
@@ -25,14 +29,20 @@ const kExceptionMessage = 'The user has not authenticated to their account yet.'
  * volunteer's personal schedule. This class implements the //api/auth behaviour.
  */
 export class UserImpl implements User {
+    public static kAuthCacheKey: string = 'portal-auth';
+    public static kUserCacheKey: string = 'portal-user';
+
     private cache: Cache;
     private configuration: Configuration;
+    private loader: CachedLoader;
 
-    private user?: any;
+    private userAuthToken?: string;
+    private userResponse?: IUserResponse;
 
     constructor(cache: Cache, configuration: Configuration) {
         this.cache = cache;
         this.configuration = configuration;
+        this.loader = new CachedLoader(cache);
     }
 
     // Initializes the user interface. This is an operation that cannot fail: either we are able to
@@ -40,7 +50,7 @@ export class UserImpl implements User {
     // means that the user is not authenticated. State will be cached for a server-defined period.
     async initialize(authToken?: string, authTokenExpiration?: number): Promise<boolean> {
         if (!authToken) {
-            const cachedToken = await this.cache.get('portal-auth', /* allowUndefined= */ true);
+            const cachedToken = await this.cache.get(UserImpl.kAuthCacheKey);
             if (!cachedToken || hasExpired(cachedToken.authTokenExpiration))
                 return false;
 
@@ -48,8 +58,22 @@ export class UserImpl implements User {
             authTokenExpiration = cachedToken.authTokenExpiration;
         }
 
-        // load user information
-        return false;
+        if (!authToken)
+            return false;  // no authentication token is available
+
+        const userResponse = await this.loader.initialize({
+            cacheKey: UserImpl.kUserCacheKey,
+            url: this.configuration.getUserEndpoint(authToken),
+            validationFn: UserImpl.prototype.validateUserResponse.bind(this),
+        });
+
+        if (!userResponse)
+            return false;  // the response could not be verified per the appropriate structure
+
+        this.userAuthToken = authToken;
+        this.userResponse = userResponse;
+
+        return true;
     }
 
     /**
@@ -69,6 +93,9 @@ export class UserImpl implements User {
                 method: 'POST',
                 body: requestData,
             });
+
+            if (!response.ok)
+                return false;  // could not get a response from the API
 
             const responseData = await response.json();
             if (typeof responseData !== 'object' || responseData === null)
@@ -92,9 +119,20 @@ export class UserImpl implements User {
             return false;  // the server was not able to issue a token
 
         return this.initialize(authToken, authTokenExpiration).then(async success => {
-            await this.cache.set('portal-auth', { authToken, authTokenExpiration });
+            await this.cache.set(UserImpl.kAuthCacheKey, { authToken, authTokenExpiration });
             return success;
         });
+    }
+
+    /**
+     * Validates the given |user| as data given in the IUserResponse response format. Error
+     * messages will be sent to the console's error buffer if the data could not be verified.
+     */
+    validateUserResponse(userResponse: any): userResponse is IUserResponse {
+        const kInterfaceName = 'IUserResponse';
+
+        return validateOptionalString(userResponse, kInterfaceName, 'avatar') &&
+               validateString(userResponse, kInterfaceName, 'name');
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -102,27 +140,27 @@ export class UserImpl implements User {
     // ---------------------------------------------------------------------------------------------
 
     get authenticated(): boolean {
-        return this.user !== undefined;
+        return this.userResponse !== undefined;
     }
 
     get authToken(): Readonly<string> {
-        if (!this.user)
+        if (!this.userAuthToken)
             throw new Error(kExceptionMessage);
 
-        return this.user.authToken;
+        return this.userAuthToken;
     }
 
     get avatar(): Readonly<string | undefined> {
-        if (!this.user)
+        if (!this.userResponse)
             throw new Error(kExceptionMessage);
 
-        return this.user.avatar;
+        return this.userResponse.avatar;
     }
 
     get name(): Readonly<string> {
-        if (!this.user)
+        if (!this.userResponse)
             throw new Error(kExceptionMessage);
 
-        return this.user.name;
+        return this.userResponse.name;
     }
 }

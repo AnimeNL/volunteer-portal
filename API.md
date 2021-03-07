@@ -4,6 +4,8 @@ by any back-end, as long as the returned data matches the specification below. B
 response structures must be given as JSON.
 
 ## /api/auth
+Allows an authentication token (`authToken`) to be obtained for given credentials. The token may
+have an expiration time, which should be validated on both the client and server-side.
 
 ### Request (`IAuthRequest`)
 A `POST` request containing the following HTML form encoded fields.
@@ -20,6 +22,8 @@ A `POST` request containing the following HTML form encoded fields.
 | `authTokenExpiration` | `number?`   | Time at which the authentication token expires. Indicated as a UNIX timestamp in UTC. |
 
 ## /api/environment
+Allows information to be obtained for the environment the volunteer portal runs under. This allows
+multiple events to be managed by the same instance without needing to change the frontend.
 
 ### Request
 A `GET` request with no additional payload.
@@ -44,6 +48,8 @@ A `GET` request with no additional payload.
 | `website`            | `string?` | URL to the website of the broader event. |
 
 ## /api/content
+Allows static content to be obtained for the registration sub-application, as well as other pages
+that can be displayed on the portal. The `<App>` component is responsible for routing these.
 
 ### Request
 A `GET` request with no additional payload.
@@ -62,3 +68,16 @@ A `GET` request with no additional payload.
 
   * **Note**: Where there are duplicated `pathname` values, the last one will be used.
   * **Note**: Directories represented as pages should have an index. If `/foo/bar.html` is a thing, then so should `/foo/` be.
+
+## /api/user
+Allows information about the authenticated user to be obtained, both for verification of validity of
+the authentication token, as for appropriate display of their information in the user interface.
+
+### Request
+A `GET` request with the `authToken` specified as a request parameter.
+
+### Response (`IUserResponse`)
+| Property  | Type      | Description |
+| :---      | :---      | :---        |
+| `avatar`  | `string?` | URL to the avatar image to use for the authenticated user, if any. |
+| `name`    | `string`  | Full name of the authenticated user. |

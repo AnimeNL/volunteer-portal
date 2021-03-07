@@ -191,4 +191,38 @@ describe('UserImpl', () => {
         expect(secondUser.avatar).toEqual('/avatars/my-avatar.jpg');
         expect(secondUser.name).toEqual('My Name');
     });
+
+    it('should be possible to sign users out', async () => {
+        const authToken = 'FakeAuthToken';
+        const { cache, configuration, user } = await createInstance();
+
+        mockFetch.mockOnceIf(configuration.getAuthenticationEndpoint(), async request => {
+            return {
+                status: /* ok= */ 200,
+                body: JSON.stringify({ authToken }),
+            };
+        });
+
+        mockFetch.mockOnceIf(configuration.getUserEndpoint(authToken), async request => {
+            return {
+                status: /* ok= */ 200,
+                body: JSON.stringify({
+                    name: 'My Name',
+                })
+            }
+        });
+
+        expect(await user.authenticate('user@example.com', '1234')).toBeTruthy();
+        expect(user.authenticated).toBeTruthy();
+
+        expect(await cache.has(UserImpl.kAuthCacheKey)).toBeTruthy();
+        expect(await cache.has(UserImpl.kUserCacheKey)).toBeTruthy();
+
+        await user.signOut();
+
+        expect(user.authenticated).toBeFalsy();
+
+        expect(await cache.has(UserImpl.kAuthCacheKey)).toBeFalsy();
+        expect(await cache.has(UserImpl.kUserCacheKey)).toBeFalsy();
+    });
 });

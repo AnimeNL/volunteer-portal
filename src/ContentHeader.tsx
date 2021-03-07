@@ -7,6 +7,8 @@ import { useContext, useState } from 'preact/hooks';
 
 import Avatar from '@material-ui/core/Avatar';
 import FaceIcon from '@material-ui/icons/Face';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -51,45 +53,65 @@ export interface ContentHeaderProps {
 // pages. It accepts properties to manipulate content shown within the header.
 export function ContentHeader(props: ContentHeaderProps) {
     const { personalize, title } = props;
-
-    const [ open, setOpen ] = useState(false);
     const { user } = useContext(AppContext);
 
-    const handleClose = setOpen.bind(null, false);
-    const handleOpen = setOpen.bind(null, true);
+    const [ authenticationDialogOpen, setAuthenticationDialogOpen ] = useState(false);
 
-    const classes = useStyles();
+    const [ userMenuAnchor, setUserMenuAnchor ] = useState<any>(null);
+    const [ userMenuOpen, setUserMenuOpen ] = useState(false);
 
-    let avatar: React.ReactElement | undefined;
-    let icon: React.ReactElement | undefined;
-    let label: string | undefined;
-
-    if (user.authenticated) {
-        /// @ts-ignore
-        avatar = <Avatar className={classes.avatar} src={user.avatar}>{initial(user.name)}</Avatar>;
-        label = firstName(user.name);
-    } else {
-        /// @ts-ignore
-        icon = <FaceIcon />;
-        label = 'Sign in';
+    function openUserMenu(event: React.MouseEvent<HTMLDivElement>) {
+        setUserMenuAnchor(event.currentTarget);
+        setUserMenuOpen(true);
     }
 
+    function signOut() {
+        setUserMenuOpen(false);
+        return user.signOut();
+    }
+
+    const classes = useStyles();
     return (
         <div className={classes.header}>
             <Typography className={classes.text} variant="h5" component="h1" noWrap>
                 {title}
             </Typography>
-            { personalize &&
+
+           { (personalize && !user.authenticated) &&
                 <Fragment>
 
                     <ContentHeaderChip clickable
-                                       avatar={avatar}
-                                       icon={icon}
-                                       label={label}
-                                       onClick={handleOpen} />
+                                       /// @ts-ignore
+                                       icon={ <FaceIcon /> }
+                                       label="Sign in"
+                                       onClick={() => setAuthenticationDialogOpen(true)} />
 
-                    <UserLoginDialog onClose={handleClose}
-                                     open={open} />
+                    <UserLoginDialog onClose={() => setAuthenticationDialogOpen(false)}
+                                     open={authenticationDialogOpen} />
+
+                </Fragment> }
+
+            { (personalize && user.authenticated) &&
+                <Fragment>
+
+                    <ContentHeaderChip clickable
+                                       /// @ts-ignore
+                                       avatar={ <Avatar className={classes.avatar} src={user.avatar}>
+                                                    {initial(user.name)}
+                                                </Avatar> }
+                                       label={firstName(user.name)}
+                                       onClick={openUserMenu} />
+
+                    <Menu anchorEl={userMenuAnchor}
+                          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                          transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                          getContentAnchorEl={null}
+                          onClose={() => setUserMenuOpen(false)}
+                          open={userMenuOpen}>
+
+                        <MenuItem onClick={signOut}>Sign out</MenuItem>
+
+                    </Menu>
 
                 </Fragment> }
         </div>

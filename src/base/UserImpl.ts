@@ -142,6 +142,23 @@ export class UserImpl implements User {
     }
 
     /**
+     * Signs the user out of their account. Will remove all current and cached data.
+     */
+    async signOut() {
+        if (!this.authenticated)
+            return;  // the user isn't currently signed in
+
+        await this.cache.delete(UserImpl.kAuthCacheKey);
+        await this.cache.delete(UserImpl.kUserCacheKey);
+
+        this.userAuthToken = undefined;
+        this.userResponse = undefined;
+
+        for (const observer of this.observers)
+            observer.onAuthenticationStateChanged();
+    }
+
+    /**
      * Validates the given |user| as data given in the IUserResponse response format. Error
      * messages will be sent to the console's error buffer if the data could not be verified.
      */

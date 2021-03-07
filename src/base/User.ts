@@ -14,6 +14,11 @@ export interface User {
     authenticate(emailAddress: string, accessCode: string): Promise<boolean>;
 
     /**
+     * Signs the user out of their account. Will remove all current and cached data.
+     */
+    signOut(): Promise<void>;
+
+    /**
      * Whether the user has been authenticated to an account.
      */
     authenticated: boolean;

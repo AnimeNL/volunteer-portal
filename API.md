@@ -43,7 +43,7 @@ A `GET` request with no additional payload.
 | `enableContent`      | `boolean` | Whether content pages for this event should be enabled. |
 | `enableRegistration` | `boolean` | Whether volunteer registrations should be accepted for this event. |
 | `enableSchedule`     | `boolean` | Whether access to the schedule should be enabled for this event. |
-| `slug`               | `string`  | URL-safe representation of the event's name, e.g. _portalcon-2021_. |
+| `identifier`         | `string`  | URL-safe representation of the event's name, e.g. _portalcon-2021_. |
 | `timezone`           | `string`  | Timezone in which the event takes place, e.g. _Europe/London_. |
 | `website`            | `string?` | URL to the website of the broader event. |
 

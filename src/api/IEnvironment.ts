@@ -20,7 +20,7 @@ export interface IEnvironmentResponseEvent {
     enableContent: boolean;
     enableRegistration: boolean;
     enableSchedule: boolean;
-    slug: string;
+    identifier: string;
     timezone: string;
     website?: string;
 }

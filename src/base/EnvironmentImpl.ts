@@ -89,7 +89,7 @@ export class EnvironmentImpl implements Environment {
                validateBoolean(event, kInterfaceName, 'enableContent') &&
                validateBoolean(event, kInterfaceName, 'enableRegistration') &&
                validateBoolean(event, kInterfaceName, 'enableSchedule') &&
-               validateString(event, kInterfaceName, 'slug') &&
+               validateString(event, kInterfaceName, 'identifier') &&
                validateString(event, kInterfaceName, 'timezone') &&
                validateOptionalString(event, kInterfaceName, 'website');
     }

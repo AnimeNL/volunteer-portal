@@ -31,13 +31,13 @@ export function RegistrationApp(props: RegistrationAppProps) {
         // (1) When no event has been specified in the slug, assume that the first mentioned event
         // part of the environment should be opened. Replace the current state to reflect this.
         if (!props.event) {
-            route(`/registration/${details.slug}/`, /* replace= */ true);
+            route(`/registration/${details.identifier}/`, /* replace= */ true);
             return <Fragment />;
         }
 
         // (2) When an event has been specified, attempt to identify it in the events part of the
         // environment and store the result in |event| when successful.
-        if (props.event.startsWith(details.slug)) {
+        if (props.event.startsWith(details.identifier)) {
             event = details;
             break;
         }
@@ -52,7 +52,7 @@ export function RegistrationApp(props: RegistrationAppProps) {
 
     // (4) Obtain all content pages that are available for this particular event. They will be added
     // to the <RegistrationApp> component through preact-router.
-    const pages = content.getPrefixed(`/registration/${event.slug}/`);
+    const pages = content.getPrefixed(`/registration/${event.identifier}/`);
 
     return (
         <ContentLayout>
@@ -62,7 +62,7 @@ export function RegistrationApp(props: RegistrationAppProps) {
                     <Route path={page.pathname}
                            component={RegistrationContent}
                            contentPage={page}
-                           eventSlug={event!.slug} />) }
+                           eventSlug={event!.identifier} />) }
             </Router>
         </ContentLayout>
     );

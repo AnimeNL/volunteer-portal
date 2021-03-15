@@ -56,7 +56,7 @@ export interface EnvironmentEvent {
     /**
      * URL-safe representation of the event's name, e.g. _portalcon-2021_.
      */
-    slug: Readonly<string>;
+    identifier: Readonly<string>;
 
     /**
      * Timezone in which the event takes place, e.g. _Europe/London_.

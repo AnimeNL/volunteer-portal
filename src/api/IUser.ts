@@ -7,5 +7,11 @@
  */
 export interface IUserResponse {
     avatar?: string;
+    events: { [key: string]: EventRole };
     name: string;
 }
+
+/**
+ * @see https://github.com/AnimeNL/volunteer-portal/blob/main/API.md#event-roles
+ */
+export type EventRole = 'Unregistered' | 'Registered' | 'Rejected' | string;

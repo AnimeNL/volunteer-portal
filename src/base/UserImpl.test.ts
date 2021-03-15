@@ -128,6 +128,7 @@ describe('UserImpl', () => {
                 status: /* ok= */ 200,
                 body: JSON.stringify({
                     avatar: '/avatars/my-avatar.jpg',
+                    events: { 'event-id': 'Rejected' },
                     name: 'My Name',
                 })
             }
@@ -138,6 +139,8 @@ describe('UserImpl', () => {
 
         expect(user.authToken).toEqual(authToken);
         expect(user.avatar).toEqual('/avatars/my-avatar.jpg');
+        expect(user.events.size).toEqual(1);
+        expect(user.events.get('event-id')).toEqual('Rejected');
         expect(user.name).toEqual('My Name');
 
         expect(await cache.has(UserImpl.kAuthCacheKey)).toBeTruthy();
@@ -167,6 +170,7 @@ describe('UserImpl', () => {
                 status: /* ok= */ 200,
                 body: JSON.stringify({
                     avatar: '/avatars/my-avatar.jpg',
+                    events: { 'event-id': 'Registered' },
                     name: 'My Name',
                 })
             }
@@ -189,6 +193,8 @@ describe('UserImpl', () => {
 
         expect(secondUser.authToken).toEqual(authToken);
         expect(secondUser.avatar).toEqual('/avatars/my-avatar.jpg');
+        expect(secondUser.events.size).toEqual(1);
+        expect(secondUser.events.get('event-id')).toEqual('Registered');
         expect(secondUser.name).toEqual('My Name');
     });
 
@@ -208,6 +214,7 @@ describe('UserImpl', () => {
                 status: /* ok= */ 200,
                 body: JSON.stringify({
                     name: 'My Name',
+                    events: {},
                 })
             }
         });

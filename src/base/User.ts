@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import { EventRole } from '../api/IUser';
+
 /**
  * The interface through which the user's state can be accessed. Certain properties may only be
  * considered when the user has authenticated to their account.
@@ -36,6 +38,15 @@ export interface User {
      * @throws Error when `authenticated` has not been set to TRUE.
      */
     avatar: Readonly<string | undefined>;
+
+    /**
+     * Object containing the roles that the user has in various events. There are three predefined
+     * values: { Unregistered, Registered, Rejected }. All other values represent the volunteer
+     * having been accepted, where the value describes their role.
+     *
+     * @throws Error when `authenticated` has not been set to TRUE.
+     */
+    events: ReadonlyMap<string, EventRole>;
 
     /**
      * Full name of the person who has authenticated to their account.

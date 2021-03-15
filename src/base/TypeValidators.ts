@@ -65,6 +65,14 @@ function isNumberOrUndefined(input: any): boolean {
     return typeof input === 'number' || typeof input === 'undefined';
 }
 
+function isObject(input: any): boolean {
+    return typeof input === 'object' && input !== null;
+}
+
+function isObjectOrUndefined(input: any): boolean {
+    return (typeof input === 'object' && input !== null) || typeof input === 'undefined';
+}
+
 function isString(input: any): boolean {
     return typeof input === 'string';
 }
@@ -106,6 +114,20 @@ export function validateNumber(input: any, inputName: string, property: string):
  */
 export function validateOptionalNumber(input: any, inputName: string, property: string): boolean {
     return validate(input, inputName, property, /* optional= */ true, isNumberOrUndefined);
+}
+
+/**
+ * Validates that the |property| on the |input| object of type |inputName| is an object.
+ */
+export function validateObject(input: any, inputName: string, property: string): boolean {
+    return validate(input, inputName, property, /* optional= */ false, isObject);
+}
+
+/**
+ * Validates that the |property| on the |input| object of type |inputName| is an object, when given.
+ */
+export function validateOptionalObject(input: any, inputName: string, property: string): boolean {
+    return validate(input, inputName, property, /* optional= */ true, isObjectOrUndefined);
 }
 
 /**

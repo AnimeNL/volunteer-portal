@@ -77,7 +77,11 @@ the authentication token, as for appropriate display of their information in the
 A `GET` request with the `authToken` specified as a request parameter.
 
 ### Response (`IUserResponse`)
-| Property  | Type      | Description |
-| :---      | :---      | :---        |
-| `avatar`  | `string?` | URL to the avatar image to use for the authenticated user, if any. |
-| `name`    | `string`  | Full name of the authenticated user. |
+| Property  | Type                     | Description |
+| :---      | :---                     | :---        |
+| `avatar`  | `string?`                | URL to the avatar image to use for the authenticated user, if any. |
+| `events`  | `Map<string, EventRole>` | Mapping of an event identifier to the role this user has in it, if any. |
+| `name`    | `string`                 | Full name of the authenticated user. |
+
+### Event roles
+There are three predefined event roles: `Unregistered`, `Registered`, `Rejected`. Any other string value may be used to represent that the volunteer has been accepted, and describe their actual role. (E.g. `Volunteer` or `Event Elf`.)

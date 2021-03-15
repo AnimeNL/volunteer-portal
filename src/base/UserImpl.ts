@@ -5,10 +5,10 @@
 import { Cache } from './Cache';
 import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
-import { IUserResponse } from '../api/IUser';
+import { EventRole, IUserResponse } from '../api/IUser';
 import { User } from './User';
 
-import { validateOptionalString, validateString } from './TypeValidators';
+import { validateObject, validateOptionalString, validateString } from './TypeValidators';
 
 /**
  * Returns whether the given |authTokenExpiration| details a date in the past.
@@ -49,6 +49,7 @@ export class UserImpl implements User {
     private observers: Set<UserImplObserver>;
 
     private userAuthToken?: string;
+    private userEvents?: Map<string, EventRole>;
     private userResponse?: IUserResponse;
 
     constructor(cache: Cache, configuration: Configuration) {
@@ -84,6 +85,7 @@ export class UserImpl implements User {
             return false;  // the response could not be verified per the appropriate structure
 
         this.userAuthToken = authToken;
+        this.userEvents = new Map(Object.entries(userResponse.events));
         this.userResponse = userResponse;
 
         return true;
@@ -152,6 +154,7 @@ export class UserImpl implements User {
         await this.cache.delete(UserImpl.kUserCacheKey);
 
         this.userAuthToken = undefined;
+        this.userEvents = undefined;
         this.userResponse = undefined;
 
         for (const observer of this.observers)
@@ -164,6 +167,14 @@ export class UserImpl implements User {
      */
     validateUserResponse(userResponse: any): userResponse is IUserResponse {
         const kInterfaceName = 'IUserResponse';
+
+        if (!validateObject(userResponse, kInterfaceName, 'events'))
+            return false;
+
+        for (const eventIdentifier of Object.keys(userResponse.events)) {
+            if (!validateString(userResponse.events, `${kInterfaceName}[events]`, eventIdentifier))
+                return false;
+        }
 
         return validateOptionalString(userResponse, kInterfaceName, 'avatar') &&
                validateString(userResponse, kInterfaceName, 'name');
@@ -207,6 +218,13 @@ export class UserImpl implements User {
             throw new Error(kExceptionMessage);
 
         return this.userResponse.avatar;
+    }
+
+    get events(): ReadonlyMap<string, EventRole> {
+        if (!this.userEvents)
+            throw new Error(kExceptionMessage);
+
+        return this.userEvents;
     }
 
     get name(): Readonly<string> {

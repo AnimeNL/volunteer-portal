@@ -141,6 +141,7 @@ describe('UserImpl', () => {
         expect(user.avatar).toEqual('/avatars/my-avatar.jpg');
         expect(user.events.size).toEqual(1);
         expect(user.events.get('event-id')).toEqual('Rejected');
+        expect(user.isAdministrator()).toBeFalsy();
         expect(user.name).toEqual('My Name');
 
         expect(await cache.has(UserImpl.kAuthCacheKey)).toBeTruthy();
@@ -169,6 +170,7 @@ describe('UserImpl', () => {
             return {
                 status: /* ok= */ 200,
                 body: JSON.stringify({
+                    administrator: true,
                     avatar: '/avatars/my-avatar.jpg',
                     events: { 'event-id': 'Registered' },
                     name: 'My Name',
@@ -195,6 +197,7 @@ describe('UserImpl', () => {
         expect(secondUser.avatar).toEqual('/avatars/my-avatar.jpg');
         expect(secondUser.events.size).toEqual(1);
         expect(secondUser.events.get('event-id')).toEqual('Registered');
+        expect(secondUser.isAdministrator()).toBeTruthy();
         expect(secondUser.name).toEqual('My Name');
     });
 

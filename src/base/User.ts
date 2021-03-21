@@ -49,6 +49,14 @@ export interface User {
     events: ReadonlyMap<string, EventRole>;
 
     /**
+     * Returns whether the user is a portal administrator, which adjusts the application's behaviour
+     * in a number of scenarios. Requires that the user has been authenticated.
+     *
+     * @throws Error when `authenticated` has not been set to TRUE.
+     */
+    isAdministrator(): boolean;
+
+    /**
      * Full name of the person who has authenticated to their account.
      *
      * @throws Error when `authenticated` has not been set to TRUE.

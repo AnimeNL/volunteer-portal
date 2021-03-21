@@ -6,6 +6,7 @@
  * @see https://github.com/AnimeNL/volunteer-portal/blob/main/API.md#response-iuserresponse
  */
 export interface IUserResponse {
+    administrator?: boolean;
     avatar?: string;
     events: { [key: string]: EventRole };
     name: string;

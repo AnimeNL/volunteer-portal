@@ -8,7 +8,7 @@ import { Configuration } from './Configuration';
 import { EventRole, IUserResponse } from '../api/IUser';
 import { User } from './User';
 
-import { validateObject, validateOptionalString, validateString } from './TypeValidators';
+import { validateObject, validateOptionalBoolean, validateOptionalString, validateString } from './TypeValidators';
 
 /**
  * Returns whether the given |authTokenExpiration| details a date in the past.
@@ -176,7 +176,8 @@ export class UserImpl implements User {
                 return false;
         }
 
-        return validateOptionalString(userResponse, kInterfaceName, 'avatar') &&
+        return validateOptionalBoolean(userResponse, kInterfaceName, 'administrator') &&
+               validateOptionalString(userResponse, kInterfaceName, 'avatar') &&
                validateString(userResponse, kInterfaceName, 'name');
     }
 
@@ -225,6 +226,13 @@ export class UserImpl implements User {
             throw new Error(kExceptionMessage);
 
         return this.userEvents;
+    }
+
+    isAdministrator(): boolean {
+        if (!this.userResponse)
+            throw new Error(kExceptionMessage);
+
+        return !!this.userResponse.administrator;
     }
 
     get name(): Readonly<string> {

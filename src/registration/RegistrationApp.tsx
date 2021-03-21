@@ -11,6 +11,7 @@ import { ContentHeader } from '../ContentHeader';
 import { ContentLayout } from '../ContentLayout';
 import { EnvironmentEvent } from '../base/Environment';
 import { RegistrationContent } from './RegistrationContent';
+import { RegistrationStatus } from './RegistrationStatus';
 
 // Properties accepted by the <RegistrationApp> component.
 export interface RegistrationAppProps {
@@ -23,7 +24,7 @@ export interface RegistrationAppProps {
 // volunteering at the convention (as a CDN-like page system) while allowing them to register their
 // interest. Registration is controlled by the environment, access to these pages is not.
 export function RegistrationApp(props: RegistrationAppProps) {
-    const { content, environment } = useContext(AppContext);
+    const { content, environment, user } = useContext(AppContext);
 
     let event: EnvironmentEvent | undefined = undefined;
 
@@ -57,6 +58,7 @@ export function RegistrationApp(props: RegistrationAppProps) {
     return (
         <ContentLayout>
             <ContentHeader personalize title={event.name} />
+            { user.authenticated && <RegistrationStatus event={event} /> }
             <Router>
                 { pages.map(page =>
                     <Route path={page.pathname}

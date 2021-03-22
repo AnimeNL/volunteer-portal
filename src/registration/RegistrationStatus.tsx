@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
     containerRejected: { backgroundColor: lighten(theme.palette.error.main, .8) },
 
     details: {
-        paddingTop: 0,
+        padding: theme.spacing(0, 2, 1, 2),
     },
 
     divider: {
@@ -89,7 +89,7 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
             case 'Registered':
                 className = classes.containerPending;
                 icon = <HowToVoteIcon style={{ color: yellow[900] }} fontSize="inherit" />;
-                title = <>Je aanmelding voor dit evenement is <b>onder behandeling</b>.</>;
+                title = <>Je aanmelding is <b>onder behandeling</b>.</>;
                 explanation = (
                     <Fragment>
                         We hebben je aanmelding voor <strong>{event.name}</strong> ontvangen en we
@@ -104,7 +104,7 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
             case 'Rejected':
                 className = classes.containerRejected;
                 icon = <ThumbDownIcon style={{ color: red[800] }} fontSize="inherit" />;
-                title = <>Helaas is je deelname aan dit evenement <b>afgewezen</b>.</>;
+                title = <>Helaas is je deelname <b>afgewezen</b>.</>;
                 explanation = (
                     <Fragment>
                         We hebben je geen plaats aan kunnen bieden binnen het team voor
@@ -117,7 +117,7 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
             default:
                 className = classes.containerAccepted;
                 icon = <ThumbUpIcon style={{ color: lightGreen[900] }} fontSize="inherit" />;
-                title = <>Je deelname aan dit evenement is <b>bevestigd</b> ({eventRole}).</>;
+                title = <>Je deelname is <b>bevestigd</b> ({eventRole}).</>;
                 explanation = (
                     <Fragment>
                         We zijn ongelooflijk blij met je aanmelding en je deelname aan het team is

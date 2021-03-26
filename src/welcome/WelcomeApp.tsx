@@ -5,14 +5,17 @@
 import { Fragment, h } from 'preact';
 import { useContext } from 'preact/hooks';
 
+import AppRegistrationIcon from '@material-ui/icons/AppRegistration';
 import ContactSupportIcon from '@material-ui/icons/ContactSupport';
 import Divider from '@material-ui/core/Divider';
-import InfoIcon from '@material-ui/icons/Info';
+import EventNoteIcon from '@material-ui/icons/EventNote';
 import LanguageIcon from '@material-ui/icons/Language';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import NewReleasesIcon from '@material-ui/icons/NewReleases';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -23,6 +26,9 @@ import { Link } from '../Link';
 
 // Customized styling for the <WelcomeApp> component.
 const useStyles = makeStyles(theme => ({
+    hidden: {
+        backgroundColor: theme.palette.grey[200],
+    },
     intro: {
         padding: theme.spacing(1, 2),
     },
@@ -36,7 +42,9 @@ const useStyles = makeStyles(theme => ({
 // their account, granting portal access, or refer the user to one of the other pages or components.
 export function WelcomeApp() {
     const classes = useStyles();
-    const { environment } = useContext(AppContext);
+    const { environment, user } = useContext(AppContext);
+
+    const isAdministrator = user.authenticated && user.isAdministrator();
 
     return (
         <ContentLayout>
@@ -50,12 +58,30 @@ export function WelcomeApp() {
             <List className={classes.list}>
                 {environment.events.map(event =>
                     <Fragment>
-                        { event.enableContent &&
-                            <ListItem component={Link} href={`/registration/${event.identifier}/`} divider button>
+                        { (event.enableContent || isAdministrator) &&
+                            <ListItem className={!event.enableContent ? classes.hidden : ''}
+                                      component={Link} href={`/registration/${event.identifier}/`} divider button>
                                 <ListItemIcon>
-                                    <InfoIcon />
+                                    <AppRegistrationIcon />
                                 </ListItemIcon>
                                 <ListItemText primary={`Interested in helping out during ${event.name}?`} />
+                                { !event.enableContent &&
+                                    <Tooltip title="Administrator access">
+                                        <NewReleasesIcon color="disabled" />
+                                    </Tooltip> }
+                            </ListItem>
+                        }
+                        { (event.enableSchedule || isAdministrator) &&
+                            <ListItem className={!event.enableSchedule ? classes.hidden : ''}
+                                      component={Link} href={`/schedule/${event.identifier}/`} divider button>
+                                <ListItemIcon>
+                                    <EventNoteIcon />
+                                </ListItemIcon>
+                                <ListItemText primary={`Access the ${event.name} Volunteer Portal`} />
+                                { !event.enableSchedule &&
+                                    <Tooltip title="Administrator access">
+                                        <NewReleasesIcon color="disabled" />
+                                    </Tooltip> }
                             </ListItem>
                         }
                         { (!event.enableContent && event.website) &&
@@ -66,7 +92,6 @@ export function WelcomeApp() {
                                 <ListItemText primary={`${event.name} isn't taking volunteer registrations yet. Visit the website instead.`} />
                             </ListItem>
                         }
-                        { /* TODO: Enable sign-in when the portal for |event| has been enabled. */ }
                     </Fragment>
                 )}
                 { environment.contactName &&

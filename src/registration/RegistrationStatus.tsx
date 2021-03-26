@@ -68,16 +68,16 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
 
     let className: string = classes.containerDefault;
     let icon: ComponentChild = <HowToVoteIcon fontSize="inherit" />;
-    let title: ComponentChild = 'Je hebt je nog niet aangemeld voor dit evenement.';
+    let title: ComponentChild = `You haven't signed up for this event yet.`;
     let explanation: ComponentChild = (
         <Fragment>
-            We hebben je aanmelding voor <strong>{event.name}</strong> nog niet mogen ontvangen.
+            We haven't received your application to help out during <strong>{event.name}</strong>.
             { !event.enableRegistration &&
-              <> Op dit moment worden er geen aanmeldingen aangenomen, maar houd deze website in de
-                 gaten om de eerste te zijn zodra dat veranderd.</> }
+              <> The registration period is currently open, so don't wait any longer and let us know
+                 about your interest to volunteer during the event!</> }
             { event.enableRegistration &&
-              <> Aanmeldingen worden op dit moment aangenomen, dus wacht niet langer en laat ons
-                 weten dat je interesse hebt om mee te helpen!</> }
+              <> Unfortunately we aren't taking registrations at the moment, but keep an eye out on
+                 this website to be the first to know once that changes. </> }
         </Fragment>
     );
 
@@ -89,13 +89,12 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
             case 'Registered':
                 className = classes.containerPending;
                 icon = <HowToVoteIcon style={{ color: yellow[900] }} fontSize="inherit" />;
-                title = <>Je aanmelding is <b>onder behandeling</b>.</>;
+                title = <>Your application is <b>being considered</b>.</>;
                 explanation = (
                     <Fragment>
-                        We hebben je aanmelding voor <strong>{event.name}</strong> ontvangen en we
-                        zijn je deelname aan het overwegen. Je krijgt hier zo snel als mogelijk
-                        bevestiging over. Stuur ons gerust een e-mailtje als je verdere vragen hebt
-                        over je aanmelding.
+                        We have received your application for <strong>{event.name}</strong> and have
+                        it under consideration. We will confirm your participation as soon as we can.
+                        Please feel free to send us a message in case you have any questions.
                     </Fragment>
                 );
 
@@ -104,12 +103,12 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
             case 'Rejected':
                 className = classes.containerRejected;
                 icon = <ThumbDownIcon style={{ color: red[800] }} fontSize="inherit" />;
-                title = <>Helaas is je deelname <b>afgewezen</b>.</>;
+                title = <>Your participation has been <b>declined</b>.</>;
                 explanation = (
                     <Fragment>
-                        We hebben je geen plaats aan kunnen bieden binnen het team voor
-                        <strong> {event.name}</strong>. Je hebt via e-mail een bericht ontvangen met
-                        verdere uitleg.
+                        Unfortunately we have not been able to offer you participation in the
+                        <strong> {event.name}</strong> team. You have received a message with more
+                        information.
                     </Fragment>
                 );
                 break;
@@ -117,12 +116,12 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
             default:
                 className = classes.containerAccepted;
                 icon = <ThumbUpIcon style={{ color: lightGreen[900] }} fontSize="inherit" />;
-                title = <>Je deelname is <b>bevestigd</b> ({eventRole}).</>;
+                title = <>Your participation has been <b>confirmed</b> ({eventRole}).</>;
                 explanation = (
                     <Fragment>
-                        We zijn ongelooflijk blij met je aanmelding en je deelname aan het team is
-                        hierbij bevestigd. Je hebt via e-mail een bericht ontvangen met verdere
-                        uitleg.
+                        We're very happy with your application and your participation during
+                        <strong> {event.name}</strong> has been confirmed. You have received a
+                        message with more information.
                     </Fragment>
                 );
                 break;

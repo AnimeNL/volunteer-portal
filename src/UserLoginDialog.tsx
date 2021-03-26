@@ -152,17 +152,16 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
         const classes = useStyles();
         return (
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Inloggen</DialogTitle>
+                <DialogTitle>Sign in</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Log in met je account om direct toegang te krijgen tot de status van je
-                        registratie, alsmede je persoonlijke agenda.
+                        Sign in with your access code to immediately access the status of your
+                        application, as well as your personal event schedule.
                     </DialogContentText>
                     <Collapse in={this.state.authenticationError}>
                         <DialogContentText color="error">
-                            De gegevens die je ingevuld hebt behoren niet tot een bekende vrijwilliger.
-                            Stuur een berichtje naar <Link href={environment.contactTarget}>{environment.contactName}</Link> als
-                            je de gegevens verloren bent.
+                            Sorry, that access code isn't right. We can help you to recover your
+                            access code if you send a quick message to <Link href={environment.contactTarget}>{environment.contactName}</Link>.
                         </DialogContentText>
                     </Collapse>
                     <TextField fullWidth
@@ -170,29 +169,29 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
                                inputProps={{ inputMode: 'email' }}
                                onBlur={UserLoginDialog.prototype.onBlurEmailAddress.bind(this)}
                                onChange={UserLoginDialog.prototype.onChangeEmailAddress.bind(this)}
-                               label="E-mailadres"
+                               label="E-mail address"
                                value={this.state.emailAddress}
                                error={this.state.emailAddressError}
-                               helperText={this.state.emailAddressError ? 'Ongeldig adres' : ''}
+                               helperText={this.state.emailAddressError ? 'Invalid address' : ''}
                                required />
                     <TextField fullWidth
                                className={classes.formField}
                                inputProps={{ inputMode: 'numeric' }}
                                onBlur={UserLoginDialog.prototype.onBlurAccessCode.bind(this)}
                                onChange={UserLoginDialog.prototype.onChangeAccessCode.bind(this)}
-                               label="Toegangscode"
+                               label="Access code"
                                value={this.state.accessCode}
                                error={this.state.accessCodeError}
-                               helperText={this.state.accessCodeError ? 'Ongeldige toegangscode' : ''}
+                               helperText={this.state.accessCodeError ? 'Invalid access code' : ''}
                                required />
                 </DialogContent>
                 <DialogActions className={classes.buttons}>
-                    <Button onClick={handleClose}>Sluiten</Button>
+                    <Button onClick={handleClose}>Close</Button>
                     <div className={classes.loginButtonWrapper}>
                         <Button disabled={this.state.authenticating}
                                 endIcon={ <LoginIcon /> }
                                 onClick={handleLogin}
-                                variant="contained">Inloggen</Button>
+                                variant="contained">Sign in</Button>
                         { this.state.authenticating &&
                             <CircularProgress className={classes.loginButtonProgress} size={24} /> }
                     </div>

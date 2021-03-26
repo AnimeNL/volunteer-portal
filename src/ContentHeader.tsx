@@ -83,7 +83,7 @@ export function ContentHeader(props: ContentHeaderProps) {
                     <ContentHeaderChip clickable
                                        /// @ts-ignore
                                        icon={ <FaceIcon /> }
-                                       label="Inloggen"
+                                       label="Sign in"
                                        onClick={() => setAuthenticationDialogOpen(true)} />
 
                     <UserLoginDialog onClose={() => setAuthenticationDialogOpen(false)}
@@ -109,7 +109,7 @@ export function ContentHeader(props: ContentHeaderProps) {
                           onClose={() => setUserMenuOpen(false)}
                           open={userMenuOpen}>
 
-                        <MenuItem onClick={signOut}>Uitloggen</MenuItem>
+                        <MenuItem onClick={signOut}>Sign out</MenuItem>
 
                     </Menu>
 

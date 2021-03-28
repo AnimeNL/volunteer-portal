@@ -39,7 +39,7 @@ const useStyles = makeStyles(theme => ({
     },
 
     summary: { minHeight: 'auto' },
-    summaryContent: { margin: theme.spacing(1, 0) },
+    summaryContent: { margin: theme.spacing(1, 0, 0.8, 0) },
     summaryIcon: {
         lineHeight: 'normal',
         paddingRight: theme.spacing(1),

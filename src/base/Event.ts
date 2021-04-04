@@ -13,6 +13,30 @@ export interface Event {
     readonly identifier: string;
 
     // ---------------------------------------------------------------------------------------------
+    // Location API
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns an iterator with the names of the areas that exist within the event.
+     */
+    getAreas(): IterableIterator<string>;
+
+    /**
+     * Returns the location identified by the given |name|, or undefined when not found.
+     */
+    getLocation(name: string): EventLocation | undefined;
+
+    /**
+     * Returns an iterator that provides access to all locations for the event.
+     */
+    getLocations(): IterableIterator<EventLocation>;
+
+    /**
+     * Returns an iterator that provides access to all locations for the event within the |area|.
+     */
+    getLocationsForArea(area: string): IterableIterator<EventLocation>;
+
+    // ---------------------------------------------------------------------------------------------
     // Volunteer API
     // ---------------------------------------------------------------------------------------------
 
@@ -25,6 +49,21 @@ export interface Event {
      * Returns an iterator that provides access to all volunteers known to the system.
      */
     getVolunteers(): IterableIterator<EventVolunteer>;
+}
+
+/**
+ * Interface that documents the information known about a particular location for the event.
+ */
+export interface EventLocation {
+    /**
+     * Name of the area in which the location is situated.
+     */
+    readonly area: string;
+
+    /**
+     * Name of the location.
+     */
+    readonly name: string;
 }
 
 /**

@@ -10,6 +10,63 @@ describe('EventImpl', () => {
      */
     const kEventIdentifier = '2021-event';
 
+    it('provides the ability to access location information', async () => {
+        const event = new EventImpl(kEventIdentifier, {
+            events: [],
+            locations: [
+                {
+                    name: 'Round Tower',
+                    area: 'Towers',
+                },
+                {
+                    name: 'Square Pyramid',
+                    area: 'Pyramids',
+                },
+                {
+                    name: 'Square Tower',
+                    area: 'Towers',
+                }
+            ],
+            volunteers: [],
+        });
+
+        expect(event.identifier).toEqual(kEventIdentifier);
+
+        const areas = [];
+        for (const area of event.getAreas())
+            areas.push(area);
+
+        expect(areas.sort()).toStrictEqual([ 'Pyramids', 'Towers' ]);
+
+        {
+            const tower = event.getLocation('Round Tower');
+            expect(tower).not.toBeUndefined();
+
+            expect(tower?.area).toEqual('Towers');
+            expect(tower?.name).toEqual('Round Tower');
+        }
+
+        expect(event.getLocation('Circular Factory')).toBeUndefined();
+
+        const locations = [];
+        for (const location of event.getLocations())
+            locations.push(location.name);
+
+        expect(locations.sort()).toStrictEqual([ 'Round Tower', 'Square Pyramid', 'Square Tower' ]);
+
+        const areaLocations = [];
+        for (const location of event.getLocationsForArea('Towers'))
+            areaLocations.push(location.name);
+
+        expect(areaLocations.sort()).toStrictEqual([ 'Round Tower', 'Square Tower' ]);
+
+        const unknownAreaLocations = [];
+        for (const location of event.getLocationsForArea('Factories'))
+            unknownAreaLocations.push(location.name);
+
+        expect(unknownAreaLocations).toStrictEqual([ /* empty */ ]);
+    });
+
     it('provides the ability to access volunteer information', async () => {
         const event = new EventImpl(kEventIdentifier, {
             events: [],

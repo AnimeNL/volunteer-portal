@@ -41,7 +41,7 @@ describe('Cache', () => {
 
         await cache.delete('foo');
 
-        expect(await cache.get('foo')).toBeUndefined()
+        expect(await cache.get('foo')).toBeUndefined();
     });
 
     it('has the ability to store content across instances', async() => {
@@ -50,5 +50,20 @@ describe('Cache', () => {
 
         await firstCache.set('my-content', 'value');
         expect(await secondCache.get('my-content')).toEqual('value');
+    });
+
+    it('has the ability to clear the entire data store', async() => {
+        const firstCache = new Cache();
+
+        await firstCache.set('my-content', 'value');
+        expect(await firstCache.get('my-content')).toEqual('value');
+
+        await firstCache.clear();
+
+        expect(await firstCache.get('my-content')).toBeUndefined();
+
+        const secondCache = new Cache();
+
+        expect(await secondCache.get('my-content')).toBeUndefined();
     });
 });

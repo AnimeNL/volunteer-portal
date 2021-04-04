@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { del, get, keys, set } from 'idb-keyval';
+import { clear, del, get, keys, set } from 'idb-keyval';
 
 /**
  * Provides the ability to cache arbitrary data within the browser cache. Jake's idb-keyval library
@@ -38,5 +38,13 @@ export class Cache {
      */
     async delete(key: string): Promise<void> {
         return del(key);
+    }
+
+    /**
+     * Removes all data from the cache, without remorse or regrets. An exception could be thrown if
+     * there is an error when writing to the underlying data store.
+     */
+    async clear(): Promise<void> {
+        return clear();
     }
 }

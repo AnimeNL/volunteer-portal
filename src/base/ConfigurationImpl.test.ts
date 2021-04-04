@@ -27,5 +27,14 @@ describe('ConfigurationImpl', () => {
 
         expect(configuration.getUserEndpoint('bar')).toEqual('/api/user?authToken=bar');
         expect(configuration.getUserEndpoint('%& :D')).toEqual('/api/user?authToken=%25%26+%3AD');
+
+        const kEventExpectations: [ [ string, string ], string ][] = [
+            [ [ 'bar', 'baz' ], '/api/event?authToken=bar&event=baz' ],
+            [ [ '%& :D', 'baz' ], '/api/event?authToken=%25%26+%3AD&event=baz' ],
+            [ [ 'bar', '%& :D' ], '/api/event?authToken=bar&event=%25%26+%3AD' ]
+        ];
+
+        for (const [ parameters, expected ] of kEventExpectations)
+            expect(configuration.getEventEndpoint(...parameters)).toEqual(expected);
     });
 });

@@ -31,6 +31,10 @@ export class ConfigurationImpl implements Configuration {
         return this.hostname + '/api/environment';
     }
 
+    getEventEndpoint(authToken: string, event: string): string {
+        return `${this.hostname}/api/event?${new URLSearchParams({ authToken, event })}`;
+    }
+
     getUserEndpoint(authToken: string): string {
         return `${this.hostname}/api/user?${new URLSearchParams({ authToken })}`;
     }

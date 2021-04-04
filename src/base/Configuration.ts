@@ -26,6 +26,12 @@ export interface Configuration {
     getEnvironmentEndpoint(): string;
 
     /**
+     * Returns a URL to the endpoint where the Event API can be reached.
+     * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apievent
+     */
+    getEventEndpoint(authToken: string, event: string): string;
+
+    /**
      * Returns a URL to the endpoint where the User API can be used.
      * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apiuser
      */

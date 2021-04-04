@@ -2,6 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+type Accessor = number | string;
 type ValidateFn = (input: any) => boolean;
 
 /**
@@ -12,7 +13,7 @@ type ValidateFn = (input: any) => boolean;
  * @param message Message that details why validation has failed.
  * @returns The boolean False to make the code a bit more streamlined.
  */
-function issueErrorAndReturnFalse(inputName: string, property: string, message: string): false {
+export function issueErrorAndReturnFalse(inputName: string, property: Accessor, message: string): false {
     console.error(`Unable to validate ${inputName}.${property}: ${message}.`);
     return false;
 }
@@ -30,7 +31,7 @@ function issueErrorAndReturnFalse(inputName: string, property: string, message: 
  */
 function validate(input: any,
                   inputName: string,
-                  property: string,
+                  property: Accessor,
                   optional: boolean,
                   validateFn: ValidateFn): boolean {
     if (!input)
@@ -84,62 +85,62 @@ function isStringOrUndefined(input: any): boolean {
 /**
  * Validates that the |property| on the |input| object of type |inputName| is an array.
  */
-export function validateArray(input: any, inputName: string, property: string): boolean {
+export function validateArray(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ false, isArray);
 }
 
 /**
  * Validates that the |property| on the |input| object of type |inputName| is a boolean. 
  */
-export function validateBoolean(input: any, inputName: string, property: string): boolean {
+export function validateBoolean(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ false, isBoolean);
 }
 
 /**
  * Validates that the |property| on the |input| object of type |inputName| is a boolean, when given.
  */
-export function validateOptionalBoolean(input: any, inputName: string, property: string): boolean {
+export function validateOptionalBoolean(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ true, isBooleanOrUndefined);
 }
 
 /**
  * Validates that the |property| on the |input| object of type |inputName| is a number.
  */
-export function validateNumber(input: any, inputName: string, property: string): boolean {
+export function validateNumber(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ false, isNumber);
 }
 
 /**
  * Validates that the |property| on the |input| object of type |inputName| is a number, when given.
  */
-export function validateOptionalNumber(input: any, inputName: string, property: string): boolean {
+export function validateOptionalNumber(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ true, isNumberOrUndefined);
 }
 
 /**
  * Validates that the |property| on the |input| object of type |inputName| is an object.
  */
-export function validateObject(input: any, inputName: string, property: string): boolean {
+export function validateObject(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ false, isObject);
 }
 
 /**
  * Validates that the |property| on the |input| object of type |inputName| is an object, when given.
  */
-export function validateOptionalObject(input: any, inputName: string, property: string): boolean {
+export function validateOptionalObject(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ true, isObjectOrUndefined);
 }
 
 /**
  * Validates that the |property| on the |input| object of type |inputName| is a string.
  */
-export function validateString(input: any, inputName: string, property: string): boolean {
+export function validateString(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ false, isString);
 }
 
 /**
  * Validates that the |property| on the |input| object of type |inputName| is a string, when given.
  */
-export function validateOptionalString(input: any, inputName: string, property: string): boolean {
+export function validateOptionalString(input: any, inputName: string, property: Accessor): boolean {
     return validate(input, inputName, property, /* optional= */ true, isStringOrUndefined);
 }

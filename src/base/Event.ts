@@ -11,4 +11,48 @@ export interface Event {
      * The identifier through which this event can be identified.
      */
     readonly identifier: string;
+
+    // ---------------------------------------------------------------------------------------------
+    // Volunteer API
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the volunteer identified by the given |identifier|, or undefined when not found.
+     */
+    getVolunteer(identifier: string): EventVolunteer | undefined;
+
+    /**
+     * Returns an iterator that provides access to all volunteers known to the system.
+     */
+    getVolunteers(): IterableIterator<EventVolunteer>;
+}
+
+/**
+ * Interface that documents the information known about a particular volunteer for the event.
+ */
+export interface EventVolunteer {
+    /**
+     * The volunteer's full name.
+     */
+    readonly name: string;
+
+    /**
+     * The volunteer's first name.
+     */
+    readonly firstName: string;
+
+    /**
+     * The volunteer's last name.
+     */
+    readonly lastName: string;
+
+    /**
+     * Unique identifier for this volunteer. Should be unique within this event.
+     */
+    readonly identifier: string;
+
+    /**
+     * URL to the avatar image to use for the volunteer, if any.
+     */
+    readonly avatar?: string;
 }

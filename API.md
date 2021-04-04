@@ -21,6 +21,28 @@ A `POST` request containing the following HTML form encoded fields.
 | `authToken`           | `string?`   | Unique token which can be used to fetch protected content. Omitted on failure. |
 | `authTokenExpiration` | `number?`   | Time at which the authentication token expires. Indicated as a UNIX timestamp in UTC. |
 
+## /api/content
+Allows static content to be obtained for the registration sub-application, as well as other pages
+that can be displayed on the portal. The `<App>` component is responsible for routing these.
+
+### Request
+A `GET` request with no additional payload.
+
+### Response (`IContentResponse`)
+| Property         | Type      | Description |
+| :---             | :---      | :--- |
+| `pages`          | `IContentResponsePage[]` | Array of the pages that are available as plain content. |
+
+### Response (`IContentResponsePage`)
+| Property         | Type      | Description |
+| :---             | :---      | :--- |
+| `pathname`       | `string` | Full pathname through which this content can be identified. |
+| `content`        | `string` | Contents of the page. May contain [Markdown syntax](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet). |
+| `modified`       | `number` | Last modification time of the page. Indicated as a UNIX timestamp in UTC. |
+
+  * **Note**: Where there are duplicated `pathname` values, the last one will be used.
+  * **Note**: Directories represented as pages should have an index. If `/foo/bar.html` is a thing, then so should `/foo/` be.
+
 ## /api/environment
 Allows information to be obtained for the environment the volunteer portal runs under. This allows
 multiple events to be managed by the same instance without needing to change the frontend.
@@ -47,27 +69,44 @@ A `GET` request with no additional payload.
 | `timezone`           | `string`  | Timezone in which the event takes place, e.g. _Europe/London_. |
 | `website`            | `string?` | URL to the website of the broader event. |
 
-## /api/content
-Allows static content to be obtained for the registration sub-application, as well as other pages
-that can be displayed on the portal. The `<App>` component is responsible for routing these.
+## /api/event
+Allows full scheduling information to be requested about a particular event, indicated by the `event` request parameter. The returned data is expected to have been (pre)filtered based on the access level granted to the owner of the given `authToken`.
 
 ### Request
-A `GET` request with no additional payload.
+A `GET` request with the `authToken` and `event` identifier specified as request parameters.
 
-### Response (`IContentResponse`)
-| Property         | Type      | Description |
-| :---             | :---      | :--- |
-| `pages`          | `IContentResponsePage[]` | Array of the pages that are available as plain content. |
+### Response
+| Property        | Type                        | Description |
+| :---            | :---                        | :---        |
+| `events`        | `IEventResponseEvent[]`     | Array of events that will be taking place during this event. |
+| `locations`     | `IEventResponseLocation[]`  | Array of locations that exist for this event. |
+| `volunteers`    | `IEventResponseVolunteer[]` | Array of volunteers that can be assigned shifts during this event. |
 
-### Response (`IContentResponsePage`)
-| Property         | Type      | Description |
-| :---             | :---      | :--- |
-| `pathname`       | `string` | Full pathname through which this content can be identified. |
-| `content`        | `string` | Contents of the page. May contain [Markdown syntax](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet). |
-| `modified`       | `number` | Last modification time of the page. Indicated as a UNIX timestamp in UTC. |
+### Response (`IEventResponseEvent`)
+| Property        | Type                      | Description |
+| :---            | :---                      | :---        |
+| `title`         | `string`                  | Visitor-visible name summarising the event. |
+| `description`   | `string`                  | Short (1–3 sentence) description briefly summarising the event. |
+| `sessions`      | `IEventResponseSession[]` | Sessions associated with this particular event. |
 
-  * **Note**: Where there are duplicated `pathname` values, the last one will be used.
-  * **Note**: Directories represented as pages should have an index. If `/foo/bar.html` is a thing, then so should `/foo/` be.
+### Response (`IEventResponseLocation`)
+| Property        | Type                 | Description |
+| :---            | :---                 | :---        |
+| `name`          | `string`             | Name of the location. |
+| `area`          | `string`             | Area in which the location is located. Could be a floor, or a section of the building. |
+
+### Response (`IEventResponseSession`)
+| Property        | Type                 | Description |
+| :---            | :---                 | :---        |
+| `location`      | `string`             | Name of the location in which this session will take place. |
+| `time`          | `[ number, number ]` | Begin and end times of this particular event session. |
+
+### Response (`IEventResponseVolunteer`)
+| Property        | Type                 | Description |
+| :---            | :---                 | :---        |
+| `name`          | `[ string, string ]` | Name of the volunteer, indicated as an array containing their first, then last name. |
+| `identifier`    | `string`             | Unique identifier for this volunteer. Should be unique within this event. |
+| `avatar`        | `string?`            | URL to the avatar image to use for the volunteer, if any. |
 
 ## /api/user
 Allows information about the authenticated user to be obtained, both for verification of validity of

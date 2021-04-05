@@ -14,6 +14,21 @@ import { IEventResponse, IEventResponseEvent, IEventResponseLocation,
 interface Finalizer { finalize(): void; }
 
 /**
+ * Comparator to use when an array containing sessions should be sorted in ascending order. A stable
+ * sort is used where, for equal start times, the events will then be sorted by end time.
+ */
+function AscendingSessionComparator(lhs: EventSession, rhs: EventSession) {
+    const lhsValue = lhs.startTime.valueOf();
+    const rhsValue = rhs.startTime.valueOf();
+
+    const diff = lhsValue - rhsValue;
+    if (!diff)
+        return lhs.endTime.valueOf() - rhs.endTime.valueOf();
+
+    return diff;
+}
+
+/**
  * Implementation of the Event interface. Instances should only be created through the EventFactory,
  * unless tests are being ran which specifically verify behaviour of this class' functionality.
  */
@@ -22,10 +37,12 @@ export class EventImpl implements Event {
 
     #areas: Map<string, Set<any>> = new Map();
     #locations: Map<string, EventLocationImpl> = new Map();
+    #sessions: EventSession[];
     #volunteers: Map<string, EventVolunteerImpl> = new Map();
 
     constructor(identifier: string, event: IEventResponse) {
         this.#identifier = identifier;
+        this.#sessions = [];
 
         let finalizationQueue: Finalizer[] = [];
 
@@ -58,9 +75,7 @@ export class EventImpl implements Event {
                 }
 
                 const session = instance.createSession(location, sessionInfo);
-
-                // TODO: Store the sessions in a separate array to cheaply be able to determine
-                // which events are active at a particular time.
+                this.#sessions.push(session);
 
                 location.addSession(session);
             }
@@ -71,9 +86,33 @@ export class EventImpl implements Event {
         // (4) Run all the finalizers to make sure that the data is in order.
         for (const instance of finalizationQueue)
             instance.finalize();
+
+        // (5) Sort the master session list to enable quick access to live events.
+        this.#sessions.sort(AscendingSessionComparator);
     }
 
     get identifier() { return this.#identifier; }
+
+    // ---------------------------------------------------------------------------------------------
+    // Event API
+    // ---------------------------------------------------------------------------------------------
+
+    getActiveSessions(time: moment.Moment): EventSession[] {
+        const timeValue = time.valueOf();
+        const results: EventSession[] = [];
+
+        for (const session of this.#sessions) {
+            if (session.endTime.valueOf() <= timeValue)
+                continue;  // the |session| ends before |timeValue|
+
+            if (session.startTime.valueOf() > timeValue)
+                continue;  // the |session| starts after |timeValue|
+
+            results.push(session);
+        }
+
+        return results;
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Location API
@@ -132,7 +171,7 @@ class EventInfoImpl implements EventInfo, Finalizer {
 
     finalize() {
         // Sort the sessions by their start time, in ascending order.
-        this.#sessions.sort((lhs, rhs) => lhs.startTime.valueOf() - rhs.startTime.valueOf());
+        this.#sessions.sort(AscendingSessionComparator);
     }
 
     get title() { return this.#title; }
@@ -159,7 +198,7 @@ class EventLocationImpl implements EventLocation, Finalizer {
 
     finalize() {
         // Sort the sessions by their start time, in ascending order.
-        this.#sessions.sort((lhs, rhs) => lhs.startTime.valueOf() - rhs.startTime.valueOf());
+        this.#sessions.sort(AscendingSessionComparator);
     }
 
     get area() { return this.#response.area; }

@@ -15,6 +15,21 @@ export interface Event {
     readonly identifier: string;
 
     // ---------------------------------------------------------------------------------------------
+    // Event API
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns an array of sessions that are active at the given |time|. The implementation has a
+     * time complexity of O(n) on the number of sessions within the Event.
+     *
+     * There are algorithms to do this faster (e.g. computing the equal range with two binary
+     * searches to limit the selection), but based on historical event data some of the first
+     * sessions last the longest, bringing performance back to O(n). An example would be an
+     * always-opened information desk during the event.
+     */
+    getActiveSessions(time: moment.Moment): EventSession[];
+
+    // ---------------------------------------------------------------------------------------------
     // Location API
     // ---------------------------------------------------------------------------------------------
 

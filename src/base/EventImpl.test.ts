@@ -128,6 +128,71 @@ describe('EventImpl', () => {
         expect(tower.sessions[0].location).toStrictEqual(tower.sessions[1].location);
     });
 
+    it('provides the ability to access sessions active at a given time', async () => {
+        const event = new EventImpl(kEventIdentifier, {
+            events: [
+                {
+                    title: 'Circular Dance',
+                    description: 'Dancing in a circle in the round tower',
+                    sessions: [
+                        {
+                            location: 'Round Tower',
+                            time: [ 1617490800, 1617577199 ],
+                        },
+                    ],
+                },
+                {
+                    title: 'Triangular Dance',
+                    description: 'Dancing in a triangle in the round tower',
+                    sessions: [
+                        {
+                            location: 'Round Tower',
+                            time: [ 1617573600, 1617663599 ],
+                        }
+                    ],
+                }
+            ],
+            locations: [
+                {
+                    name: 'Round Tower',
+                    area: 'Towers',
+                },
+            ],
+            volunteers: [],
+        });
+
+        // (1) Before the sessions.
+        expect(event.getActiveSessions(moment('2021-04-03T23:59:59')).length).toEqual(0);
+
+        // (2) During the first session (Circular Dance).
+        {
+            const sessions = event.getActiveSessions(moment('2021-04-04T01:00:00'));
+
+            expect(sessions.length).toEqual(1);
+            expect(sessions[0].event.title).toEqual('Circular Dance');
+        }
+
+        // (3) During the overlap between the sessions.
+        {
+            const sessions = event.getActiveSessions(moment('2021-04-04T23:30:00'));
+
+            expect(sessions.length).toEqual(2);
+            expect(sessions[0].event.title).toEqual('Circular Dance');
+            expect(sessions[1].event.title).toEqual('Triangular Dance');
+        }
+
+        // (4) During the second session (Triangular Dance).
+        {
+            const sessions = event.getActiveSessions(moment('2021-04-05T23:00:00'));
+
+            expect(sessions.length).toEqual(1);
+            expect(sessions[0].event.title).toEqual('Triangular Dance');
+        }
+
+        // (5) After the sessions.
+        expect(event.getActiveSessions(moment('2021-04-06T00:00:00')).length).toEqual(0);
+    });
+
     it('provides the ability to access volunteer information', async () => {
         const event = new EventImpl(kEventIdentifier, {
             events: [],

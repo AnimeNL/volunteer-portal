@@ -2,8 +2,16 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { Event, EventLocation, EventVolunteer } from './Event';
-import { IEventResponse, IEventResponseLocation, IEventResponseVolunteer } from '../api/IEvent';
+import moment from 'moment-timezone';
+
+import { Event, EventInfo, EventLocation, EventSession, EventVolunteer } from './Event';
+import { IEventResponse, IEventResponseEvent, IEventResponseLocation,
+         IEventResponseSession, IEventResponseVolunteer } from '../api/IEvent';
+
+/**
+ * Interface that enables certain objects to be finalized after event initialization is complete.
+ */
+interface Finalizer { finalize(): void; }
 
 /**
  * Implementation of the Event interface. Instances should only be created through the EventFactory,
@@ -19,6 +27,9 @@ export class EventImpl implements Event {
     constructor(identifier: string, event: IEventResponse) {
         this.#identifier = identifier;
 
+        let finalizationQueue: Finalizer[] = [];
+
+        // (1) Initialize all the location information.
         for (const location of event.locations) {
             const instance = new EventLocationImpl(location);
 
@@ -27,10 +38,39 @@ export class EventImpl implements Event {
 
             this.#areas.get(instance.area)?.add(instance);
             this.#locations.set(instance.name, instance);
+
+            finalizationQueue.push(instance);
         }
 
+        // (2) Initialize all the volunteer information.
         for (const volunteer of event.volunteers)
             this.#volunteers.set(volunteer.identifier, new EventVolunteerImpl(volunteer));
+
+        // (3) Initialize all the event and session information.
+        for (const eventInfo of event.events) {
+            const instance = new EventInfoImpl(eventInfo);
+
+            for (const sessionInfo of eventInfo.sessions) {
+                const location = this.#locations.get(sessionInfo.location);
+                if (!location) {
+                    console.warn('Invalid location given for event session.', sessionInfo, event);
+                    continue;
+                }
+
+                const session = instance.createSession(location, sessionInfo);
+
+                // TODO: Store the sessions in a separate array to cheaply be able to determine
+                // which events are active at a particular time.
+
+                location.addSession(session);
+            }
+
+            finalizationQueue.push(instance);
+        }
+
+        // (4) Run all the finalizers to make sure that the data is in order.
+        for (const instance of finalizationQueue)
+            instance.finalize();
     }
 
     get identifier() { return this.#identifier; }
@@ -69,18 +109,88 @@ export class EventImpl implements Event {
 }
 
 /**
+ * Implementation of the EventInfo interface, which abstracts over the IEventResponseEvent response
+ * information.
+ */
+class EventInfoImpl implements EventInfo, Finalizer {
+    #title: string;
+    #description: string;
+    #sessions: EventSession[];
+
+    constructor(response: IEventResponseEvent) {
+        this.#title = response.title;
+        this.#description = response.description;
+        this.#sessions = [];
+    }
+
+    createSession(location: EventLocation, response: IEventResponseSession): EventSession {
+        const session = new EventSessionImpl(this, location, response);
+
+        this.#sessions.push(session);
+        return session;
+    }
+
+    finalize() {
+        // Sort the sessions by their start time, in ascending order.
+        this.#sessions.sort((lhs, rhs) => lhs.startTime.valueOf() - rhs.startTime.valueOf());
+    }
+
+    get title() { return this.#title; }
+    get description() { return this.#description; }
+    get sessions() { return this.#sessions; }
+}
+
+/**
  * Implementation of the EventLocation interface, which abstracts over the IEventResponseLocation
  * response information and adds the ability to cross-reference information.
  */
-class EventLocationImpl implements EventLocation {
+class EventLocationImpl implements EventLocation, Finalizer {
     #response: IEventResponseLocation;
+    #sessions: EventSession[];
 
     constructor(response: IEventResponseLocation) {
         this.#response = response;
+        this.#sessions = [];
+    }
+
+    addSession(session: EventSession) {
+        this.#sessions.push(session);
+    }
+
+    finalize() {
+        // Sort the sessions by their start time, in ascending order.
+        this.#sessions.sort((lhs, rhs) => lhs.startTime.valueOf() - rhs.startTime.valueOf());
     }
 
     get area() { return this.#response.area; }
     get name() { return this.#response.name; }
+    get sessions() { return this.#sessions; }
+}
+
+/**
+ * Implementation of the EventSession interface, which abstracts over the IEventResponseSession
+ * response information. Times will be represented by MomentJS.
+ */
+class EventSessionImpl implements EventSession {
+    #event: EventInfo;
+    #location: EventLocation;
+
+    #beginTime: moment.Moment;
+    #endTime: moment.Moment;
+
+    constructor(event: EventInfo, location: EventLocation, response: IEventResponseSession) {
+        this.#event = event;
+        this.#location = location;
+
+        this.#beginTime = moment(response.time[0] * 1000);
+        this.#endTime = moment(response.time[1] * 1000);
+    }
+
+    get event() { return this.#event; }
+    get location() { return this.#location; }
+
+    get startTime() { return this.#beginTime; }
+    get endTime() { return this.#endTime; }
 }
 
 /**

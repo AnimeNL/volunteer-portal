@@ -2,9 +2,16 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import moment from 'moment-timezone';
+
 import { EventImpl } from './EventImpl';
 
 describe('EventImpl', () => {
+    /**
+     * Default timezone for these tests, to avoid different results for different people.
+     */
+    moment.tz.setDefault('Europe/London');
+
     /**
      * Fixed event identifier that will be used throughout the tests.
      */
@@ -65,6 +72,60 @@ describe('EventImpl', () => {
             unknownAreaLocations.push(location.name);
 
         expect(unknownAreaLocations).toStrictEqual([ /* empty */ ]);
+    });
+
+    it('provides the ability to access event information through locations', async () => {
+        const event = new EventImpl(kEventIdentifier, {
+            events: [
+                {
+                    title: 'Circular Dance',
+                    description: 'Dancing in a circle in the round tower',
+                    sessions: [
+                        {
+                            location: 'Round Tower',
+                            time: [ 1617577200, 1617663599 ],  // note: this session is out-of-order
+                        },
+                        {
+                            location: 'Round Tower',
+                            time: [ 1617490800, 1617577199 ],
+                        }
+                    ],
+                }
+            ],
+            locations: [
+                {
+                    name: 'Round Tower',
+                    area: 'Towers',
+                },
+            ],
+            volunteers: [],
+        });
+
+        const tower = event.getLocation('Round Tower')!;
+        expect(tower).not.toBeUndefined();
+
+        expect(tower.sessions.length).toEqual(2);
+        {
+            expect(tower.sessions[0].event.title).toEqual('Circular Dance');
+            expect(tower.sessions[0].location).toStrictEqual(tower);
+
+            expect(`${tower.sessions[0].startTime}`).toEqual('Sun Apr 04 2021 00:00:00 GMT+0100');
+            expect(`${tower.sessions[0].endTime}`).toEqual('Sun Apr 04 2021 23:59:59 GMT+0100');
+
+            expect(tower.sessions[0].event.sessions.length).toEqual(2);
+        }
+        {
+            expect(tower.sessions[1].event.title).toEqual('Circular Dance');
+            expect(tower.sessions[1].location).toStrictEqual(tower);
+
+            expect(`${tower.sessions[1].startTime}`).toEqual('Mon Apr 05 2021 00:00:00 GMT+0100');
+            expect(`${tower.sessions[1].endTime}`).toEqual('Mon Apr 05 2021 23:59:59 GMT+0100');
+
+            expect(tower.sessions[1].event.sessions.length).toEqual(2);
+        }
+
+        expect(tower.sessions[0].event).toStrictEqual(tower.sessions[1].event);
+        expect(tower.sessions[0].location).toStrictEqual(tower.sessions[1].location);
     });
 
     it('provides the ability to access volunteer information', async () => {

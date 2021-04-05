@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import moment from 'moment-timezone';
+
 /**
  * Interface that defines how code is expected to interact with information about a specific event.
  * This builds on top of the `IEventResponse` information retrieved from the Event API.
@@ -52,11 +54,31 @@ export interface Event {
 }
 
 /**
+ * Interface that documents the information known about a particular event within an event.
+ */
+export interface EventInfo {
+    /**
+     * Visitor-visible name summarising the event.
+     */
+    readonly title: string;
+
+    /**
+     * Short (1–3 sentence) description briefly summarising the event.
+     */
+    readonly description: string;
+
+    /**
+     * An array with the instances of this event that will be taking place. Sorted.
+     */
+    readonly sessions: EventSession[];
+}
+
+/**
  * Interface that documents the information known about a particular location for the event.
  */
 export interface EventLocation {
     /**
-     * Name of the area in which the location is situated.
+     * Area in which the location is located. Could be a floor, or a section of the building.
      */
     readonly area: string;
 
@@ -64,6 +86,36 @@ export interface EventLocation {
      * Name of the location.
      */
     readonly name: string;
+
+    /**
+     * An array with the event sessions that will be taking place within this location. Sorted.
+     */
+    readonly sessions: EventSession[];
+}
+
+/**
+ * Interface that documents the information known about an event session within an event.
+ */
+export interface EventSession {
+    /**
+     * Information about the event that this session is a part of.
+     */
+    readonly event: EventInfo;
+
+    /**
+     * Information about the location in which this session will be taking place.
+     */
+    readonly location: EventLocation;
+
+    /**
+     * Time at which this session is due to begin.
+     */
+    readonly startTime: moment.Moment;
+
+    /**
+     * Time at which this session is due to finish. Guaranteed to be after the `startTime`.
+     */
+    readonly endTime: moment.Moment;
 }
 
 /**

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import { Component, h } from 'preact';
-import { Router, Route } from 'preact-router';
+import { Router, RouterOnChangeArgs, Route, route } from 'preact-router';
 
 import { AppContext, IAppContext } from './AppContext';
 import { AppError } from './AppError';
@@ -11,11 +11,12 @@ import { Cache } from './base/Cache';
 import { ConfigurationImpl } from './base/ConfigurationImpl';
 import { ContentImpl } from './base/ContentImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
+import { EventFactory } from './base/EventFactory';
 import { UserImpl, UserImplObserver } from './base/UserImpl';
 
 import { LoadingApp } from './loading/LoadingApp';
-import { PortalApp } from './portal/PortalApp';
 import { RegistrationApp } from './registration/RegistrationApp';
+import { ScheduleApp } from './schedule/ScheduleApp';
 import { WelcomeApp } from './welcome/WelcomeApp';
 
 // High-level state of the application. We primarily care about whether the user has authenticated,
@@ -27,15 +28,20 @@ interface AppState {
 }
 
 // Main component of the Volunteer Portal application, which creates the app context and switches
-// between the four main sub-applications: Portal, Registration and Welcome.
+// between the four main sub-applications: Registration, Schedule and Welcome.
 export class App extends Component<{}, AppState> implements UserImplObserver {
     private cache: Cache;
     private configuration: ConfigurationImpl;
     private content: ContentImpl;
     private environment: EnvironmentImpl;
+    private eventFactory: EventFactory;
     private user: UserImpl;
 
-    public state: AppState;
+    public appContext: IAppContext;
+    public state: AppState = {
+        authenticated: false,
+        loaded: false,
+    };
 
     constructor() {
         super();
@@ -44,13 +50,16 @@ export class App extends Component<{}, AppState> implements UserImplObserver {
         this.configuration = new ConfigurationImpl();
         this.content = new ContentImpl(this.cache, this.configuration);
         this.environment = new EnvironmentImpl(this.cache, this.configuration);
+        this.eventFactory = new EventFactory(this.cache, this.configuration);
         this.user = new UserImpl(this.cache, this.configuration);
 
-        // Initial state of the application. The actual state will be loaded and processed when the
-        // component gets mounted. Once finished, a re-render will be requested as appropriate.
-        this.state = {
-            authenticated: false,
-            loaded: false,
+        // Compose the app context. Preact uses instance equality to determine whether the context
+        // changed, so we'll want to ensure the same instance will be reused when possible.
+        this.appContext = {
+            configuration: this.configuration,
+            content: this.content,
+            environment: this.environment,
+            user: this.user,
         };
     }
 
@@ -69,12 +78,16 @@ export class App extends Component<{}, AppState> implements UserImplObserver {
 
         this.user.addObserver(this);
 
-        if (!environmentInitialized)
+        if (!environmentInitialized) {
             this.setState({ error: `Unable to initialize the portal's environment.` });
-        else if (!contentInitialized)
+        } else if (!contentInitialized) {
             this.setState({ error: `Unable to initialize the portal's content.` });
-        else
-            this.setState({ loaded: true });
+        } else {
+            this.setState({
+                authenticated: this.user.authenticated,
+                loaded: true,
+            });
+        }
     }
 
     // Called when the <App> component is being removed. Stops observing the UserImpl object.
@@ -87,38 +100,55 @@ export class App extends Component<{}, AppState> implements UserImplObserver {
     // ---------------------------------------------------------------------------------------------
 
     onAuthenticationStateChanged() {
+        this.appContext.event = undefined;
         this.setState({
-            authenticated: this.user.authenticated
+            authenticated: this.user.authenticated,
         });
+    }
+
+    async onNavigate(routerChange: RouterOnChangeArgs) {
+        const matches = routerChange.url.match(/^\/schedule\/([^\/]+)\//);
+        if (!matches || matches.length < 2 || !this.user.authenticated)
+            return;  // the page does not require an event
+
+        if (!this.state.loaded && routerChange.url !== routerChange.previous)
+            return;  // something is already being loaded
+
+        const identifier = matches[1];
+        if (this.appContext.event && this.appContext.event.identifier === identifier)
+            return;  // the event has already been loaded
+
+        this.setState({ loaded: false });
+
+        const event = await this.eventFactory.load(this.user.authToken, identifier);
+        if (!event) {
+            document.location.href = '/';
+            return;
+        }
+
+        this.setState({ loaded: true });
+        this.appContext.event = event;
     }
 
     // ---------------------------------------------------------------------------------------------
     // Display routines.
     // ---------------------------------------------------------------------------------------------
 
-    // Composes the properties that together create for the app context. This enables the full
-    // system to access these global application properties.
-    composeAppContext(): IAppContext {
-        return {
-            configuration: this.configuration,
-            content: this.content,
-            environment: this.environment,
-            user: this.user,
-        }
-    }
-
     // Renders the main app. Provides the context, and then switches between the sub-application
     // that should be presented to the user.
     render() {
         return (
-            <AppContext.Provider value={ this.composeAppContext() }>
+            <AppContext.Provider value={ this.appContext }>
                 { this.state.error && <AppError error={this.state.error} /> }
                 { this.state.loaded &&
-                    <Router>
+                    <Router onChange={ event => this.onNavigate(event) }>
                         <Route path="/registration/:event*" component={RegistrationApp} />
 
-                        { this.state.authenticated && <Route default component={PortalApp} /> }
-                        { !this.state.authenticated && <Route default component={WelcomeApp} /> }
+                        { /* The schedule is only available for authenticated users. */ }
+                        { this.state.authenticated &&
+                            <Route path="/schedule/:event/:request*" component={ScheduleApp} /> }
+
+                        <Route default component={WelcomeApp} />
                     </Router>
                 }
                 { !this.state.loaded && <LoadingApp /> }

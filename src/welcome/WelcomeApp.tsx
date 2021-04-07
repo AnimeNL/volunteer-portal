@@ -51,7 +51,7 @@ export function WelcomeApp() {
             <ContentHeader title={environment.title} />
             <Typography className={classes.intro}>
                 This site allows you to learn more about the perks and responsibilities of
-                volunteering during one of our events, to register your interest to become a
+                volunteering during one of our events, to register your interest in becoming a
                 volunteer, and to get direct access to your personal schedule.
             </Typography>
             <Divider />
@@ -67,7 +67,7 @@ export function WelcomeApp() {
                                 <ListItemText primary={`Interested in helping out during ${event.name}?`} />
                                 { !event.enableContent &&
                                     <Tooltip title="Administrator access">
-                                        <NewReleasesIcon color="disabled" />
+                                        <NewReleasesIcon htmlColor="#E57373" />
                                     </Tooltip> }
                             </ListItem>
                         }
@@ -80,7 +80,7 @@ export function WelcomeApp() {
                                 <ListItemText primary={`Access the ${event.name} Volunteer Portal`} />
                                 { !event.enableSchedule &&
                                     <Tooltip title="Administrator access">
-                                        <NewReleasesIcon color="disabled" />
+                                        <NewReleasesIcon htmlColor="#E57373" />
                                     </Tooltip> }
                             </ListItem>
                         }

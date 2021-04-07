@@ -51,7 +51,7 @@ export class EventFactory {
      * Validates the given |response| as data given in the IEventResponse response format. Error
      * messages will be sent to the console's error buffer if the data could not be verified.
      */
-    validateEventResponse(response: any): response is IEventResponse {
+    private validateEventResponse(response: any): response is IEventResponse {
         const kInterfaceName = 'IEventResponse';
 
         if (!validateArray(response, kInterfaceName, 'events'))
@@ -84,7 +84,7 @@ export class EventFactory {
     /**
      * Validates that the given |event| corresponds to the IEventResponseEvent structure.
      */
-    validateEventResponseEvent(event: any): event is IEventResponseEvent {
+    private validateEventResponseEvent(event: any): event is IEventResponseEvent {
         const kInterfaceName = 'IEventResponseEvent';
 
         if (!validateArray(event, kInterfaceName, 'sessions'))
@@ -102,7 +102,7 @@ export class EventFactory {
     /**
      * Validates that the given |location| corresponds to the IEventResponseLocation structure.
      */
-    validateEventResponseLocation(location: any): location is IEventResponseLocation {
+    private validateEventResponseLocation(location: any): location is IEventResponseLocation {
         const kInterfaceName = 'IEventResponseLocation';
 
         return validateString(location, kInterfaceName, 'name') &&
@@ -112,7 +112,7 @@ export class EventFactory {
     /**
      * Validates that the given |session| corresponds to the IEventResponseSession structure.
      */
-    validateEventResponseSession(session: any): session is IEventResponseSession {
+    private validateEventResponseSession(session: any): session is IEventResponseSession {
         const kInterfaceName = 'IEventResponseSession';
 
         if (!validateArray(session, kInterfaceName, 'time'))
@@ -132,7 +132,7 @@ export class EventFactory {
     /**
      * Validates that the given |volunteer| corresponds to the IEventResponseVolunteer structure.
      */
-    validateEventResponseVolunteer(volunteer: any): volunteer is IEventResponseVolunteer {
+    private validateEventResponseVolunteer(volunteer: any): volunteer is IEventResponseVolunteer {
         const kInterfaceName = 'IEventResponseVolunteer';
 
         if (!validateArray(volunteer, kInterfaceName, 'name'))

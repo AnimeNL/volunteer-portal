@@ -10,6 +10,7 @@ import { AppContext } from '../AppContext';
 import { ContentHeader } from '../ContentHeader';
 import { ContentLayout } from '../ContentLayout';
 import { EnvironmentEvent } from '../base/Environment';
+import { RegistrationApplicationFlow } from './RegistrationApplicationFlow';
 import { RegistrationContent } from './RegistrationContent';
 import { RegistrationStatus } from './RegistrationStatus';
 
@@ -60,11 +61,15 @@ export function RegistrationApp(props: RegistrationAppProps) {
             <ContentHeader personalize title={event.name} />
             { user.authenticated && <RegistrationStatus event={event} /> }
             <Router>
+                <Route path={`/registration/${event.identifier}/application.html`}
+                       component={RegistrationApplicationFlow}
+                       event={event} />
+
                 { pages.map(page =>
                     <Route path={page.pathname}
                            component={RegistrationContent}
                            contentPage={page}
-                           eventSlug={event!.identifier} />) }
+                           event={event} />) }
             </Router>
         </ContentLayout>
     );

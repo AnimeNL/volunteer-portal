@@ -2,14 +2,16 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { h } from 'preact';
+import { ComponentChildren, h } from 'preact';
 import Markdown from 'preact-markdown';
 
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import { SxProps, Theme } from '@mui/system';
 import { lighten } from '@mui/material/styles';
 
 import { ContentPage } from '../base/Content';
+import { EnvironmentEvent } from '../base/Environment';
 import { Link } from '../Link';
 
 // CSS customizations applied to the <RegistrationContent> component.
@@ -53,23 +55,40 @@ export interface RegistrationContentProps {
     // The page entry that should be rendered within this component.
     contentPage: ContentPage;
 
-    // Slug for the event, which provides the base URL for linkable content.
-    eventSlug: string;
+    // Information about the event that this page is being rendered for.
+    event: EnvironmentEvent;
 }
 
 // Responsible for displaying a single page of content on the registration app, specifically one
 // that is powered through server-provided content to be displayed using Markdown.
 export function RegistrationContent(props: RegistrationContentProps) {
-    const { contentPage, eventSlug } = props;
+    const { contentPage, event } = props;
+
+    // Inline component for the registration button. Behaviour depends on the configuration for
+    // this event, which might have registration disabled whilst looking at this page.
+    const RegistrationElement = (props: { children: ComponentChildren }) => {
+        if (!event.enableRegistration) {
+            return (
+                <blockquote>
+                    <p>We're currently not accepting registrations, please try again later!</p>
+                </blockquote>
+            );
+        }
+
+        return <Button href={`/registration/${event.identifier}/application.html`} variant="contained">
+                   {props.children}
+               </Button>;
+    };
 
     const markdown = Markdown({
         markdown: contentPage.content,
         markdownOpts: {
-            baseUrl: `/registration/${eventSlug}/`,
+            baseUrl: `/registration/${event.identifier}/`,
         },
         markupOpts: {
             components: {
                 a: Link,
+                del: RegistrationElement,
             }
         },
     });

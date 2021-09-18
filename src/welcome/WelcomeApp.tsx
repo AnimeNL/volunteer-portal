@@ -30,7 +30,8 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         backgroundColor: 'grey.200',
     },
     intro: {
-        padding: '1 2',
+        paddingX: 2,
+        paddingY: 1,
     },
     list: {
         paddingBottom: '0px !important',

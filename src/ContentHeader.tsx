@@ -22,18 +22,19 @@ import { firstName, initial } from './base/NameUtilities';
 const kStyles: { [key: string]: SxProps<Theme> } = {
     avatar: {
         backgroundColor: 'primary.light',
-        color: 'red',  // `${theme.palette.getContrastText(theme.palette.primary.light)} !important`,
+        color: theme => theme.palette.getContrastText(theme.palette.primary.light),
     },
     header: {
         backgroundColor: 'primary.dark',
-        color: 'red',  // theme.palette.getContrastText(theme.palette.primary.dark),
+        color: theme => theme.palette.getContrastText(theme.palette.primary.dark),
         display: 'flex',
 
         borderTopLeftRadius: 4,
         borderTopRightRadius: 4,
 
         margin: 0,
-        padding: '1 2',
+        paddingX: 2,
+        paddingY: 1,
     },
     text: {
         flex: 1,

@@ -8,47 +8,43 @@ import Markdown from 'preact-markdown';
 import Box from '@mui/material/Box';
 import { SxProps, Theme } from '@mui/system';
 import { lighten } from '@mui/material/styles';
-import { makeStyles } from '@mui/material/styles';
 
 import { ContentPage } from '../base/Content';
 import { Link } from '../Link';
 
 // CSS customizations applied to the <RegistrationContent> component.
-const kStyles: { [key: string]: SxProps<Theme> } = {
-    container: {
-        margin: '0 2',
+const kContainerStyles: SxProps<Theme> = {
+    marginX: 2,
 
-/**
-        '& blockquote': {
-            backgroundColor: lighten(theme.palette.error.main, .8),
-            border: '1px solid ' + theme.palette.error.main,
-            borderRadius: theme.shape.borderRadius,
-            margin: 0,
+    '& blockquote': {
+        backgroundColor: theme => lighten(theme.palette.error.main, .8),
+        border: theme => '1px solid ' + theme.palette.error.main,
+        borderRadius: theme => theme.shape.borderRadius,
+        margin: 0,
 
-            '& p': {
-                margin: theme.spacing(1),
-            }
-        },
-
-        '& h2, h3': { marginBottom: 0 },
-
-        '& h2 + p, h2 + ul': { marginTop: 0 },
-        '& h3 + p, h3 + ul': { marginTop: 0 },
-
-        '& li p': {
-            margin: 0,
-        },
-
-        '& table': { borderCollapse: 'collapse' },
-        '& td, th': {
-            border: '1px solid ' + theme.palette.divider,
-            padding: theme.spacing(0.5, 1),
-        },
-
-        '& th': {
-            textAlign: 'left',
+        '& p': {
+            margin: 1,
         }
-**/
+    },
+
+    '& h2, h3': { marginBottom: 0 },
+
+    '& h2 + p, h2 + ul': { marginTop: 0 },
+    '& h3 + p, h3 + ul': { marginTop: 0 },
+
+    '& li p': {
+        margin: 0,
+    },
+
+    '& table': { borderCollapse: 'collapse' },
+    '& td, th': {
+        border: theme => '1px solid ' + theme.palette.divider,
+        paddingX: 1,
+        paddingY: 0.5,
+    },
+
+    '& th': {
+        textAlign: 'left',
     }
 };
 
@@ -78,5 +74,5 @@ export function RegistrationContent(props: RegistrationContentProps) {
         },
     });
 
-    return <Box sx={kStyles.container}>{markdown}</Box>;
+    return <Box sx={kContainerStyles}>{markdown}</Box>;
 }

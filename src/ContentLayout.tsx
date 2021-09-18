@@ -9,7 +9,6 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { SxProps, Theme } from '@mui/system';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/material/styles';
 
 import { AppContext } from './AppContext';
 import { ContentTheme } from './ContentTheme';
@@ -28,15 +27,10 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         backgroundAttachment: 'fixed',
         backgroundPosition: 'bottom right',
         backgroundSize: 'cover',
-/**
-        [theme.breakpoints.down('sm')]: {
-            backgroundImage: 'url(/images/background-mobile.jpg)',
+        backgroundImage: {
+            xs: 'url(/images/background-mobile.jpg)',
+            sm: 'url(/images/background-desktop.jpg)',
         },
-
-        [theme.breakpoints.up('sm')]: {
-            backgroundImage: 'url(/images/background-desktop.jpg)',
-        },
-**/
     },
 
     container: {
@@ -53,16 +47,13 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         maxWidth: '1280px',
         width: '90%',
     },
+};
 
-    footer: {
-        paddingBottom: '125px',
-    },
-
-    logo: {  // TODO: fix
-        marginTop: '2em',
-        maxWidth: '40vw',
-        width: '256px',
-    }
+// Styles applied to the logo. These cannot use the @sx attribute.
+const kLogoStyles: h.JSX.CSSProperties = {
+    marginTop: '2em',
+    maxWidth: '40vw',
+    width: '256px',
 };
 
 // Properties accepted by the <ContentLayout> component.
@@ -82,12 +73,12 @@ export function ContentLayout(props: ContentLayoutProps) {
             <Box sx={kStyles.background}></Box>
             <Box sx={kStyles.container}>
                 <Link href="/">
-                    <img src="/images/logo-portal.png" alt="J-POP Logo" />
+                    <img src="/images/logo-portal.png" style={kLogoStyles} alt="J-POP Logo" />
                 </Link>
                 <Paper sx={kStyles.content}>
                     {props.children}
                 </Paper>
-                <Typography variant="body2" sx={kStyles.footer}>
+                <Typography variant="body2" sx={{ paddingBottom: '125px' }}>
                     {environment.title} (
                     <Link variant="inherit" href="https://github.com/AnimeNL/volunteer-portal">
                         {process.env.REACT_APP_GIT_VERSION}

@@ -4,7 +4,7 @@
 
 import { h } from 'preact';
 
-import Chip from '@mui/material/Chip';
+import { chipClasses, default as Chip } from '@mui/material/Chip';
 import { styled } from '@mui/material/styles';
 
 import { lighten } from '@mui/material/styles';
@@ -13,11 +13,11 @@ export const ContentHeaderChip = styled(Chip)(({ theme }) => {
     const chipBackground = theme.palette.primary.main;
 
     return {
-        root: {
+        [`&.${chipClasses.root}`]: {
             backgroundColor: chipBackground,
-            color: theme.palette.getContrastText(chipBackground),
+            color: 'inherit',
         },
-        clickable: {
+        [`&.${chipClasses.clickable}`]: {
             backgroundColor: chipBackground,
             '&:focus': {
                 backgroundColor: lighten(chipBackground, 0.15),
@@ -26,7 +26,7 @@ export const ContentHeaderChip = styled(Chip)(({ theme }) => {
                 backgroundColor: lighten(chipBackground, 0.1),
             }
         },
-        icon: {
+        [`& .${chipClasses.iconMedium}`]: {
             color: 'inherit !important',
         },
     };

@@ -24,17 +24,17 @@ import { Link } from './Link';
 // CSS customizations applied to the <UserLoginDialog> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
     buttons: {
-        padding: '0 3 2 0',
-    },
-    formField: {
-        margin: '1 0',
+        paddingTop: 0,
+        paddingRight: 3,
+        paddingBottom: 2,
+        paddingLeft: 0,
     },
     loginButtonProgress: {
         position: 'absolute',
         top: '50%',
         left: '50%',
-        marginTop: -12,
-        marginLeft: -12,
+        marginTop: '-12px',
+        marginLeft: '-12px',
     },
     loginButtonWrapper: {
         marginLeft: 2,
@@ -159,13 +159,13 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
                         application, as well as your personal event schedule.
                     </DialogContentText>
                     <Collapse in={this.state.authenticationError}>
-                        <DialogContentText color="error">
+                        <DialogContentText sx={{ paddingY: 1 }} color="error">
                             Sorry, that access code isn't right. We can help you to recover your
                             access code if you send a quick message to <Link href={environment.contactTarget}>{environment.contactName}</Link>.
                         </DialogContentText>
                     </Collapse>
                     <TextField fullWidth
-                               sx={kStyles.formField}
+                               sx={{ marginY: 1 }}
                                inputProps={{ inputMode: 'email' }}
                                onBlur={UserLoginDialog.prototype.onBlurEmailAddress.bind(this)}
                                onChange={UserLoginDialog.prototype.onChangeEmailAddress.bind(this)}
@@ -175,7 +175,7 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
                                helperText={this.state.emailAddressError ? 'Invalid address' : ''}
                                required />
                     <TextField fullWidth
-                               sx={kStyles.formField}
+                               sx={{ marginY: 1 }}
                                inputProps={{ inputMode: 'numeric' }}
                                onBlur={UserLoginDialog.prototype.onBlurAccessCode.bind(this)}
                                onChange={UserLoginDialog.prototype.onChangeAccessCode.bind(this)}

@@ -18,7 +18,6 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import Typography from '@mui/material/Typography';
 import lightGreen from '@mui/material/colors/lightGreen'
 import { lighten } from '@mui/material/styles';
-import { makeStyles } from '@mui/material/styles';
 import red from '@mui/material/colors/red';
 import yellow from '@mui/material/colors/yellow';
 
@@ -28,28 +27,33 @@ import { EnvironmentEvent } from '../base/Environment';
 // CSS customizations applied to the <RegistrationContent> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
     containerAccepted: {
-        backgroundColor: 'lightgreen.200',  // lightGreen[200]
+        backgroundColor: lightGreen[200],
     },
     containerDefault: {
-        backgroundColor: 'red',  // lighten(theme.palette.primary.light, .9)
+        backgroundColor: theme => lighten(theme.palette.primary.light, .9)
     },
     containerPending: {
-        backgroundColor: 'yellow.100',  // yellow[100]
+        backgroundColor: yellow[100],
     },
     containerRejected: {
-        backgroundColor: 'red',  // lighten(theme.palette.error.main, .8)
+        backgroundColor: theme => lighten(theme.palette.error.main, .8),
     },
     details: {
-        padding: '0 2 1 2',
+        paddingTop: 0,
+        paddingRight: 2,
+        paddingBottom: 1,
+        paddingLeft: 2,
     },
     divider: {
         marginBottom: 1,
     },
     summary: {
         minHeight: 'auto',
-    },
-    summaryContent: {  // TODO: fix
-        margin: '1 0 0.8 0',
+
+        '& .MuiAccordionSummary-content': {
+            marginTop: 1,
+            marginBottom: 0.8,
+        },
     },
     summaryIcon: {
         lineHeight: 'normal',
@@ -74,7 +78,7 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
     if (!user.authenticated)
         return <Fragment />;
 
-    const eventRole = user.events.get(event.identifier);
+    let eventRole = user.events.get(event.identifier);
 
     let containerStyle: SxProps<Theme> = kStyles.containerDefault;
     let icon: ComponentChild = <HowToVoteIcon fontSize="inherit" />;

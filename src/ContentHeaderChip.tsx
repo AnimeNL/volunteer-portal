@@ -5,9 +5,11 @@
 import { h } from 'preact';
 
 import Chip from '@mui/material/Chip';
-import { lighten, withStyles } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 
-export const ContentHeaderChip = withStyles(theme => {
+import { lighten } from '@mui/material/styles';
+
+export const ContentHeaderChip = styled(Chip)(({ theme }) => {
     const chipBackground = theme.palette.primary.main;
 
     return {
@@ -28,5 +30,4 @@ export const ContentHeaderChip = withStyles(theme => {
             color: 'inherit !important',
         },
     };
-
-})(Chip);
+});

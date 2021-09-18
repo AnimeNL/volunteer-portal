@@ -15,9 +15,9 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import { SxProps, Theme } from '@mui/system';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/material/styles';
 
 import { AppContext } from '../AppContext';
 import { ContentHeader } from '../ContentHeader';
@@ -25,23 +25,22 @@ import { ContentLayout } from '../ContentLayout';
 import { Link } from '../Link';
 
 // Customized styling for the <WelcomeApp> component.
-const useStyles = makeStyles(theme => ({
+const kStyles: { [key: string]: SxProps<Theme> } = {
     hidden: {
-        backgroundColor: theme.palette.grey[200],
+        backgroundColor: 'grey.200',
     },
     intro: {
-        padding: theme.spacing(1, 2),
+        padding: '1 2',
     },
     list: {
         paddingBottom: '0px !important',
         paddingTop: '0px !important',
-    }
-}));
+    },
+};
 
 // The "welcome" application is a generic content page that allows the user to either sign in to
 // their account, granting portal access, or refer the user to one of the other pages or components.
 export function WelcomeApp() {
-    const classes = useStyles();
     const { environment, user } = useContext(AppContext);
 
     const isAdministrator = user.authenticated && user.isAdministrator();
@@ -49,17 +48,17 @@ export function WelcomeApp() {
     return (
         <ContentLayout>
             <ContentHeader title={environment.title} />
-            <Typography className={classes.intro}>
+            <Typography sx={kStyles.intro}>
                 This site allows you to learn more about the perks and responsibilities of
                 volunteering during one of our events, to register your interest in becoming a
                 volunteer, and to get direct access to your personal schedule.
             </Typography>
             <Divider />
-            <List className={classes.list}>
+            <List sx={kStyles.list}>
                 {environment.events.map(event =>
                     <Fragment>
                         { (event.enableContent || isAdministrator) &&
-                            <ListItem className={!event.enableContent ? classes.hidden : ''}
+                            <ListItem sx={!event.enableContent ? kStyles.hidden : {}}
                                       component={Link} href={`/registration/${event.identifier}/`} divider button>
                                 <ListItemIcon>
                                     <AppRegistrationIcon />
@@ -72,7 +71,7 @@ export function WelcomeApp() {
                             </ListItem>
                         }
                         { (event.enableSchedule || isAdministrator) &&
-                            <ListItem className={!event.enableSchedule ? classes.hidden : ''}
+                            <ListItem sx={!event.enableSchedule ? kStyles.hidden : {}}
                                       component={Link} href={`/schedule/${event.identifier}/`} divider button>
                                 <ListItemIcon>
                                     <EventNoteIcon />

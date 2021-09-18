@@ -5,6 +5,7 @@
 import { Component, h } from 'preact';
 import { useContext } from 'preact/hooks';
 
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Collapse from '@mui/material/Collapse';
@@ -14,19 +15,19 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import LoginIcon from '@mui/icons-material/Login';
+import { SxProps, Theme } from '@mui/system';
 import TextField from '@mui/material/TextField';
-import { makeStyles } from '@mui/material/styles';
 
 import { AppContext } from './AppContext';
 import { Link } from './Link';
 
 // CSS customizations applied to the <UserLoginDialog> component.
-const useStyles = makeStyles(theme => ({
+const kStyles: { [key: string]: SxProps<Theme> } = {
     buttons: {
-        padding: theme.spacing(0, 3, 2, 0),
+        padding: '0 3 2 0',
     },
     formField: {
-        margin: theme.spacing(1, 0),
+        margin: '1 0',
     },
     loginButtonProgress: {
         position: 'absolute',
@@ -36,10 +37,10 @@ const useStyles = makeStyles(theme => ({
         marginLeft: -12,
     },
     loginButtonWrapper: {
-        marginLeft: theme.spacing(2),
+        marginLeft: 2,
         position: 'relative',
-    }
-}));
+    },
+};
 
 // Properties accepted by the <UserLoginDialog> component.
 export interface UserLoginDialogProps {
@@ -149,7 +150,6 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
                 this.setState({ authenticating: false, authenticationError: true });
         }
 
-        const classes = useStyles();
         return (
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Sign in</DialogTitle>
@@ -165,7 +165,7 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
                         </DialogContentText>
                     </Collapse>
                     <TextField fullWidth
-                               className={classes.formField}
+                               sx={kStyles.formField}
                                inputProps={{ inputMode: 'email' }}
                                onBlur={UserLoginDialog.prototype.onBlurEmailAddress.bind(this)}
                                onChange={UserLoginDialog.prototype.onChangeEmailAddress.bind(this)}
@@ -175,7 +175,7 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
                                helperText={this.state.emailAddressError ? 'Invalid address' : ''}
                                required />
                     <TextField fullWidth
-                               className={classes.formField}
+                               sx={kStyles.formField}
                                inputProps={{ inputMode: 'numeric' }}
                                onBlur={UserLoginDialog.prototype.onBlurAccessCode.bind(this)}
                                onChange={UserLoginDialog.prototype.onChangeAccessCode.bind(this)}
@@ -185,16 +185,16 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
                                helperText={this.state.accessCodeError ? 'Invalid access code' : ''}
                                required />
                 </DialogContent>
-                <DialogActions className={classes.buttons}>
+                <DialogActions sx={kStyles.buttons}>
                     <Button onClick={handleClose}>Close</Button>
-                    <div className={classes.loginButtonWrapper}>
+                    <Box sx={kStyles.loginButtonWrapper}>
                         <Button disabled={this.state.authenticating}
                                 endIcon={ <LoginIcon /> }
                                 onClick={handleLogin}
                                 variant="contained">Sign in</Button>
                         { this.state.authenticating &&
-                            <CircularProgress className={classes.loginButtonProgress} size={24} /> }
-                    </div>
+                            <CircularProgress sx={kStyles.loginButtonProgress} size={24} /> }
+                    </Box>
                 </DialogActions>
             </Dialog>
         );

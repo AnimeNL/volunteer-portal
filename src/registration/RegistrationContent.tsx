@@ -5,6 +5,8 @@
 import { h } from 'preact';
 import Markdown from 'preact-markdown';
 
+import Box from '@mui/material/Box';
+import { SxProps, Theme } from '@mui/system';
 import { lighten } from '@mui/material/styles';
 import { makeStyles } from '@mui/material/styles';
 
@@ -12,10 +14,11 @@ import { ContentPage } from '../base/Content';
 import { Link } from '../Link';
 
 // CSS customizations applied to the <RegistrationContent> component.
-const useStyles = makeStyles(theme => ({
+const kStyles: { [key: string]: SxProps<Theme> } = {
     container: {
-        margin: theme.spacing(0, 2),
+        margin: '0 2',
 
+/**
         '& blockquote': {
             backgroundColor: lighten(theme.palette.error.main, .8),
             border: '1px solid ' + theme.palette.error.main,
@@ -45,8 +48,9 @@ const useStyles = makeStyles(theme => ({
         '& th': {
             textAlign: 'left',
         }
+**/
     }
-}));
+};
 
 // Properties accepted by the <RegistrationContent> component.
 export interface RegistrationContentProps {
@@ -62,7 +66,6 @@ export interface RegistrationContentProps {
 export function RegistrationContent(props: RegistrationContentProps) {
     const { contentPage, eventSlug } = props;
 
-    const classes = useStyles();
     const markdown = Markdown({
         markdown: contentPage.content,
         markdownOpts: {
@@ -75,5 +78,5 @@ export function RegistrationContent(props: RegistrationContentProps) {
         },
     });
 
-    return <div className={classes.container}>{markdown}</div>;
+    return <Box sx={kStyles.container}>{markdown}</Box>;
 }

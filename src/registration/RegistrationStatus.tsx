@@ -8,9 +8,11 @@ import { useContext } from 'preact/hooks';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
+import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import { SxProps, Theme } from '@mui/system';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import Typography from '@mui/material/Typography';
@@ -24,28 +26,37 @@ import { AppContext } from '../AppContext';
 import { EnvironmentEvent } from '../base/Environment';
 
 // CSS customizations applied to the <RegistrationContent> component.
-const useStyles = makeStyles(theme => ({
-    containerAccepted: { backgroundColor: lightGreen[200] },
-    containerDefault: { backgroundColor: lighten(theme.palette.primary.light, .9) },
-    containerPending: { backgroundColor: yellow[100] },
-    containerRejected: { backgroundColor: lighten(theme.palette.error.main, .8) },
-
+const kStyles: { [key: string]: SxProps<Theme> } = {
+    containerAccepted: {
+        backgroundColor: 'lightgreen.200',  // lightGreen[200]
+    },
+    containerDefault: {
+        backgroundColor: 'red',  // lighten(theme.palette.primary.light, .9)
+    },
+    containerPending: {
+        backgroundColor: 'yellow.100',  // yellow[100]
+    },
+    containerRejected: {
+        backgroundColor: 'red',  // lighten(theme.palette.error.main, .8)
+    },
     details: {
-        padding: theme.spacing(0, 2, 1, 2),
+        padding: '0 2 1 2',
     },
-
     divider: {
-        marginBottom: theme.spacing(1),
+        marginBottom: 1,
     },
-
-    summary: { minHeight: 'auto' },
-    summaryContent: { margin: theme.spacing(1, 0, 0.8, 0) },
+    summary: {
+        minHeight: 'auto',
+    },
+    summaryContent: {  // TODO: fix
+        margin: '1 0 0.8 0',
+    },
     summaryIcon: {
         lineHeight: 'normal',
-        paddingRight: theme.spacing(1),
+        paddingRight: 1,
         paddingTop: '1px',
     },
-}));
+};
 
 // Properties accepted by the <RegistrationStatus> component.
 export interface RegistrationStatusProps {
@@ -59,14 +70,13 @@ export interface RegistrationStatusProps {
 export function RegistrationStatus(props: RegistrationStatusProps) {
     const { event } = props;
     const { user } = useContext(AppContext);
-    const classes = useStyles();
 
     if (!user.authenticated)
         return <Fragment />;
 
     const eventRole = user.events.get(event.identifier);
 
-    let className: string = classes.containerDefault;
+    let containerStyle: SxProps<Theme> = kStyles.containerDefault;
     let icon: ComponentChild = <HowToVoteIcon fontSize="inherit" />;
     let title: ComponentChild = `You haven't signed up for this event yet.`;
     let explanation: ComponentChild = (
@@ -87,7 +97,7 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
                 break;  // default role, no need to special case
 
             case 'Registered':
-                className = classes.containerPending;
+                containerStyle = kStyles.containerPending;
                 icon = <HowToVoteIcon style={{ color: yellow[900] }} fontSize="inherit" />;
                 title = <>Your application is <b>being considered</b>.</>;
                 explanation = (
@@ -101,7 +111,7 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
                 break;
 
             case 'Rejected':
-                className = classes.containerRejected;
+                containerStyle = kStyles.containerRejected;
                 icon = <ThumbDownIcon style={{ color: red[800] }} fontSize="inherit" />;
                 title = <>Your participation has been <b>declined</b>.</>;
                 explanation = (
@@ -114,7 +124,7 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
                 break;
 
             default:
-                className = classes.containerAccepted;
+                containerStyle = kStyles.containerAccepted;
                 icon = <ThumbUpIcon style={{ color: lightGreen[900] }} fontSize="inherit" />;
                 title = <>Your participation has been <b>confirmed</b> ({eventRole}).</>;
                 explanation = (
@@ -130,19 +140,18 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
 
     return (
         <Fragment>
-            <Accordion className={className} disableGutters>
-                <AccordionSummary className={classes.summary}
-                                  classes={{ content: classes.summaryContent }}
+            <Accordion sx={containerStyle} disableGutters>
+                <AccordionSummary sx={kStyles.summary}
                                   expandIcon={<ExpandMoreIcon />}>
-                    <div className={classes.summaryIcon}>
+                    <Box sx={kStyles.summaryIcon}>
                         {icon}
-                    </div>
+                    </Box>
                     <Typography variant="body2">
                         {title}
                     </Typography>
                 </AccordionSummary>
-                <AccordionDetails className={classes.details}>
-                    <Divider className={classes.divider} />
+                <AccordionDetails sx={kStyles.details}>
+                    <Divider sx={kStyles.divider} />
                     {explanation}
                 </AccordionDetails>
             </Accordion>

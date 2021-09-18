@@ -4,11 +4,10 @@
 
 import { ComponentChildren, h } from 'preact';
 
-import ThemeProvider from '@material-ui/styles/ThemeProvider';
-import { createMuiTheme } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { brown } from '@mui/material/colors';
 
-const theme = createMuiTheme({
+const theme = createTheme({
     palette: {
         primary: { main: brown[700] },
     }

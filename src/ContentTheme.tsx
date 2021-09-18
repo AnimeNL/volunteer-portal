@@ -5,8 +5,8 @@
 import { ComponentChildren, h } from 'preact';
 
 import ThemeProvider from '@material-ui/styles/ThemeProvider';
-import { createMuiTheme } from '@material-ui/core/styles';
-import { brown } from '@material-ui/core/colors';
+import { createMuiTheme } from '@mui/material/styles';
+import { brown } from '@mui/material/colors';
 
 const theme = createMuiTheme({
     palette: {

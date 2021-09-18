@@ -5,10 +5,10 @@
 import { Fragment, h } from 'preact';
 import { useState } from 'preact/hooks';
 
-import Alert from '@material-ui/core/Alert';
-import CloseIcon from '@material-ui/icons/Close';
-import IconButton from '@material-ui/core/IconButton';
-import Snackbar from '@material-ui/core/Snackbar';
+import Alert from '@mui/material/Alert';
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+import Snackbar from '@mui/material/Snackbar';
 
 // Properties accepted by the <AppError> component.
 export interface AppErrorProps {

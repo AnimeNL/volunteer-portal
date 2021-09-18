@@ -5,12 +5,12 @@
 import { Fragment, h } from 'preact';
 import { useContext, useState } from 'preact/hooks';
 
-import Avatar from '@material-ui/core/Avatar';
-import FaceIcon from '@material-ui/icons/Face';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import Avatar from '@mui/material/Avatar';
+import FaceIcon from '@mui/icons-material/Face';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/material/styles';
 
 import { AppContext } from './AppContext';
 import { ContentHeaderChip } from './ContentHeaderChip';

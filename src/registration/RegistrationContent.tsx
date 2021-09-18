@@ -5,8 +5,8 @@
 import { h } from 'preact';
 import Markdown from 'preact-markdown';
 
-import { lighten } from '@material-ui/core/styles';
-import { makeStyles } from '@material-ui/core/styles';
+import { lighten } from '@mui/material/styles';
+import { makeStyles } from '@mui/material/styles';
 
 import { ContentPage } from '../base/Content';
 import { Link } from '../Link';

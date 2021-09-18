@@ -5,19 +5,19 @@
 import { Fragment, h } from 'preact';
 import { useContext } from 'preact/hooks';
 
-import AppRegistrationIcon from '@material-ui/icons/AppRegistration';
-import ContactSupportIcon from '@material-ui/icons/ContactSupport';
-import Divider from '@material-ui/core/Divider';
-import EventNoteIcon from '@material-ui/icons/EventNote';
-import LanguageIcon from '@material-ui/icons/Language';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import NewReleasesIcon from '@material-ui/icons/NewReleases';
-import Tooltip from '@material-ui/core/Tooltip';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
+import ContactSupportIcon from '@mui/icons-material/ContactSupport';
+import Divider from '@mui/material/Divider';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import LanguageIcon from '@mui/icons-material/Language';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/material/styles';
 
 import { AppContext } from '../AppContext';
 import { ContentHeader } from '../ContentHeader';

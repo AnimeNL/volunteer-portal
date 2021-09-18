@@ -5,9 +5,9 @@
 import { ComponentChildren, h } from 'preact';
 import { useContext } from 'preact/hooks';
 
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/material/styles';
 
 import { AppContext } from './AppContext';
 import { ContentTheme } from './ContentTheme';

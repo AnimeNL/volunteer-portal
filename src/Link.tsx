@@ -6,7 +6,7 @@ import { Ref, h } from 'preact';
 import { forwardRef } from 'preact/compat';
 import { route } from 'preact-router';
 
-import { TypographyProps, default as Typography } from '@material-ui/core/Typography';
+import { TypographyProps, default as Typography } from '@mui/material/Typography';
 
 // Properties accepted by the <Link> component.
 export type LinkProps = h.JSX.HTMLAttributes<HTMLAnchorElement> & TypographyProps;

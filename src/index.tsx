@@ -4,7 +4,7 @@
 
 import { Fragment, render } from 'preact';
 
-import CssBaseline from '@material-ui/core/CssBaseline';
+import CssBaseline from '@mui/material/CssBaseline';
 
 import { App } from './App';
 

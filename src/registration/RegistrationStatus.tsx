@@ -5,20 +5,20 @@
 import { ComponentChild, Fragment, h } from 'preact';
 import { useContext } from 'preact/hooks';
 
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import Divider from '@material-ui/core/Divider';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import HowToVoteIcon from '@material-ui/icons/HowToVote';
-import ThumbDownIcon from '@material-ui/icons/ThumbDown';
-import ThumbUpIcon from '@material-ui/icons/ThumbUp';
-import Typography from '@material-ui/core/Typography';
-import lightGreen from '@material-ui/core/colors/lightGreen'
-import { lighten } from '@material-ui/core/styles';
-import { makeStyles } from '@material-ui/core/styles';
-import red from '@material-ui/core/colors/red';
-import yellow from '@material-ui/core/colors/yellow';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Divider from '@mui/material/Divider';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import Typography from '@mui/material/Typography';
+import lightGreen from '@mui/material/colors/lightGreen'
+import { lighten } from '@mui/material/styles';
+import { makeStyles } from '@mui/material/styles';
+import red from '@mui/material/colors/red';
+import yellow from '@mui/material/colors/yellow';
 
 import { AppContext } from '../AppContext';
 import { EnvironmentEvent } from '../base/Environment';

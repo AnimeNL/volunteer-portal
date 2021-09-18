@@ -4,8 +4,8 @@
 
 import { h } from 'preact';
 
-import Chip from '@material-ui/core/Chip';
-import { lighten, withStyles } from '@material-ui/core/styles';
+import Chip from '@mui/material/Chip';
+import { lighten, withStyles } from '@mui/material/styles';
 
 export const ContentHeaderChip = withStyles(theme => {
     const chipBackground = theme.palette.primary.main;

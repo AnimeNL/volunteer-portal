@@ -149,6 +149,8 @@ export class UserImpl implements User {
      */
     async submitApplication(application: UserApplication) {
         await new Promise(resolve => setTimeout(resolve, 2500));
+        console.log(application);
+
         return { success: false, error: 'Not implemented' };
     }
 

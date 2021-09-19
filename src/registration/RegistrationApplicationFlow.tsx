@@ -12,6 +12,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
+import Collapse from '@mui/material/Collapse';
 import DatePicker from '@mui/lab/DatePicker';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
@@ -29,6 +30,13 @@ import { UserApplication } from '../base/User';
 
 // CSS customizations applied to the <RegistrationApplicationFlow> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
+    submitErrorList: {
+        color: 'error.main',
+
+        '& ul': {
+            marginTop: 0,
+        }
+    },
     submitButtonProgress: {
         position: 'absolute',
         top: '50%',
@@ -83,7 +91,7 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
     const [ lastName, setLastName ] = useState(/* empty string: */ '');
     const [ lastNameError, setLastNameError ] = useState(false);
 
-    const [ dateOfBirth, setDateOfBirth ] = useState(new Date());
+    const [ dateOfBirth, setDateOfBirth ] = useState(moment());
     const [ dateOfBirthError, setDateOfBirthError ] = useState(false);
 
     const [ emailAddress, setEmailAddress ] = useState(/* empty string: */ '');
@@ -138,12 +146,12 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
         }
 
         const kCurrentYear = (new Date).getFullYear();
-        if (!dateOfBirth || dateOfBirth.getFullYear() < 1900 || dateOfBirth.getFullYear() > kCurrentYear) {
+        if (!dateOfBirth || dateOfBirth.year() < 1900 || dateOfBirth.year() > kCurrentYear) {
             setDateOfBirthError(true);
             validationErrors.push('Please enter your full date of birth.');
         } else {
             setDateOfBirthError(false);
-            application.dateOfBirth = moment(dateOfBirth).toString();
+            application.dateOfBirth = dateOfBirth.format('YYYY-MM-DD');
         }
 
         if (!emailAddress || !emailAddress.length) {
@@ -226,12 +234,11 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
             { header &&
                 <RegistrationContent event={event} contentPage={header} /> }
 
-            { errors.length > 0 &&
-                <Box sx={{ color: 'error.main' }}>
-                    <ul>
-                        { errors.map(message => <li>{message}</li>) }
-                    </ul>
-                </Box> }
+            <Collapse sx={kStyles.submitErrorList} in={errors.length > 0}>
+                <ul>
+                    { errors.map(message => <li>{message}</li>) }
+                </ul>
+            </Collapse>
 
             <Grid container
                   sx={{ paddingX: 2 }}

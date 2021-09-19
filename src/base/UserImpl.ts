@@ -6,10 +6,11 @@ import { Cache } from './Cache';
 import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
 import { EventRole, IUserResponse } from '../api/IUser';
-import { IApplicationRequest } from '../api/IApplication';
+import { IApplicationResponse, IApplicationRequest } from '../api/IApplication';
 import { User } from './User';
 
-import { validateObject, validateOptionalBoolean, validateOptionalString, validateString } from './TypeValidators';
+import { validateBoolean, validateNumber, validateObject, validateOptionalBoolean,
+         validateOptionalNumber, validateOptionalString, validateString } from './TypeValidators';
 
 /**
  * Returns whether the given |authTokenExpiration| details a date in the past.
@@ -160,14 +161,44 @@ export class UserImpl implements User {
 
     /**
      * Submits the given |application| to the server. No caching can be applied, and availability of
-     * network connectivity is a requirement. Will not return to the caller when the application was
-     * submitted successfully.
+     * network connectivity is a requirement.
      */
     async submitApplication(eventIdentifier: string, application: IApplicationRequest) {
-        await new Promise(resolve => setTimeout(resolve, 2500));
-        console.log(application);
+        let applicationResponse: IApplicationResponse | undefined;
 
-        return 'Not implemented';
+        try {
+            const requestData = new FormData();
+
+            requestData.set('event', eventIdentifier);
+            for (const [ key, value ] of Object.entries(application))
+                requestData.set(key, value);
+
+            const response = await fetch(this.configuration.getApplicationEndpoint(), {
+                method: 'POST',
+                body: requestData,
+            });
+
+            if (!response.ok)
+                return 'Unable to connect to the server: are you connected to the internet?';
+
+            const responseData = await response.json();
+            if (!this.validateApplicationResponse(responseData))
+                throw new Error('Invalid data received from the application endpoint.');
+
+            applicationResponse = responseData;
+
+        } catch (exception) {
+            console.error('Unable to interact with the application API:', exception);
+            return 'There is an issue with the server, your application could not be shared.';
+        }
+
+        if (applicationResponse.error)
+            return applicationResponse.error;
+
+        if (!await this.authenticate(application.emailAddress, applicationResponse.accessCode!))
+            return 'Your application has been shared, but there is an issue with the server.';
+
+        return null;  // all good
     }
 
     /**
@@ -186,6 +217,22 @@ export class UserImpl implements User {
 
         for (const observer of this.observers)
             observer.onAuthenticationStateChanged();
+    }
+
+    /**
+     * Validates whether the given |response| adheres to the structure and format expected from
+     * the IApplicationRequest format. Error messages will be sent to the console's error buffer if
+     * the data could not be verified.
+     */
+    validateApplicationResponse(response: any): response is IApplicationResponse {
+        const kInterfaceName = 'IApplicationResponse';
+
+        if (typeof response !== 'object')
+            return false;
+
+        return response.hasOwnProperty('accessCode')
+            ? validateString(response, kInterfaceName, 'accessCode')
+            : validateString(response, kInterfaceName, 'error');
     }
 
     /**

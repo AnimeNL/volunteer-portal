@@ -17,12 +17,12 @@ export interface User {
     authenticate(emailAddress: string, accessCode: string): Promise<boolean>;
 
     /**
-     * Submits an application for participation within a certain event. This method will not return
-     * when the application was submitted successfully. In case of an error, the returned string
-     * will be appropriate to be presented to the user.
+     * Submits an application for participation within a certain event. This method will return a
+     * string with a user-presentable error message in case of issues, or NULL when there were no
+     * issues. The application will have been redirected if that were the case.
      */
     submitApplication(eventIdentifier: string,
-                      application: IApplicationRequest): Promise<string>;
+                      application: IApplicationRequest): Promise<string | null>;
 
     /**
      * Signs the user out of their account. Will remove all current and cached data.

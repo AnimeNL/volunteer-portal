@@ -8,6 +8,12 @@
  */
 export interface Configuration {
     /**
+     * Returns a URL to the endpoint where the Application API can be used.
+     * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apiapplication
+     */
+    getApplicationEndpoint(): string;
+
+    /**
      * Returns a URL to the endpoint where the Authentication API can be used.
      * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apiauth
      */

@@ -252,11 +252,14 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
 
         setSubmitting(true);
         user.submitApplication(props.event.identifier, application).then(errorMessage => {
-            // Note: submitApplication() will only return when the application could not be
-            // submitted successfully, we the |response| will always be an error message.
+            setSubmitting(false);
+
+            // Note: submitApplication() will only return a message when the application could not
+            // be submitted successfully, so ignore NULL values for |errorMessage|.
+            if (!errorMessage)
+                return;
 
             setErrors([ errorMessage ]);
-            setSubmitting(false);
         });
     }
 

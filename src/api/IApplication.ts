@@ -31,12 +31,8 @@
  * @see https://github.com/AnimeNL/volunteer-portal/blob/main/API.md#response-iapplicationresponse
  */
 export interface IApplicationResponse {
-    success: boolean;
-
     // Iff the application was successful:
     accessCode?: string;
-    authToken?: string;
-    authTokenExpiration?: number;
 
     // Iff the application was not successful:
     error?: string;

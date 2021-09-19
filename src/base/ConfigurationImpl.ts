@@ -19,6 +19,10 @@ export class ConfigurationImpl implements Configuration {
         this.hostname = process.env.REACT_APP_API_HOST || '';
     }
 
+    getApplicationEndpoint(): string {
+        return this.hostname + '/api/application';
+    }
+
     getAuthenticationEndpoint(): string {
         return this.hostname + '/api/auth';
     }

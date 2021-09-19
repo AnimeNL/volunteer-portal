@@ -2,13 +2,18 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { Fragment, h } from 'preact';
-import { useContext } from 'preact/hooks';
+import moment from 'moment-timezone';
 
+import { Fragment, h } from 'preact';
+import { useContext, useState } from 'preact/hooks';
+
+import AdapterMoment from '@mui/lab/AdapterMoment';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
+import DatePicker from '@mui/lab/DatePicker';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -52,6 +57,9 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
         none: 'No t-shirt',
     };
 
+    // (3) Values for each of the fields within the form.
+    const [ dateOfBirth, setDateOfBirth ] = useState(new Date());
+
     return (
         <Fragment>
             { header &&
@@ -75,6 +83,15 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                     <TextField required fullWidth
                                id="personal-last-name"
                                label="Last name" />
+                </Grid>
+                <Grid item xs={12}>
+                    <LocalizationProvider dateAdapter={AdapterMoment} dateLibInstance={moment}>
+                        <DatePicker renderInput={ params => <TextField {...params} fullWidth /> as any }
+                                    label="Date of birth"
+                                    views={['year', 'month', 'day']} openTo="year" disableFuture
+                                    value={dateOfBirth}
+                                    onChange={value => setDateOfBirth(value!)} />
+                    </LocalizationProvider>
                 </Grid>
 
                 { /* Date of birth */ }

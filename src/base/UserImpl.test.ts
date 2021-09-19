@@ -127,9 +127,7 @@ describe('UserImpl', () => {
             return {
                 status: /* ok= */ 200,
                 body: JSON.stringify({
-                    accessCode: 1234,
                     avatar: '/avatars/my-avatar.jpg',
-                    emailAddress: 'user@example.com',
                     events: { 'event-id': 'Rejected' },
                     name: 'My Name',
                 })
@@ -139,7 +137,7 @@ describe('UserImpl', () => {
         expect(await user.authenticate('user@example.com', '1234')).toBeTruthy();
         expect(user.authenticated).toBeTruthy();
 
-        expect(user.accessCode).toEqual(1234);
+        expect(user.accessCode).toEqual('1234');
         expect(user.authToken).toEqual(authToken);
         expect(user.avatar).toEqual('/avatars/my-avatar.jpg');
         expect(user.emailAddress).toEqual('user@example.com');
@@ -175,9 +173,7 @@ describe('UserImpl', () => {
                 status: /* ok= */ 200,
                 body: JSON.stringify({
                     administrator: true,
-                    accessCode: 1234,
                     avatar: '/avatars/my-avatar.jpg',
-                    emailAddress: 'user@example.com',
                     events: { 'event-id': 'Registered' },
                     name: 'My Name',
                 })
@@ -222,9 +218,7 @@ describe('UserImpl', () => {
             return {
                 status: /* ok= */ 200,
                 body: JSON.stringify({
-                    accessCode: 1234,
                     name: 'My Name',
-                    emailAddress: 'user@example.com',
                     events: {},
                 })
             }

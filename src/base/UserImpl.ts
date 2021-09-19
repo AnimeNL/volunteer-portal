@@ -8,7 +8,7 @@ import { Configuration } from './Configuration';
 import { EventRole, IUserResponse } from '../api/IUser';
 import { User, UserApplication } from './User';
 
-import { validateNumber, validateObject, validateOptionalBoolean, validateOptionalString, validateString } from './TypeValidators';
+import { validateObject, validateOptionalBoolean, validateOptionalString, validateString } from './TypeValidators';
 
 /**
  * Returns whether the given |authTokenExpiration| details a date in the past.
@@ -48,7 +48,9 @@ export class UserImpl implements User {
     private loader: CachedLoader;
     private observers: Set<UserImplObserver>;
 
+    private userAccessCode?: string;
     private userAuthToken?: string;
+    private userEmailAddress?: string;
     private userEvents?: Map<string, EventRole>;
     private userResponse?: IUserResponse;
 
@@ -62,14 +64,19 @@ export class UserImpl implements User {
     // Initializes the user interface. This is an operation that cannot fail: either we are able to
     // initialize the user state, which means that the user is authenticated, or we cannot, which
     // means that the user is not authenticated. State will be cached for a server-defined period.
-    async initialize(authToken?: string, authTokenExpiration?: number): Promise<boolean> {
-        if (!authToken) {
+    async initialize(accessCode?: string,
+                     authToken?: string,
+                     authTokenExpiration?: number,
+                     emailAddress?: string): Promise<boolean> {
+        if (!accessCode || !authToken) {
             const cachedToken = await this.cache.get(UserImpl.kAuthCacheKey);
             if (!cachedToken || hasExpired(cachedToken.authTokenExpiration))
                 return false;
 
+            accessCode = cachedToken.accessCode;
             authToken = cachedToken.authToken;
             authTokenExpiration = cachedToken.authTokenExpiration;
+            emailAddress = cachedToken.emailAddress;
         }
 
         if (!authToken)
@@ -84,7 +91,9 @@ export class UserImpl implements User {
         if (!userResponse)
             return false;  // the response could not be verified per the appropriate structure
 
+        this.userAccessCode = accessCode;
         this.userAuthToken = authToken;
+        this.userEmailAddress = emailAddress;
         this.userEvents = new Map(Object.entries(userResponse.events));
         this.userResponse = userResponse;
 
@@ -133,8 +142,13 @@ export class UserImpl implements User {
         if (!authToken || hasExpired(authTokenExpiration))
             return false;  // the server was not able to issue a token
 
-        return this.initialize(authToken, authTokenExpiration).then(async success => {
-            await this.cache.set(UserImpl.kAuthCacheKey, { authToken, authTokenExpiration });
+        return this.initialize(accessCode, authToken, authTokenExpiration, emailAddress).then(async success => {
+            await this.cache.set(UserImpl.kAuthCacheKey, {
+                accessCode,
+                authToken,
+                authTokenExpiration,
+                emailAddress,
+            });
 
             for (const observer of this.observers)
                 observer.onAuthenticationStateChanged();
@@ -187,10 +201,8 @@ export class UserImpl implements User {
                 return false;
         }
 
-        return validateNumber(userResponse, kInterfaceName, 'accessCode') &&
-               validateOptionalBoolean(userResponse, kInterfaceName, 'administrator') &&
+        return validateOptionalBoolean(userResponse, kInterfaceName, 'administrator') &&
                validateOptionalString(userResponse, kInterfaceName, 'avatar') &&
-               validateString(userResponse, kInterfaceName, 'emailAddress') &&
                validateString(userResponse, kInterfaceName, 'name');
     }
 
@@ -220,11 +232,11 @@ export class UserImpl implements User {
         return this.userResponse !== undefined;
     }
 
-    get accessCode(): Readonly<number> {
-        if (!this.userResponse)
+    get accessCode(): Readonly<string> {
+        if (!this.userAccessCode)
             throw new Error(kExceptionMessage);
 
-        return this.userResponse.accessCode;
+        return this.userAccessCode;
     }
 
     get authToken(): Readonly<string> {
@@ -242,10 +254,10 @@ export class UserImpl implements User {
     }
 
     get emailAddress(): Readonly<string> {
-        if (!this.userResponse)
+        if (!this.userEmailAddress)
             throw new Error(kExceptionMessage);
 
-        return this.userResponse.emailAddress;
+        return this.userEmailAddress;
     }
 
     get events(): ReadonlyMap<string, EventRole> {

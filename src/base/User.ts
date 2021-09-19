@@ -36,7 +36,7 @@ export interface User {
      *
      * @throws Error when `authenticated` has not been set to TRUE.
      */
-    accessCode: Readonly<number>;
+    accessCode: Readonly<string>;
 
     /**
      * Authentication token that can be used to access otherwise privileged content.

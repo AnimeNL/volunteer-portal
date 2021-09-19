@@ -25,9 +25,9 @@ import Typography from '@mui/material/Typography';
 
 import { AppContext } from '../AppContext';
 import { EnvironmentEvent } from '../base/Environment';
+import { IApplicationRequest } from '../api/IApplication';
 import { Link } from '../Link';
 import { RegistrationContent } from './RegistrationContent';
-import { UserApplication } from '../base/User';
 
 // CSS customizations applied to the <RegistrationApplicationFlow> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
@@ -155,7 +155,7 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
     function handleSubmit(event: h.JSX.TargetedEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        let application: UserApplication = {} as UserApplication;
+        let application: IApplicationRequest = {} as IApplicationRequest;
         let validationErrors = [];
 
         // Personal information:
@@ -251,13 +251,12 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
             return;
 
         setSubmitting(true);
-        user.submitApplication(application).then(response => {
-            setSubmitting(false);
+        user.submitApplication(props.event.identifier, application).then(errorMessage => {
+            // Note: submitApplication() will only return when the application could not be
+            // submitted successfully, we the |response| will always be an error message.
 
-            if (response.success)
-                alert('Application was submitted successfully.');
-            else
-                setErrors([ response.error! ]);
+            setErrors([ errorMessage ]);
+            setSubmitting(false);
         });
     }
 

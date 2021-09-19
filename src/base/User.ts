@@ -16,6 +16,12 @@ export interface User {
     authenticate(emailAddress: string, accessCode: string): Promise<boolean>;
 
     /**
+     * Submits an application for participation within a certain event. The |application| will be
+     * shared with the server, which gives us an answer.
+     */
+    submitApplication(application: UserApplication): Promise<UserApplicationResponse>;
+
+    /**
      * Signs the user out of their account. Will remove all current and cached data.
      */
     signOut(): Promise<void>;
@@ -62,4 +68,40 @@ export interface User {
      * @throws Error when `authenticated` has not been set to TRUE.
      */
     name: Readonly<string>;
+}
+
+/**
+ * Interface that applies when submitting a user application through the registration app. Each
+ * field is assumed to be client-side validated, although the server-side will validate again.
+ */
+export interface UserApplication {
+    // Personal information:
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    emailAddress: string;
+    phoneNumber: string;
+    gender: string;
+    shirtSize: string;
+
+    // Participative information:
+    preferences: string;
+
+    available: boolean;
+    hotel: boolean;
+    whatsApp: boolean;
+
+    // Requirements:
+    covidRequirements: boolean;
+    gdprRequirements: boolean;
+}
+
+/**
+ * Response to a submitted application, which will be issued asynchronously.
+ */
+export interface UserApplicationResponse {
+    success: boolean;
+
+    // Error message, iff |success| is false:
+    error?: string;
 }

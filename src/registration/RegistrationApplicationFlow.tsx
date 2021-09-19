@@ -4,23 +4,39 @@
 
 import moment from 'moment-timezone';
 
-import { Fragment, h } from 'preact';
+import { h } from 'preact';
 import { useContext, useState } from 'preact/hooks';
 
 import AdapterMoment from '@mui/lab/AdapterMoment';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
+import CircularProgress from '@mui/material/CircularProgress';
 import DatePicker from '@mui/lab/DatePicker';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import MenuItem from '@mui/material/MenuItem';
+import SendIcon from '@mui/icons-material/Send';
+import { SxProps, Theme } from '@mui/system';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { AppContext } from '../AppContext';
 import { EnvironmentEvent } from '../base/Environment';
 import { RegistrationContent } from './RegistrationContent';
+import { UserApplication } from '../base/User';
+
+// CSS customizations applied to the <RegistrationApplicationFlow> component.
+const kStyles: { [key: string]: SxProps<Theme> } = {
+    submitButtonProgress: {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        marginTop: '-12px',
+        marginLeft: '-12px',
+    },
+};
 
 // Properties accepted by the <RegistrationApplicationFlow> component.
 export interface RegistrationAppProps {
@@ -58,12 +74,165 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
     };
 
     // (3) Values for each of the fields within the form.
+    const [ errors, setErrors ] = useState<string[]>([]);
+    const [ submitting, setSubmitting ] = useState(false);
+
+    const [ firstName, setFirstName ] = useState(/* empty string: */ '');
+    const [ firstNameError, setFirstNameError ] = useState(false);
+
+    const [ lastName, setLastName ] = useState(/* empty string: */ '');
+    const [ lastNameError, setLastNameError ] = useState(false);
+
     const [ dateOfBirth, setDateOfBirth ] = useState(new Date());
+    const [ dateOfBirthError, setDateOfBirthError ] = useState(false);
+
+    const [ emailAddress, setEmailAddress ] = useState(/* empty string: */ '');
+    const [ emailAddressError, setEmailAddressError ] = useState(false);
+
+    const [ phoneNumber, setPhoneNumber ] = useState(/* empty string: */ '');
+    const [ phoneNumberError, setPhoneNumberError ] = useState(false);
+
+    const [ gender, setGender ] = useState(/* empty string: */ '');
+    const [ genderError, setGenderError ] = useState(false);
+
+    const [ shirtSize, setShirtSize ] = useState(/* empty string: */ '');
+    const [ shirtSizeError, setShirtSizeError ] = useState(false);
+
+    const [ preferences, setPreferences ] = useState(/* empty string: */ '');
+
+    const [ available, setAvailable ] = useState(false);
+    const [ hotel, setHotel ] = useState(false);
+    const [ whatsApp, setWhatsApp ] = useState(false);
+
+    const [ covidRequirements, setCovidRequirements ] = useState(false);
+    const [ covidRequirementsError, setCovidRequirementsError ] = useState(false);
+
+    const [ gdprRequirements, setGdprRequirements ] = useState(false);
+    const [ gdprRequirementsError, setGdprRequirementsError ] = useState(false);
+
+    // (4) The submit event, which will enable the user to submit the form with all information
+    // contained therein, after successful validation.
+    function handleSubmit(event: h.JSX.TargetedEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        let application: UserApplication = {} as UserApplication;
+        let validationErrors = [];
+
+        // Personal information:
+        // -----------------------------------------------------------------------------------------
+
+        if (!firstName || !firstName.length) {
+            setFirstNameError(true);
+            validationErrors.push('Please enter your first name.');
+        } else {
+            setFirstNameError(false);
+            application.firstName = firstName;
+        }
+
+        if (!lastName || !lastName.length) {
+            setLastNameError(true);
+            validationErrors.push('Please enter your last name.');
+        } else {
+            setLastNameError(false);
+            application.lastName = lastName;
+        }
+
+        const kCurrentYear = (new Date).getFullYear();
+        if (!dateOfBirth || dateOfBirth.getFullYear() < 1900 || dateOfBirth.getFullYear() > kCurrentYear) {
+            setDateOfBirthError(true);
+            validationErrors.push('Please enter your full date of birth.');
+        } else {
+            setDateOfBirthError(false);
+            application.dateOfBirth = moment(dateOfBirth).toString();
+        }
+
+        if (!emailAddress || !emailAddress.length) {
+            setEmailAddressError(true);
+            validationErrors.push('Please enter your personal e-mail address.');
+        } else {
+            setEmailAddressError(false);
+            application.emailAddress = emailAddress;
+        }
+
+        if (!phoneNumber || !phoneNumber.length) {
+            setPhoneNumberError(true);
+            validationErrors.push('Please enter your mobile phone number.');
+        } else {
+            setPhoneNumberError(false);
+            application.phoneNumber = phoneNumber;
+        }
+
+        if (!gender || !gender.length) {
+            setGenderError(true);
+            validationErrors.push('Please enter your preferred gender.');
+        } else {
+            setGenderError(false);
+            application.gender = gender;
+        }
+
+        if (!shirtSize || !shirtSize.length) {
+            setShirtSizeError(true);
+            validationErrors.push('Please enter your preferred t-shirt size.');
+        } else {
+            setShirtSizeError(false);
+            application.shirtSize = shirtSize;
+        }
+
+        // Participative information:
+        // -----------------------------------------------------------------------------------------
+
+        application.preferences = preferences;
+
+        application.available = !!available;
+        application.hotel = !!hotel;
+        application.whatsApp = !!whatsApp;
+
+        // Requirements:
+        // -----------------------------------------------------------------------------------------
+
+        if (!covidRequirements) {
+            setCovidRequirementsError(true);
+            validationErrors.push('Please indicate that you will comply with the COVID-19 requirements.');
+        } else {
+            setCovidRequirementsError(false);
+            application.covidRequirements = true;
+        }
+
+        if (!gdprRequirements) {
+            setGdprRequirementsError(true);
+            validationErrors.push('Please indicate that you accept the GDPR and data sharing policies.');
+        } else {
+            setGdprRequirementsError(false);
+            application.gdprRequirements = true;
+        }
+
+        setErrors(validationErrors);
+        if (validationErrors.length)
+            return;
+
+        setSubmitting(true);
+        user.submitApplication(application).then(response => {
+            setSubmitting(false);
+
+            if (response.success)
+                alert('Application was submitted successfully.');
+            else
+                setErrors([ response.error! ]);
+        });
+    }
 
     return (
-        <Fragment>
+        <form onSubmit={formEvent => handleSubmit(formEvent)} noValidate>
             { header &&
                 <RegistrationContent event={event} contentPage={header} /> }
+
+            { errors.length > 0 &&
+                <Box sx={{ color: 'error.main' }}>
+                    <ul>
+                        { errors.map(message => <li>{message}</li>) }
+                    </ul>
+                </Box> }
+
             <Grid container
                   sx={{ paddingX: 2 }}
                   spacing={2}>
@@ -77,41 +246,55 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                 <Grid item xs={6}>
                     <TextField required fullWidth
                                id="personal-first-name"
+                               value={firstName}
+                               onChange={changeEvent => setFirstName(changeEvent.target.value)}
+                               error={firstNameError}
                                label="First name(s)" />
                 </Grid>
                 <Grid item xs={6}>
                     <TextField required fullWidth
                                id="personal-last-name"
+                               value={lastName}
+                               onChange={changeEvent => setLastName(changeEvent.target.value)}
+                               error={lastNameError}
                                label="Last name" />
                 </Grid>
                 <Grid item xs={12}>
                     <LocalizationProvider dateAdapter={AdapterMoment} dateLibInstance={moment}>
-                        <DatePicker renderInput={ params => <TextField {...params} fullWidth /> as any }
+                        <DatePicker renderInput={ params =>
+                                        <TextField {...params}
+                                                   error={dateOfBirthError}
+                                                   fullWidth /> as any }
                                     label="Date of birth"
                                     views={['year', 'month', 'day']} openTo="year" disableFuture
                                     value={dateOfBirth}
                                     onChange={value => setDateOfBirth(value!)} />
                     </LocalizationProvider>
                 </Grid>
-
-                { /* Date of birth */ }
-
                 <Grid item xs={12}>
                     <TextField required fullWidth
                                type="email"
                                id="personal-email-address"
+                               value={emailAddress}
+                               onChange={changeEvent => setEmailAddress(changeEvent.target.value)}
+                               error={emailAddressError}
                                label="E-mail address" />
                 </Grid>
                 <Grid item xs={12}>
                     <TextField required fullWidth
                                type="tel"
                                id="personal-phone-number"
+                               value={phoneNumber}
+                               onChange={changeEvent => setPhoneNumber(changeEvent.target.value)}
+                               error={phoneNumberError}
                                label="Phone number" />
                 </Grid>
-
                 <Grid item xs={6}>
                     <TextField required select fullWidth
                                id="personal-gender"
+                               value={gender}
+                               onChange={changeEvent => setGender(changeEvent.target.value)}
+                               error={genderError}
                                label="Gender">
                         { Object.entries(kGenderOptions).map(([ value, label ]) =>
                             <MenuItem key={value} value={value}>{label}</MenuItem> ) }
@@ -120,6 +303,9 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                 <Grid item xs={6}>
                     <TextField required select fullWidth
                                id="personal-tshirt"
+                               value={shirtSize}
+                               onChange={changeEvent => setShirtSize(changeEvent.target.value)}
+                               error={shirtSizeError}
                                label="T-shirt size">
                         { Object.entries(kTshirtOptions).map(([ value, label ]) =>
                             <MenuItem key={value} value={value}>{label}</MenuItem> ) }
@@ -140,6 +326,8 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                 <Grid item xs={12}>
                     <TextField multiline fullWidth
                                id="participation-comments"
+                               value={preferences}
+                               onChange={changeEvent => setPreferences(changeEvent.target.value)}
                                label="Do you have any (volunteering) preferences?" />
                 </Grid>
 
@@ -149,18 +337,21 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                   spacing={{ xs: 2, sm: 0 }}>
 
                 <Grid item xs={12}>
-                    <FormControlLabel control={<Checkbox />}
+                    <FormControlLabel control={<Checkbox checked={available}
+                                                         onChange={event => setAvailable(event.target.checked)} />}
                                       label={`Yes, I will be fully available during ${event.name}.`} />
                 </Grid>
 
                 { hotelEnabled &&
                     <Grid item xs={12}>
-                        <FormControlLabel control={<Checkbox />}
+                        <FormControlLabel control={<Checkbox checked={hotel}
+                                                             onChange={event => setHotel(event.target.checked)} />}
                                         label="Yes, I would like to book a hotel room at a discounted rate." />
                     </Grid> }
 
                 <Grid item xs={12}>
-                    <FormControlLabel control={<Checkbox />}
+                    <FormControlLabel control={<Checkbox checked={whatsApp}
+                                                         onChange={event => setWhatsApp(event.target.checked)} />}
                                       label="Yes, I would like to join the private WhatsApp group." />
                 </Grid>
 
@@ -171,27 +362,37 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                   spacing={{ xs: 2, sm: 0 }}>
 
                 <Grid item xs={12}>
-                    <Typography variant="h6" sx={{ paddingBottom: 1 }}>
+                    <Typography variant="h6">
                         Mandatory paperwork
                     </Typography>
                 </Grid>
 
                 <Grid item xs={12}>
-                    <FormControlLabel control={<Checkbox required />}
+                    <FormControlLabel control={<Checkbox checked={covidRequirements}
+                                                         onChange={event => setCovidRequirements(event.target.checked)} />}
+                                      sx={covidRequirementsError ? { color: 'error.main' } : {}}
                                       label="Yes, I will comply with the COVID-19 requirements." />
                 </Grid>
                 <Grid item xs={12}>
-                    <FormControlLabel control={<Checkbox required />}
+                    <FormControlLabel control={<Checkbox checked={gdprRequirements}
+                                                         onChange={event => setGdprRequirements(event.target.checked)} />}
+                                      sx={gdprRequirementsError ? { color: 'error.main' } : {}}
                                       label="Yes, I accept the GDPR and data sharing policies." />
                 </Grid>
 
                 <Grid item xs={12} sx={{ paddingTop: 2 }}>
-                    <Button variant="contained">
-                        Submit your application
-                    </Button>
+                    <Box sx={{ display: 'inline-block', position: 'relative' }}>
+                        <Button disabled={submitting}
+                                endIcon={ <SendIcon /> }
+                                type="submit"
+                                variant="contained">
+                            Submit your application
+                        </Button>
+                        { submitting &&
+                            <CircularProgress sx={kStyles.submitButtonProgress} size={24} /> }
+                    </Box>
                 </Grid>
             </Grid>
-
-        </Fragment>
+        </form>
     );
 }

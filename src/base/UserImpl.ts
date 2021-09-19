@@ -6,7 +6,7 @@ import { Cache } from './Cache';
 import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
 import { EventRole, IUserResponse } from '../api/IUser';
-import { User } from './User';
+import { User, UserApplication } from './User';
 
 import { validateObject, validateOptionalBoolean, validateOptionalString, validateString } from './TypeValidators';
 
@@ -141,6 +141,15 @@ export class UserImpl implements User {
 
             return success;
         });
+    }
+
+    /**
+     * Submits the given |application| to the server. No caching can be applied, and availability of
+     * network connectivity is a requirement.
+     */
+    async submitApplication(application: UserApplication) {
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        return { success: false, error: 'Not implemented' };
     }
 
     /**

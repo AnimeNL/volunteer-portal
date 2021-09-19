@@ -252,7 +252,6 @@ export class UserImpl implements User {
         if (!this.userEvents)
             throw new Error(kExceptionMessage);
 
-            this.userEvents.set('2021-christmas', 'Registered');
         return this.userEvents;
     }
 

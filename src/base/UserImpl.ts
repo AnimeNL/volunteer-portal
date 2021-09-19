@@ -8,7 +8,7 @@ import { Configuration } from './Configuration';
 import { EventRole, IUserResponse } from '../api/IUser';
 import { User, UserApplication } from './User';
 
-import { validateObject, validateOptionalBoolean, validateOptionalString, validateString } from './TypeValidators';
+import { validateNumber, validateObject, validateOptionalBoolean, validateOptionalString, validateString } from './TypeValidators';
 
 /**
  * Returns whether the given |authTokenExpiration| details a date in the past.
@@ -187,8 +187,10 @@ export class UserImpl implements User {
                 return false;
         }
 
-        return validateOptionalBoolean(userResponse, kInterfaceName, 'administrator') &&
+        return validateNumber(userResponse, kInterfaceName, 'accessCode') &&
+               validateOptionalBoolean(userResponse, kInterfaceName, 'administrator') &&
                validateOptionalString(userResponse, kInterfaceName, 'avatar') &&
+               validateString(userResponse, kInterfaceName, 'emailAddress') &&
                validateString(userResponse, kInterfaceName, 'name');
     }
 
@@ -218,6 +220,13 @@ export class UserImpl implements User {
         return this.userResponse !== undefined;
     }
 
+    get accessCode(): Readonly<number> {
+        if (!this.userResponse)
+            throw new Error(kExceptionMessage);
+
+        return this.userResponse.accessCode;
+    }
+
     get authToken(): Readonly<string> {
         if (!this.userAuthToken)
             throw new Error(kExceptionMessage);
@@ -232,10 +241,18 @@ export class UserImpl implements User {
         return this.userResponse.avatar;
     }
 
+    get emailAddress(): Readonly<string> {
+        if (!this.userResponse)
+            throw new Error(kExceptionMessage);
+
+        return this.userResponse.emailAddress;
+    }
+
     get events(): ReadonlyMap<string, EventRole> {
         if (!this.userEvents)
             throw new Error(kExceptionMessage);
 
+            this.userEvents.set('2021-christmas', 'Registered');
         return this.userEvents;
     }
 

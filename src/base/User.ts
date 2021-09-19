@@ -32,6 +32,13 @@ export interface User {
     authenticated: boolean;
 
     /**
+     * The access code through which the user is able to access the volunteer portal.
+     *
+     * @throws Error when `authenticated` has not been set to TRUE.
+     */
+    accessCode: Readonly<number>;
+
+    /**
      * Authentication token that can be used to access otherwise privileged content.
      *
      * @throws Error when `authenticated` has not been set to TRUE.
@@ -44,6 +51,13 @@ export interface User {
      * @throws Error when `authenticated` has not been set to TRUE.
      */
     avatar: Readonly<string | undefined>;
+
+    /**
+     * The e-mail address that has been associated with the current access code.
+     *
+     * @throws Error when `authenticated` has not been set to TRUE.
+     */
+     emailAddress: Readonly<string>;
 
     /**
      * Object containing the roles that the user has in various events. There are three predefined

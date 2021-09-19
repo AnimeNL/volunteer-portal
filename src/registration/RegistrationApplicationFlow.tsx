@@ -4,7 +4,7 @@
 
 import moment from 'moment-timezone';
 
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
 import { useContext, useState } from 'preact/hooks';
 
 import AdapterMoment from '@mui/lab/AdapterMoment';
@@ -25,6 +25,7 @@ import Typography from '@mui/material/Typography';
 
 import { AppContext } from '../AppContext';
 import { EnvironmentEvent } from '../base/Environment';
+import { Link } from '../Link';
 import { RegistrationContent } from './RegistrationContent';
 import { UserApplication } from '../base/User';
 
@@ -53,11 +54,42 @@ export interface RegistrationAppProps {
     event: EnvironmentEvent;
 }
 
+// Responsible for displaying a message to the (now) signed in user when their application has been
+// successfully submitted. They will see a confirmation message, including their personal code.
+function RegistrationApplicationSubmittedFlow(props: RegistrationAppProps) {
+    const { content, user } = useContext(AppContext);
+    const { event } = props;
+
+    const message = content.get(`/registration/${event.identifier}/application-submitted.html`);
+    return (
+        <Fragment>
+            { message && <RegistrationContent event={event} contentPage={message} /> }
+
+            <Box sx={{ paddingX: 2, paddingBottom: 2 }}>
+                <p>
+                    <strong>E-mail address</strong>: {user.emailAddress}<br />
+                    <strong>Access code</strong>: {user.accessCode}
+                </p>
+
+                <Link href={`/registration/${event.identifier}/`}>
+                    « Previous page
+                </Link>
+            </Box>
+        </Fragment>
+    );
+}
+
 // Responsible for displaying the registration application flow, which allows people to apply to
 // join whichever volunteering team the page is being displayed for.
 export function RegistrationApplicationFlow(props: RegistrationAppProps) {
     const { content, environment, user } = useContext(AppContext);
     const { event } = props;
+
+    if (user.authenticated) {
+        const eventRole = user.events.get(event.identifier);
+        if (eventRole && eventRole !== 'Unregistered')
+            return <RegistrationApplicationSubmittedFlow event={event} />
+    }
 
     // (1) Get the environment-specific portions of the application page.
     const header = content.get(`/registration/${event.identifier}/application-header.html`);

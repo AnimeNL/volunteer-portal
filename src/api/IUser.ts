@@ -6,8 +6,10 @@
  * @see https://github.com/AnimeNL/volunteer-portal/blob/main/API.md#response-iuserresponse
  */
 export interface IUserResponse {
+    accessCode: number;
     administrator?: boolean;
     avatar?: string;
+    emailAddress: string;
     events: { [key: string]: EventRole };
     name: string;
 }

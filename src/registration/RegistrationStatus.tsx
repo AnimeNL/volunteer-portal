@@ -78,7 +78,7 @@ export function RegistrationStatus(props: RegistrationStatusProps) {
     if (!user.authenticated)
         return <Fragment />;
 
-    let eventRole = user.events.get(event.identifier);
+    const eventRole = user.events.get(event.identifier);
 
     let containerStyle: SxProps<Theme> = kStyles.containerDefault;
     let icon: ComponentChild = <HowToVoteIcon fontSize="inherit" />;

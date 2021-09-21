@@ -256,8 +256,11 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
 
             // Note: submitApplication() will only return a message when the application could not
             // be submitted successfully, so ignore NULL values for |errorMessage|.
-            if (!errorMessage)
+            if (!errorMessage) {
+                if (location && location.reload)
+                    location.reload();
                 return;
+            }
 
             setErrors([ errorMessage ]);
         });

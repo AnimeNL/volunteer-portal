@@ -115,7 +115,7 @@ module.exports = {
             'REACT_APP_GIT_VERSION': getGitCommitHash(),
         }),
 
-        new MomentLocalesPlugin({ localesToKeep: [ 'en' ] }),
+        new MomentLocalesPlugin({ localesToKeep: [ 'en-gb' ] }),
         new MomentTimezoneDataPlugin({
             matchZones: /^Europe\//,
             startYear: 2020,

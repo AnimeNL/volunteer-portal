@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 import { Fragment, render } from 'preact';
+import moment from 'moment-timezone';
+import 'moment/locale/en-gb';
 
 import CssBaseline from '@mui/material/CssBaseline';
 
 import { App } from './App';
+
+moment.locale('en-gb');
 
 const root = document.getElementById('root')!;
 render(

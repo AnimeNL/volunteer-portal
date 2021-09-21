@@ -26,6 +26,9 @@ export const ContentHeaderChip = styled(Chip)(({ theme }) => {
                 backgroundColor: lighten(chipBackground, 0.1),
             }
         },
+        [`& .${chipClasses.avatarMedium}`]: {
+            color: 'inherit !important',
+        },
         [`& .${chipClasses.iconMedium}`]: {
             color: 'inherit !important',
         },

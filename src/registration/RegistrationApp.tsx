@@ -33,6 +33,9 @@ export function RegistrationApp(props: RegistrationAppProps) {
         // (1) When no event has been specified in the slug, assume that the first mentioned event
         // part of the environment should be opened. Replace the current state to reflect this.
         if (!props.event) {
+            if (!details.enableContent)
+                continue;
+
             route(`/registration/${details.identifier}/`, /* replace= */ true);
             return <Fragment />;
         }

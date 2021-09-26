@@ -44,8 +44,9 @@ describe('EnvironmentImpl', () => {
 
     it('should reflect the values of a valid environment from the network', async () => {
         const { cache, environment } = await createInstance(200, {
-            contactName: 'Peter',
-            contactTarget: undefined,
+            title: 'Volunteer Portal',
+            themeColor: '#ff0000',
+
             events: [
                 {
                     name: 'Event Name',
@@ -57,7 +58,9 @@ describe('EnvironmentImpl', () => {
                     website: 'https://example.com/'
                 }
             ],
-            title: 'Volunteer Portal',
+
+            contactName: 'Peter',
+            contactTarget: undefined,
         });
 
         expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeFalsy();
@@ -83,8 +86,9 @@ describe('EnvironmentImpl', () => {
         const { cache, environment } = await createInstance(404, {});
 
         await cache.set(EnvironmentImpl.kCacheKey, {
-            contactName: 'Ferdi',
-            contactTarget: '0000-00-000',
+            title: 'Volunteer Portal',
+            themeColor: '#00ff00',
+
             events: [
                 {
                     name: 'Event Name',
@@ -96,7 +100,9 @@ describe('EnvironmentImpl', () => {
                     /* website: omitted */
                 }
             ],
-            title: 'Volunteer Portal',
+
+            contactName: 'Ferdi',
+            contactTarget: '0000-00-000',
         });
 
         expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeTruthy();

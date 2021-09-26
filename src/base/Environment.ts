@@ -8,6 +8,21 @@
  */
 export interface Environment {
     /**
+     * Name of the Volunteer Portal instance, e.g. _Volunteer Portal_.
+     */
+    title: Readonly<string>;
+
+    /**
+     * HTML colour that defines the base theme for the current portal.
+     */
+    themeColor: Readonly<string>;
+
+    /**
+     * Array of the events that are supported by this portal.
+     */
+    events: ReadonlyArray<EnvironmentEvent>;
+
+    /**
      * Name of the person who can be contacted for questions.
      */
     contactName: Readonly<string>;
@@ -16,16 +31,6 @@ export interface Environment {
      * Link target (phone number / e-mail address) of the person who can be contacted for questions.
      */
     contactTarget?: Readonly<string>;
-
-    /**
-     * Array of the events that are supported by this portal.
-     */
-    events: ReadonlyArray<EnvironmentEvent>;
-
-    /**
-     * Name of the Volunteer Portal instance, e.g. _Volunteer Portal_.
-     */
-    title: Readonly<string>;
 }
 
 /**

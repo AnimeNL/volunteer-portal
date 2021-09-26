@@ -4,22 +4,33 @@
 
 import { ComponentChildren, h } from 'preact';
 
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Theme, ThemeProvider, createTheme } from '@mui/material/styles';
 import { brown } from '@mui/material/colors';
 
-const theme = createTheme({
-    palette: {
-        primary: { main: brown[700] },
-    }
-});
+import { Environment } from './base/Environment';
+
+// The global application theme state. Will be initialized lazily once the environment configuration
+// is available, but will in memory thereafter. Private to this implementation unit.
+let applicationTheme: Theme | undefined;
 
 // Properties accepted by the <ContentTheme> component.
 export interface ContentThemeProps {
     children?: ComponentChildren;
+    environment: Environment;
 }
 
 // The <ContentTheme> component provides the theme that should be used for all content pages, as has
 // been specified in the `theme` variable that is to be found earlier in this file.
 export function ContentTheme(props: ContentThemeProps) {
-    return <ThemeProvider theme={theme}>{props.children}</ThemeProvider>;
+    if (!applicationTheme) {
+        const { environment } = props;
+
+        applicationTheme = createTheme({
+            palette: {
+                primary: { main: environment.themeColor },
+            }
+        });
+    }
+
+    return <ThemeProvider theme={applicationTheme}>{props.children}</ThemeProvider>;
 }

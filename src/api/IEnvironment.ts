@@ -6,10 +6,13 @@
  * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apienvironment
  */
 export interface IEnvironmentResponse {
+    title: string;
+    themeColor: string;
+
+    events: IEnvironmentResponseEvent[];
+
     contactName: string;
     contactTarget?: string;
-    events: IEnvironmentResponseEvent[];
-    title: string;
 }
 
 /**

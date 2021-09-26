@@ -73,9 +73,10 @@ export class EnvironmentImpl implements Environment {
             }
         }
 
-        return validateString(environment, kInterfaceName, 'contactName') &&
-               validateOptionalString(environment, kInterfaceName, 'contactTarget') &&
-               validateString(environment, kInterfaceName, 'title');
+        return validateString(environment, kInterfaceName, 'title') &&
+               validateString(environment, kInterfaceName, 'themeColor') &&
+               validateString(environment, kInterfaceName, 'contactName') &&
+               validateOptionalString(environment, kInterfaceName, 'contactTarget');
     }
 
     /**
@@ -98,6 +99,27 @@ export class EnvironmentImpl implements Environment {
     // Environment interface implementation
     // ---------------------------------------------------------------------------------------------
 
+    get title(): Readonly<string> {
+        if (!this.data)
+            throw new Error(kExceptionMessage);
+
+        return this.data.title;
+    }
+
+    get themeColor(): Readonly<string> {
+        if (!this.data)
+            throw new Error(kExceptionMessage);
+
+        return this.data.themeColor;
+    }
+
+    get events(): ReadonlyArray<EnvironmentEvent> {
+        if (!this.data)
+            throw new Error(kExceptionMessage);
+
+        return this.data.events;
+    }
+
     get contactName(): Readonly<string> {
         if (!this.data)
             throw new Error(kExceptionMessage);
@@ -110,19 +132,5 @@ export class EnvironmentImpl implements Environment {
             throw new Error(kExceptionMessage);
 
         return this.data.contactTarget;
-    }
-
-    get events(): ReadonlyArray<EnvironmentEvent> {
-        if (!this.data)
-            throw new Error(kExceptionMessage);
-
-        return this.data.events;
-    }
-
-    get title(): Readonly<string> {
-        if (!this.data)
-            throw new Error(kExceptionMessage);
-
-        return this.data.title;
     }
 }

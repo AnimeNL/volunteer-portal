@@ -69,7 +69,7 @@ export function ContentLayout(props: ContentLayoutProps) {
     const year = (new Date()).getFullYear();
 
     return (
-        <ContentTheme>
+        <ContentTheme environment={environment}>
             <Box sx={kStyles.background}></Box>
             <Box sx={kStyles.container}>
                 <Link href="/">

@@ -9,8 +9,8 @@ const mockFetch = require('jest-fetch-mock');
 mockFetch.enableMocks();
 
 mockFetch.mockIf(/\/api\/environment$/, async request => JSON.stringify({
-    contactName: 'Peter',
-    /* contactNumber: omitted */
+    title: 'Volunteer Portal',
+    themeColor: '#ff0000',
 
     events: [
         {
@@ -24,7 +24,8 @@ mockFetch.mockIf(/\/api\/environment$/, async request => JSON.stringify({
         }
     ],
 
-    title: 'Volunteer Portal',
+    contactName: 'Peter',
+    /* contactNumber: omitted */
 }));
 
 // Enables IndexedDB to be used in Jest tests, which we depend on for caching.

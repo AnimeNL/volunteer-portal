@@ -1,13 +1,19 @@
 <!-- Copyright 2021 Peter Beverloo & AnimeCon. All rights reserved.
      Use of this source code is governed by a MIT license that can be
      found in the LICENSE file. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
-    <!-- (0) Temporary styles. -->
-    <path d="m0 0 h500 v500 h-500 v-500" style="fill: #ccc; stroke: none" />
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 500">
     <style>
         circle, path {
             fill: #3e2723;
             stroke: #3e2723;
+        }
+
+        textPath {
+            font-size: 40px;
+            font-family: Franklin Gothic, sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 6px;
         }
     </style>
 
@@ -118,5 +124,12 @@
     </g>
 
     <!-- (5) The Volunteer Portal logo -->
-    <!-- TODO -->
+    <g>
+      <path style="fill: transparent; stroke: none" id="curve" d="M17 250 a1,1 0,0 0 466 0" />
+      <text x="73%" y="50%" alignment-baseline="middle" text-anchor="middle">
+          <textPath xlink:href="#curve" style="fill: white; stroke: none">
+              Steward Team
+          </textPath>
+      </text>
+    </g>
 </svg>

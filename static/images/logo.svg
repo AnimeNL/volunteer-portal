@@ -16,9 +16,33 @@
 
     <!-- (1) Marieke -->
     <g>
-        <!-- TODO: White background -->
-        <!-- TODO: Yellow highlights -->
-        <!-- TODO: Skin colour-->
+        <!-- White background -->
+        <path style="fill: #ffffff; stroke: none"
+              d="m106 291 L211 291 L177 311 L173 381 L110 381 L70 330 L106 300" />
+        <path style="fill: #ffffff; stroke: none"
+              d="m99 251 L99 225 L134 225 L144 232 L161 220 L186 220 L171 233 L164 247 L130 239" />
+        <path style="fill: #ffffff; stroke: none"
+              d="m77 193 L66 174 L81 169 L96 195 L115 191 L111 203 L95 203" />
+        <path style="fill: #ffffff; stroke: none"
+              d="m118 106 L195 58 L257 58 L279 93 L274 106 L274 126 L257 136 L249 147 L229 152 L215 164 L203 121 L183 106" />
+
+        <!-- Yellow highlights -->
+        <rect style="fill: #f8b40c; stroke: none"
+              x="162" y="196" width="17" height="10" />
+        <path style="fill: #f8b40c; stroke: none"
+              d="m162 105 L182 85 L220 95 L247 86 L261 119 L220 137 L207 116" />
+        <path style="fill: #f8b40c; stroke: none"
+              d="m160 106 L112 136 L92 155 L113 187 L97 194 L74 159 L122 106" />
+
+        <!-- Skin colour -->
+        <path style="fill: #eeae91; stroke: none"
+              d="m96 284 L81 272 L81 259 L96 239 L101 253 L119 243 L152 243 L162 246 L170 237 L177 225 L207 225 L220 269 L191 284" />
+        <path style="fill: #eeae91; stroke: none"
+              d="m92 154 L158 106 L191 110 L211 141 L211 168 L170 197 L121 202" />
+        <path style="fill: #eeae91; stroke: none"
+              d="m144 232 L130 221 L159 204 L178 207 L202 195 L202 227 L165 218" />
+        <path style="fill: #eeae91; stroke: none"
+              d="m203 397 L203 442 L120 397" />
 
         <!-- Outline of their body -->
         <path d="m241 61 1 1c1-1 1-2-1-2v1z"/>

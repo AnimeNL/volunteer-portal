@@ -45,7 +45,16 @@
     </g>
 
     <!-- (3) The outer circle -->
-    <circle r="220" cy="250" cx="250" stroke-width="60" style="fill: transparent" />
+    <g>
+          <circle r="220" cy="250" cx="250" stroke-width="60" style="fill: transparent" />
+
+          <!-- (3a) Clara overlays -->
+          <path style="fill: #ffffff; stroke: none"
+                d="m423.5 174 L439 186 L453 198 L432.7 198.5" />
+          <path style="fill: #ffffff; stroke: none"
+                d="M415.7 343.4 a1,1 0 0,0 0,-47" />
+
+      </g>
 
     <!-- (4) The J-POP logo -->
     <!-- TODO -->

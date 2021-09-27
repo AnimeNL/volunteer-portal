@@ -55,6 +55,7 @@ A `GET` request with no additional payload.
 | :---             | :---      | :--- |
 | `title`          | `string`  | Name of the Volunteer Portal instance, e.g. _Volunteer Portal_. |
 | `themeColor`     | `string`  | Colour (in #RRGGBB format) that should define the portal's theme. |
+| `themeTitle`     | `string`  | Title of the theme as it should be displayed on the portal. |
 | `events`         | `IEnvironmentResponseEvent[]` | Array of the events that are supported by this portal. |
 | `contactName`    | `string`  | Name of the person who can be contacted for questions. |
 | `contactTarget`  | `string?` | Link target (phone number / e-mail address) of the person who can be contacted for questions. |

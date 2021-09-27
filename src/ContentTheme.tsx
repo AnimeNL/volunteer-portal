@@ -5,7 +5,6 @@
 import { ComponentChildren, h } from 'preact';
 
 import { Theme, ThemeProvider, createTheme } from '@mui/material/styles';
-import { brown } from '@mui/material/colors';
 
 import { Environment } from './base/Environment';
 

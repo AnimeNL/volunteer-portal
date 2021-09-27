@@ -75,6 +75,7 @@ export class EnvironmentImpl implements Environment {
 
         return validateString(environment, kInterfaceName, 'title') &&
                validateString(environment, kInterfaceName, 'themeColor') &&
+               validateString(environment, kInterfaceName, 'themeTitle') &&
                validateString(environment, kInterfaceName, 'contactName') &&
                validateOptionalString(environment, kInterfaceName, 'contactTarget');
     }
@@ -111,6 +112,13 @@ export class EnvironmentImpl implements Environment {
             throw new Error(kExceptionMessage);
 
         return this.data.themeColor;
+    }
+
+    get themeTitle(): Readonly<string> {
+        if (!this.data)
+            throw new Error(kExceptionMessage);
+
+        return this.data.themeTitle;
     }
 
     get events(): ReadonlyArray<EnvironmentEvent> {

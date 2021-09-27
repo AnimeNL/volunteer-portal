@@ -18,6 +18,11 @@ export interface Environment {
     themeColor: Readonly<string>;
 
     /**
+     * Title of the theme, as it should be displayed in logos.
+     */
+    themeTitle: Readonly<string>;
+
+    /**
      * Array of the events that are supported by this portal.
      */
     events: ReadonlyArray<EnvironmentEvent>;

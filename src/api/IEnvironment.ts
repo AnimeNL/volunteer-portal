@@ -7,7 +7,9 @@
  */
 export interface IEnvironmentResponse {
     title: string;
+
     themeColor: string;
+    themeTitle: string;
 
     events: IEnvironmentResponseEvent[];
 

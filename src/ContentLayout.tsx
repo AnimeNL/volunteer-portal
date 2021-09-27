@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { SxProps, Theme } from '@mui/system';
 import Typography from '@mui/material/Typography';
+import { darken } from '@mui/material/styles';
 
 import { AppContext } from './AppContext';
 import { ContentTheme } from './ContentTheme';
@@ -47,6 +48,11 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         maxWidth: '1280px',
         width: '90%',
     },
+
+    logoContainer: {
+        cursor: 'pointer',
+        pointerEvents: 'none',
+    }
 };
 
 // Styles applied to the logo. These cannot use the @sx attribute.
@@ -68,12 +74,21 @@ export function ContentLayout(props: ContentLayoutProps) {
     const { environment } = useContext(AppContext);
     const year = (new Date()).getFullYear();
 
+    const params = new URLSearchParams([
+        [ 'color', darken(environment.themeColor, .3) ],
+        [ 'title', environment.themeTitle ],
+    ]);
+
     return (
         <ContentTheme environment={environment}>
             <Box sx={kStyles.background}></Box>
             <Box sx={kStyles.container}>
                 <Link href="/">
-                    <img src="/images/logo-portal.png" style={kLogoStyles} alt="J-POP Logo" />
+                    <Box sx={kStyles.logoContainer}>
+                        <object type="image/svg+xml" style={kLogoStyles}
+                                data={'/images/logo.svg?' + params}
+                                alt="J-POP Logo" />
+                    </Box>
                 </Link>
                 <Paper sx={kStyles.content}>
                     {props.children}

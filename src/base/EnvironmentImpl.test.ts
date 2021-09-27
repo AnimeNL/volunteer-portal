@@ -45,7 +45,9 @@ describe('EnvironmentImpl', () => {
     it('should reflect the values of a valid environment from the network', async () => {
         const { cache, environment } = await createInstance(200, {
             title: 'Volunteer Portal',
+
             themeColor: '#ff0000',
+            themeTitle: 'Voluntering Team',
 
             events: [
                 {
@@ -70,6 +72,9 @@ describe('EnvironmentImpl', () => {
         expect(environment.contactTarget).toBeUndefined();
         expect(environment.title).toEqual('Volunteer Portal');
 
+        expect(environment.themeColor).toEqual('#ff0000');
+        expect(environment.themeTitle).toEqual('Voluntering Team');
+
         expect(environment.events).toHaveLength(1);
         expect(environment.events[0].name).toEqual('Event Name');
         expect(environment.events[0].enableContent).toBeTruthy();
@@ -87,7 +92,9 @@ describe('EnvironmentImpl', () => {
 
         await cache.set(EnvironmentImpl.kCacheKey, {
             title: 'Volunteer Portal',
+
             themeColor: '#00ff00',
+            themeTitle: 'Volunteer Team',
 
             events: [
                 {
@@ -111,6 +118,9 @@ describe('EnvironmentImpl', () => {
         expect(environment.contactName).toEqual('Ferdi');
         expect(environment.contactTarget).toEqual('0000-00-000');
         expect(environment.title).toEqual('Volunteer Portal');
+
+        expect(environment.themeColor).toEqual('#00ff00');
+        expect(environment.themeTitle).toEqual('Volunteer Team');
 
         expect(environment.events).toHaveLength(1);
         expect(environment.events[0].name).toEqual('Event Name');

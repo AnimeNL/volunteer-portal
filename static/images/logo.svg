@@ -127,9 +127,35 @@
     <g>
       <path style="fill: transparent; stroke: none" id="curve" d="M17 250 a1,1 0,0 0 466 0" />
       <text x="73%" y="50%" alignment-baseline="middle" text-anchor="middle">
-          <textPath xlink:href="#curve" style="fill: white; stroke: none">
+          <textPath xlink:href="#curve" style="fill: white; stroke: none" id="title">
               Steward Team
           </textPath>
       </text>
     </g>
+
+    <!-- (6) JavaScript to tie it all together -->
+    <script type="application/javascript">
+    <![CDATA[
+        if (typeof window.URL !== 'undefined' && typeof window.URLSearchParams !== 'undefined') {
+            const params = (new URL(document.location)).searchParams;
+            if (params.has('color')) {
+                const color = params.get('color');
+                const rule = 'circle, path { fill: ' + color + '; stroke: ' + color + '; }';
+
+                for (const styleSheet of document.styleSheets) {
+                    styleSheet.insertRule(rule, styleSheet.cssRules.length);
+                    break;
+                }
+            }
+
+            if (params.has('title')) {
+                const title = params.get('title');
+                const titleElement = document.getElementById('title');
+
+                if (titleElement)
+                    titleElement.textContent = title;
+            }
+        }
+    ]]>
+    </script>
 </svg>

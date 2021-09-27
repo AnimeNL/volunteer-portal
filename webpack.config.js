@@ -128,6 +128,7 @@ module.exports = {
 
                 // Duplicate common image resources to both environments.
                 { from: 'static/images/*.*', to: createCopyDestinationFn('static/images/gophers/') },
+                { from: 'static/images/*.*', to: createCopyDestinationFn('static/images/hosts/') },
                 { from: 'static/images/*.*', to: createCopyDestinationFn('static/images/stewards/') },
             ],
         }),

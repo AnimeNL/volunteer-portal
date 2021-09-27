@@ -98,13 +98,24 @@
 
         <!-- (3b) Clara overlays -->
         <path style="fill: #ffffff; stroke: none"
-              d="m423.5 174 L439 186 L453 198 L432.7 198.5" />
+              d="M423.5 174 L439 186 L453 198 L432.7 198.5" />
         <path style="fill: #ffffff; stroke: none"
               d="M415.7 343.4 a1,1 0 0,0 0,-47" />
     </g>
 
     <!-- (4) The J-POP logo -->
-    <!-- TODO -->
+    <!-- Note: each "block" in the pixelated logo has 7 pixel edges on a 500x500 canvas -->
+    <g>
+        <path style="fill: #ffffff; stroke: none" transform="rotate(-18)"
+              d="M153 76 h21 v28 h-7 v7 h-14 v-14 h-7 v7 h21 v-21 h-14"/>
+        <circle r="14" cx="216" cy="28" style="fill: #ffffff; stroke: none" />
+        <path style="fill: #ffffff; stroke: none"
+              d="M239 9 h21 v7 h7 v14 h-7 v-14 h-14 v14 h14 v7 h-14 v7 h-7 v-35"/>
+        <path style="fill: #ffffff; stroke: none" transform="rotate(9)"
+              d="M292 -32 h7 v28 h7 v-21 h-28 v21 h21 v7 h-14 v-35"/>
+        <path style="fill: #ffffff; stroke: none" transform="rotate(18)"
+              d="M313 -78 h21 v7 h7 v14 h-7 v-14 h-14 v14 h14 v7 h-14 v7 h-7 v-35"/>
+    </g>
 
     <!-- (5) The Volunteer Portal logo -->
     <!-- TODO -->

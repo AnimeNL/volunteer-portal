@@ -1,0 +1,25 @@
+{
+    "name": "AnimeCon Hosts Portal",
+    "short_name": "Festival Hosts",
+    "icons": [
+        {
+            "src": "images/logo-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "images/logo-256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "images/logo-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ],
+    "display": "standalone",
+    "theme_color": "#5f0937",
+    "background_color": "#fce4ec",
+    "start_url": "/"
+}

@@ -29,8 +29,8 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         backgroundPosition: 'bottom right',
         backgroundSize: 'cover',
         backgroundImage: {
-            xs: 'url(/images/background-mobile.jpg)',
-            sm: 'url(/images/background-desktop.jpg)',
+            xs: 'url(/images/background-mobile.jpg?v2)',
+            sm: 'url(/images/background-desktop.jpg?v2)',
         },
     },
 

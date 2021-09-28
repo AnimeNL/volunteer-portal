@@ -93,7 +93,7 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
 
     // (1) Get the environment-specific portions of the application page.
     const header = content.get(`/registration/${event.identifier}/application-header.html`);
-    const hotelEnabled = environment.title.includes('Steward');
+    const hotelEnabled = !environment.title.includes('Gopher');
 
     // (2) Predefined options for the select fields.
     const kGenderOptions = {

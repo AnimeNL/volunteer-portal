@@ -34,24 +34,19 @@ export interface Event {
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns an iterator with the names of the areas that exist within the event.
+     * Returns an iterator with the areas that exist within the event.
      */
-    getAreas(): IterableIterator<string>;
+    getAreas(): IterableIterator<EventArea>;
 
     /**
-     * Returns the location identified by the given |name|, or undefined when not found.
+     * Returns the location identified by the given |identifier|, or undefined when not found.
      */
-    getLocation(name: string): EventLocation | undefined;
+    getLocation(identifier: string): EventLocation | undefined;
 
     /**
      * Returns an iterator that provides access to all locations for the event.
      */
     getLocations(): IterableIterator<EventLocation>;
-
-    /**
-     * Returns an iterator that provides access to all locations for the event within the |area|.
-     */
-    getLocationsForArea(area: string): IterableIterator<EventLocation>;
 
     // ---------------------------------------------------------------------------------------------
     // Volunteer API
@@ -69,18 +64,43 @@ export interface Event {
 }
 
 /**
+ * Interface that documents the information known about a location in the event's venue.
+ */
+export interface EventArea {
+    /**
+     * The unique identifier that has been assigned to this area.
+     */
+    readonly identifier: string;
+
+    /**
+     * The name this area should be known by.
+     */
+    readonly name: string;
+
+    /**
+     * The icon used to illustrate the area, if any.
+     */
+    readonly icon?: string;
+
+    /**
+     * An array with the locations that are part of this area.
+     */
+    readonly locations: EventLocation[];
+}
+
+/**
  * Interface that documents the information known about a particular event within an event.
  */
 export interface EventInfo {
     /**
-     * Visitor-visible name summarising the event.
+     * The unique identifier that has been assigned to this event.
      */
-    readonly title: string;
+    readonly identifier: string;
 
     /**
-     * Short (1–3 sentence) description briefly summarising the event.
+     * Whether the event is visible to regular visitors.
      */
-    readonly description: string;
+    readonly hidden: boolean;
 
     /**
      * An array with the instances of this event that will be taking place. Sorted.
@@ -93,9 +113,14 @@ export interface EventInfo {
  */
 export interface EventLocation {
     /**
+     * The unique identifier that has been assigned to this location.
+     */
+    readonly identifier: string;
+
+    /**
      * Area in which the location is located. Could be a floor, or a section of the building.
      */
-    readonly area: string;
+    readonly area: EventArea;
 
     /**
      * Name of the location.
@@ -121,6 +146,16 @@ export interface EventSession {
      * Information about the location in which this session will be taking place.
      */
     readonly location: EventLocation;
+
+    /**
+     * Name of the event, as it should appear in the user interface.
+     */
+    readonly name: string;
+
+    /**
+     * Description of the event, when known and provided by the server.
+     */
+    readonly description?: string;
 
     /**
      * Time at which this session is due to begin.
@@ -153,12 +188,27 @@ export interface EventVolunteer {
     readonly lastName: string;
 
     /**
+     * Array of the environments in which this volunteer will be participating.
+     */
+    readonly environments: string[];
+
+    /**
      * Unique identifier for this volunteer. Should be unique within this event.
      */
     readonly identifier: string;
 
     /**
+     * The access code this volunteer uses to identify themselves, if shared by the server.
+     */
+    readonly accessCode?: string;
+
+    /**
      * URL to the avatar image to use for the volunteer, if any.
      */
     readonly avatar?: string;
+
+    /**
+     * The phone number using which this volunteer can be contacted, if shared by the server.
+     */
+    readonly phoneNumber?: string;
 }

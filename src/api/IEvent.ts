@@ -3,44 +3,72 @@
 // found in the LICENSE file.
 
 /**
- * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apievent
+ * Response structure for the /api/event endpoint.
  */
 export interface IEventResponse {
+    // Zero or more areas that are available for this event. Will be displayed in the menu.
+    areas: IEventResponseArea[];
+
+    // Zero or more events that will be taking place during this event.
     events: IEventResponseEvent[];
+
+    // Zero or more locations in which events will be taking place.
     locations: IEventResponseLocation[];
+
+    // Zero or more volunteers who will be active during this event.
     volunteers: IEventResponseVolunteer[];
 }
 
 /**
- * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#response-ieventresponseevent
+ * Structure defining an area of the event's venue.
+ */
+export interface IEventResponseArea {
+    identifier: string;
+    name: string;
+    icon?: string;
+}
+
+/**
+ * Structure defining an event part of the event's programme.
  */
 export interface IEventResponseEvent {
-    title: string;
-    description: string;
+    hidden: boolean;
+    identifier: string;
     sessions: IEventResponseSession[];
 }
 
 /**
- * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#response-ieventresponselocation
+ * Structure defining a location within an area of the event's venue.
  */
 export interface IEventResponseLocation {
+    identifier: string;
+
     name: string;
     area: string;
 }
 
 /**
- * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#response-ieventresponsesession
+ * Structure defining one of the sessions that will be hosted during one of the events.
  */
 export interface IEventResponseSession {
     location: string;
+
+    name: string;
+    description?: string;
+
     time: [ number, number ];
 }
 
 /**
- * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#response-ieventresponsevolunteer
+ * Structure defining a volunteer who will be active during the event.
  */
 export interface IEventResponseVolunteer {
-    name: [ string, string ];
     identifier: string;
+
+    name: [ string, string ];
+    environments: string[];
+
+    accessCode?: string;
     avatar?: string;
+    phoneNumber?: string;
 }

@@ -7,10 +7,10 @@ import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
 import { Event } from './Event';
 import { EventImpl } from './EventImpl';
-import { IEventResponse, IEventResponseEvent, IEventResponseLocation,
+import { IEventResponse, IEventResponseArea, IEventResponseEvent, IEventResponseLocation,
          IEventResponseSession, IEventResponseVolunteer } from '../api/IEvent';
 
-import { issueErrorAndReturnFalse, validateArray, validateNumber,
+import { issueErrorAndReturnFalse, validateArray, validateBoolean, validateNumber,
          validateOptionalString, validateString } from './TypeValidators';
 
 /**
@@ -54,6 +54,14 @@ export class EventFactory {
     private validateEventResponse(response: any): response is IEventResponse {
         const kInterfaceName = 'IEventResponse';
 
+        if (!validateArray(response, kInterfaceName, 'areas'))
+            return false;
+
+        for (const area of response.areas) {
+            if (!this.validateEventResponseArea(area))
+                return false;
+        }
+
         if (!validateArray(response, kInterfaceName, 'events'))
             return false;
 
@@ -82,6 +90,17 @@ export class EventFactory {
     }
 
     /**
+     * Validates that the given |area| corresponds to the IEventResponseArea structure.
+     */
+    private validateEventResponseArea(area: any): area is IEventResponseArea {
+        const kInterfaceName = 'IEventResponseArea';
+
+        return validateString(area, kInterfaceName, 'identifier') &&
+               validateString(area, kInterfaceName, 'name') &&
+               validateOptionalString(area, kInterfaceName, 'icon');
+    }
+
+    /**
      * Validates that the given |event| corresponds to the IEventResponseEvent structure.
      */
     private validateEventResponseEvent(event: any): event is IEventResponseEvent {
@@ -95,8 +114,8 @@ export class EventFactory {
                 return false;
         }
 
-        return validateString(event, kInterfaceName, 'title') &&
-               validateString(event, kInterfaceName, 'description');
+        return validateString(event, kInterfaceName, 'identifier') &&
+               validateBoolean(event, kInterfaceName, 'hidden');
     }
 
     /**
@@ -105,7 +124,8 @@ export class EventFactory {
     private validateEventResponseLocation(location: any): location is IEventResponseLocation {
         const kInterfaceName = 'IEventResponseLocation';
 
-        return validateString(location, kInterfaceName, 'name') &&
+        return validateString(location, kInterfaceName, 'identifier') &&
+               validateString(location, kInterfaceName, 'name') &&
                validateString(location, kInterfaceName, 'area');
     }
 
@@ -126,7 +146,9 @@ export class EventFactory {
                 return false;
         }
 
-        return validateString(session, kInterfaceName, 'location');
+        return validateString(session, kInterfaceName, 'location') &&
+               validateString(session, kInterfaceName, 'name') &&
+               validateOptionalString(session, kInterfaceName, 'description');
     }
 
     /**
@@ -146,8 +168,22 @@ export class EventFactory {
                 return false;
         }
 
+        if (!validateArray(volunteer, kInterfaceName, 'environments'))
+            return false;
+
+        if (volunteer.environments.length === 0)
+            return issueErrorAndReturnFalse(kInterfaceName, 'environments', 'should have entries');
+
+
+        for (let index = 0; index < volunteer.environments.length; ++index) {
+            if (!validateString(volunteer.environments, kInterfaceName + '.environments', index))
+                return false;
+        }
+
         return validateString(volunteer, kInterfaceName, 'identifier') &&
-               validateOptionalString(volunteer, kInterfaceName, 'avatar');
+               validateOptionalString(volunteer, kInterfaceName, 'accessCode') &&
+               validateOptionalString(volunteer, kInterfaceName, 'avatar') &&
+               validateOptionalString(volunteer, kInterfaceName, 'phoneNumber');
     }
 
     /**

@@ -56,18 +56,25 @@ describe('EventFactory', () => {
 
     it('should be able to issue an EventImpl object from the network', async () => {
         const { factory } = await createInstance(kEventIdentifier, 200, {
+            areas: [
+                {
+                    identifier: 'Towers',
+                    name: 'The Towers',
+                }
+            ],
             events: [
                 {
-                    title: 'My Event',
-                    description: 'Description of my event',
+                    identifier: 'my-event',
+                    hidden: false,
                     sessions: [
-                        { location: 'Round Tower', time: [ 10, 20 ] },
-                        { location: 'Round Tower', time: [ 25, 35 ] },
+                        { name: 'My Event', location: 'round-tower', time: [ 10, 20 ] },
+                        { name: 'My Event', location: 'round-tower', time: [ 25, 35 ] },
                     ]
                 }
             ],
             locations: [
                 {
+                    identifier: 'round-tower',
                     name: 'Round Tower',
                     area: 'Towers',
                 }
@@ -87,18 +94,25 @@ describe('EventFactory', () => {
         });
 
         await cache.set(EventFactory.cacheKeyForIdentifier(kEventIdentifier), {
+            areas: [
+                {
+                    identifier: 'Towers',
+                    name: 'The Towers',
+                }
+            ],
             events: [
                 {
-                    title: 'My Event',
-                    description: 'Description of my event',
+                    identifier: 'my-event',
+                    hidden: false,
                     sessions: [
-                        { location: 'Round Tower', time: [ 10, 20 ] },
-                        { location: 'Round Tower', time: [ 25, 35 ] },
+                        { name: 'My Event', location: 'round-tower', time: [ 10, 20 ] },
+                        { name: 'My Event', location: 'round-tower', time: [ 25, 35 ] },
                     ]
                 }
             ],
             locations: [
                 {
+                    identifier: 'round-tower',
                     name: 'Round Tower',
                     area: 'Towers',
                 }

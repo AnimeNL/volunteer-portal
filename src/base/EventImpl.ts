@@ -4,8 +4,8 @@
 
 import moment from 'moment-timezone';
 
-import { Event, EventInfo, EventLocation, EventSession, EventVolunteer } from './Event';
-import { IEventResponse, IEventResponseEvent, IEventResponseLocation,
+import { Event, EventArea, EventInfo, EventLocation, EventSession, EventVolunteer } from './Event';
+import { IEventResponse, IEventResponseArea, IEventResponseEvent, IEventResponseLocation,
          IEventResponseSession, IEventResponseVolunteer } from '../api/IEvent';
 
 /**
@@ -35,7 +35,7 @@ function AscendingSessionComparator(lhs: EventSession, rhs: EventSession) {
 export class EventImpl implements Event {
     #identifier: string;
 
-    #areas: Map<string, Set<any>> = new Map();
+    #areas: Map<string, EventAreaImpl> = new Map();
     #locations: Map<string, EventLocationImpl> = new Map();
     #sessions: EventSession[];
     #volunteers: Map<string, EventVolunteerImpl> = new Map();
@@ -46,15 +46,27 @@ export class EventImpl implements Event {
 
         let finalizationQueue: Finalizer[] = [];
 
+        // (1) Initialize all the area information.
+        for (const area of event.areas) {
+            const instance = new EventAreaImpl(area);
+
+            this.#areas.set(area.identifier, instance);
+
+            finalizationQueue.push(instance);
+        }
+
         // (1) Initialize all the location information.
         for (const location of event.locations) {
-            const instance = new EventLocationImpl(location);
+            const area = this.#areas.get(location.area);
+            if (!area) {
+                console.warn('Invalid area given for location. Ignoring.', location);
+                continue;
+            }
 
-            if (!this.#areas.has(instance.area))
-                this.#areas.set(instance.area, new Set());
+            const instance = new EventLocationImpl(location, area);
 
-            this.#areas.get(instance.area)?.add(instance);
-            this.#locations.set(instance.name, instance);
+            this.#locations.set(instance.identifier, instance);
+            area.addLocation(instance);
 
             finalizationQueue.push(instance);
         }
@@ -118,20 +130,16 @@ export class EventImpl implements Event {
     // Location API
     // ---------------------------------------------------------------------------------------------
 
-    getAreas(): IterableIterator<string> {
-        return this.#areas.keys();
+    getAreas(): IterableIterator<EventArea> {
+        return this.#areas.values();
     }
 
-    getLocation(name: string): EventLocation | undefined {
-        return this.#locations.get(name);
+    getLocation(identifier: string): EventLocation | undefined {
+        return this.#locations.get(identifier);
     }
 
     getLocations(): IterableIterator<EventLocation> {
         return this.#locations.values();
-    }
-
-    getLocationsForArea(area: string): IterableIterator<EventLocation> {
-        return (this.#areas.get(area) || []).values();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -148,17 +156,43 @@ export class EventImpl implements Event {
 }
 
 /**
+ * Implementation of the EventArea interface, which abstracts over the IEventResponseArea data.
+ */
+class EventAreaImpl implements EventArea, Finalizer {
+    #response: IEventResponseArea;
+    #locations: EventLocation[];
+
+    constructor(response: IEventResponseArea) {
+        this.#response = response;
+        this.#locations = [];
+    }
+
+    addLocation(location: EventLocation) {
+        this.#locations.push(location);
+    }
+
+    finalize() {
+        this.#locations.sort((lhs, rhs) => lhs.name.localeCompare(rhs.name));
+    }
+
+    get identifier() { return this.#response.identifier; }
+    get name() { return this.#response.name; }
+    get icon() { return this.#response.icon; }
+    get locations() { return this.#locations; }
+}
+
+/**
  * Implementation of the EventInfo interface, which abstracts over the IEventResponseEvent response
  * information.
  */
 class EventInfoImpl implements EventInfo, Finalizer {
-    #title: string;
-    #description: string;
+    #identifier: string;
+    #hidden: boolean;
     #sessions: EventSession[];
 
     constructor(response: IEventResponseEvent) {
-        this.#title = response.title;
-        this.#description = response.description;
+        this.#identifier = response.identifier;
+        this.#hidden = response.hidden;
         this.#sessions = [];
     }
 
@@ -174,8 +208,8 @@ class EventInfoImpl implements EventInfo, Finalizer {
         this.#sessions.sort(AscendingSessionComparator);
     }
 
-    get title() { return this.#title; }
-    get description() { return this.#description; }
+    get identifier() { return this.#identifier; }
+    get hidden() { return this.#hidden; }
     get sessions() { return this.#sessions; }
 }
 
@@ -185,10 +219,14 @@ class EventInfoImpl implements EventInfo, Finalizer {
  */
 class EventLocationImpl implements EventLocation, Finalizer {
     #response: IEventResponseLocation;
+
+    #area: EventAreaImpl;
     #sessions: EventSession[];
 
-    constructor(response: IEventResponseLocation) {
+    constructor(response: IEventResponseLocation, area: EventAreaImpl) {
         this.#response = response;
+
+        this.#area = area;
         this.#sessions = [];
     }
 
@@ -201,7 +239,8 @@ class EventLocationImpl implements EventLocation, Finalizer {
         this.#sessions.sort(AscendingSessionComparator);
     }
 
-    get area() { return this.#response.area; }
+    get identifier() { return this.#response.identifier; }
+    get area() { return this.#area; }
     get name() { return this.#response.name; }
     get sessions() { return this.#sessions; }
 }
@@ -214,6 +253,9 @@ class EventSessionImpl implements EventSession {
     #event: EventInfo;
     #location: EventLocation;
 
+    #name: string;
+    #description?: string;
+
     #beginTime: moment.Moment;
     #endTime: moment.Moment;
 
@@ -221,12 +263,18 @@ class EventSessionImpl implements EventSession {
         this.#event = event;
         this.#location = location;
 
+        this.#name = response.name;
+        this.#description = response.description;
+
         this.#beginTime = moment(response.time[0] * 1000);
         this.#endTime = moment(response.time[1] * 1000);
     }
 
     get event() { return this.#event; }
     get location() { return this.#location; }
+
+    get name() { return this.#name; }
+    get description() { return this.#description; }
 
     get startTime() { return this.#beginTime; }
     get endTime() { return this.#endTime; }
@@ -246,6 +294,9 @@ class EventVolunteerImpl implements EventVolunteer {
     get name() { return `${this.#response.name[0]} ${this.#response.name[1]}`.trim(); }
     get firstName() { return this.#response.name[0]; }
     get lastName() { return this.#response.name[1]; }
+    get environments() { return this.#response.environments; }
     get identifier() { return this.#response.identifier; }
+    get accessCode() { return this.#response.accessCode; }
     get avatar() { return this.#response.avatar; }
+    get phoneNumber() { return this.#response.phoneNumber; }
 }

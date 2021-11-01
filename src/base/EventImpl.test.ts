@@ -19,17 +19,30 @@ describe('EventImpl', () => {
 
     it('provides the ability to access location information', async () => {
         const event = new EventImpl(kEventIdentifier, {
+            areas: [
+                {
+                    identifier: 'Towers',
+                    name: 'The Towers',
+                },
+                {
+                    identifier: 'Pyramids',
+                    name: 'The Pyramids',
+                }
+            ],
             events: [],
             locations: [
                 {
+                    identifier: 'round-tower',
                     name: 'Round Tower',
                     area: 'Towers',
                 },
                 {
+                    identifier: 'square-pyramid',
                     name: 'Square Pyramid',
                     area: 'Pyramids',
                 },
                 {
+                    identifier: 'square-tower',
                     name: 'Square Tower',
                     area: 'Towers',
                 }
@@ -41,15 +54,15 @@ describe('EventImpl', () => {
 
         const areas = [];
         for (const area of event.getAreas())
-            areas.push(area);
+            areas.push(area.name);
 
-        expect(areas.sort()).toStrictEqual([ 'Pyramids', 'Towers' ]);
+        expect(areas.sort()).toStrictEqual([ 'The Pyramids', 'The Towers' ]);
 
         {
-            const tower = event.getLocation('Round Tower');
+            const tower = event.getLocation('round-tower');
             expect(tower).not.toBeUndefined();
 
-            expect(tower?.area).toEqual('Towers');
+            expect(tower?.area.name).toEqual('The Towers');
             expect(tower?.name).toEqual('Round Tower');
         }
 
@@ -60,33 +73,29 @@ describe('EventImpl', () => {
             locations.push(location.name);
 
         expect(locations.sort()).toStrictEqual([ 'Round Tower', 'Square Pyramid', 'Square Tower' ]);
-
-        const areaLocations = [];
-        for (const location of event.getLocationsForArea('Towers'))
-            areaLocations.push(location.name);
-
-        expect(areaLocations.sort()).toStrictEqual([ 'Round Tower', 'Square Tower' ]);
-
-        const unknownAreaLocations = [];
-        for (const location of event.getLocationsForArea('Factories'))
-            unknownAreaLocations.push(location.name);
-
-        expect(unknownAreaLocations).toStrictEqual([ /* empty */ ]);
     });
 
     it('provides the ability to access event information through locations', async () => {
         const event = new EventImpl(kEventIdentifier, {
+            areas: [
+                {
+                    identifier: 'Towers',
+                    name: 'The Towers',
+                }
+            ],
             events: [
                 {
-                    title: 'Circular Dance',
-                    description: 'Dancing in a circle in the round tower',
+                    hidden: false,
+                    identifier: '12345',
                     sessions: [
                         {
-                            location: 'Round Tower',
+                            location: 'round-tower',
+                            name: 'Circular Dance',
                             time: [ 1617577200, 1617663599 ],  // note: this session is out-of-order
                         },
                         {
-                            location: 'Round Tower',
+                            location: 'round-tower',
+                            name: 'Circular Dance',
                             time: [ 1617490800, 1617577199 ],
                         }
                     ],
@@ -94,6 +103,7 @@ describe('EventImpl', () => {
             ],
             locations: [
                 {
+                    identifier: 'round-tower',
                     name: 'Round Tower',
                     area: 'Towers',
                 },
@@ -101,12 +111,12 @@ describe('EventImpl', () => {
             volunteers: [],
         });
 
-        const tower = event.getLocation('Round Tower')!;
+        const tower = event.getLocation('round-tower')!;
         expect(tower).not.toBeUndefined();
 
         expect(tower.sessions.length).toEqual(2);
         {
-            expect(tower.sessions[0].event.title).toEqual('Circular Dance');
+            expect(tower.sessions[0].event.hidden).toBeFalsy();
             expect(tower.sessions[0].location).toStrictEqual(tower);
 
             expect(`${tower.sessions[0].startTime}`).toEqual('Sun Apr 04 2021 00:00:00 GMT+0100');
@@ -115,7 +125,7 @@ describe('EventImpl', () => {
             expect(tower.sessions[0].event.sessions.length).toEqual(2);
         }
         {
-            expect(tower.sessions[1].event.title).toEqual('Circular Dance');
+            expect(tower.sessions[1].event.hidden).toBeFalsy();
             expect(tower.sessions[1].location).toStrictEqual(tower);
 
             expect(`${tower.sessions[1].startTime}`).toEqual('Mon Apr 05 2021 00:00:00 GMT+0100');
@@ -130,23 +140,31 @@ describe('EventImpl', () => {
 
     it('provides the ability to access sessions active at a given time', async () => {
         const event = new EventImpl(kEventIdentifier, {
+            areas: [
+                {
+                    identifier: 'Towers',
+                    name: 'The Towers',
+                }
+            ],
             events: [
                 {
-                    title: 'Circular Dance',
-                    description: 'Dancing in a circle in the round tower',
+                    hidden: true,
+                    identifier: '12345',
                     sessions: [
                         {
-                            location: 'Round Tower',
+                            name: 'Circular Dance',
+                            location: 'round-tower',
                             time: [ 1617490800, 1617577199 ],
                         },
                     ],
                 },
                 {
-                    title: 'Triangular Dance',
-                    description: 'Dancing in a triangle in the round tower',
+                    hidden: false,
+                    identifier: '34567',
                     sessions: [
                         {
-                            location: 'Round Tower',
+                            name: 'Triangular Dance',
+                            location: 'round-tower',
                             time: [ 1617573600, 1617663599 ],
                         }
                     ],
@@ -154,6 +172,8 @@ describe('EventImpl', () => {
             ],
             locations: [
                 {
+                    identifier: 'round-tower',
+
                     name: 'Round Tower',
                     area: 'Towers',
                 },
@@ -169,7 +189,7 @@ describe('EventImpl', () => {
             const sessions = event.getActiveSessions(moment('2021-04-04T01:00:00'));
 
             expect(sessions.length).toEqual(1);
-            expect(sessions[0].event.title).toEqual('Circular Dance');
+            expect(sessions[0].name).toEqual('Circular Dance');
         }
 
         // (3) During the overlap between the sessions.
@@ -177,8 +197,8 @@ describe('EventImpl', () => {
             const sessions = event.getActiveSessions(moment('2021-04-04T23:30:00'));
 
             expect(sessions.length).toEqual(2);
-            expect(sessions[0].event.title).toEqual('Circular Dance');
-            expect(sessions[1].event.title).toEqual('Triangular Dance');
+            expect(sessions[0].name).toEqual('Circular Dance');
+            expect(sessions[1].name).toEqual('Triangular Dance');
         }
 
         // (4) During the second session (Triangular Dance).
@@ -186,7 +206,7 @@ describe('EventImpl', () => {
             const sessions = event.getActiveSessions(moment('2021-04-05T23:00:00'));
 
             expect(sessions.length).toEqual(1);
-            expect(sessions[0].event.title).toEqual('Triangular Dance');
+            expect(sessions[0].name).toEqual('Triangular Dance');
         }
 
         // (5) After the sessions.
@@ -195,17 +215,21 @@ describe('EventImpl', () => {
 
     it('provides the ability to access volunteer information', async () => {
         const event = new EventImpl(kEventIdentifier, {
+            areas: [],
             events: [],
             locations: [],
             volunteers: [
                 {
-                    name: [ 'John', 'Doe' ],
                     identifier: 'john-doe',
+                    name: [ 'John', 'Doe' ],
+                    environments: [ 'Volunteer Club' ],
+
                     avatar: '/john-doe.jpg',
                 },
                 {
-                    name: [ 'Jane', '' ],
                     identifier: 'jane',
+                    name: [ 'Jane', '' ],
+                    environments: [ 'Volunteer Club' ],
                 }
             ],
         });

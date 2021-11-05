@@ -117,7 +117,14 @@ describe('EventFactory', () => {
                     area: 'Towers',
                 }
             ],
-            volunteers: [],
+            volunteers: [
+                {
+                    identifier: 'jamie-volunteer',
+
+                    name: [ 'Jamie', 'Volunteer' ],
+                    environments: [ 'TowerCon' ],
+                }
+            ],
         });
 
         const event = await factory.load(kAuthToken, kEventIdentifier);

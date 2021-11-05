@@ -164,7 +164,7 @@ export class EventFactory {
             return issueErrorAndReturnFalse(kInterfaceName, 'name', 'should have a length of 2');
 
         for (let index = 0; index < volunteer.name.length; ++index) {
-            if (!validateNumber(volunteer.name, kInterfaceName + '.name', index))
+            if (!validateString(volunteer.name, kInterfaceName + '.name', index))
                 return false;
         }
 

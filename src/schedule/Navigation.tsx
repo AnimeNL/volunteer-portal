@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import { h } from 'preact';
+import { route } from 'preact-router';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Badge from '@mui/material/Badge';
@@ -11,21 +12,28 @@ import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupIcon from '@mui/icons-material/Group';
 import HomeIcon from '@mui/icons-material/Home';
+import Paper from '@mui/material/Paper';
+
+// Active navigation that the user is on, as should be highlighted in the user interface.
+export type NavigationActiveOptions = 'overview' | 'shifts' | 'areas' | 'volunteers';
 
 // Properties that can be passed to the <Navigation> component. Values will be valid for both the
 // mobile and desktop views of this component, even if their composition is entirely different.
 export interface NavigationProps {
     // Which page of the navigation interface should be active?
-    active: 'overview' | 'schedule' | 'events' | 'volunteers';
+    active: NavigationActiveOptions;
 
     // Badge to display for the number of active events, if any.
-    badgeEvents?: number;
+    badgeActiveEvents?: number;
 
     // Badge to display when the user's schedule has an active entry.
-    badgeSchedule?: boolean;
+    badgeActiveShifts?: boolean;
 
     // Badge to display for the number of active volunteers, if any.
-    badgeVolunteers?: number;
+    badgeActiveVolunteers?: number;
+
+    // Identifier of the event for which navigation is being provided.
+    event: string;
 };
 
 // The <Navigation> component powers the main navigation capability of the volunteer portal. On
@@ -38,32 +46,54 @@ export interface NavigationProps {
 // on the left- or right-hand side of the main content, to make better use of the available screen
 // estate, without polluting it with a full side-drawer.
 export function Navigation(props: NavigationProps) {
-    const eventIcon =
-        props.badgeEvents ? <Badge color="error" badgeContent={props.badgeEvents}><EventNoteIcon /></Badge>
-                          : <EventNoteIcon />;
+    const eventsIcon =
+        props.badgeActiveEvents ? <Badge color="error" badgeContent={props.badgeActiveEvents}>
+                                      <EventNoteIcon />
+                                  </Badge>
+                                : <EventNoteIcon />;
 
-    const scheduleIcon =
-        props.badgeSchedule ? <Badge color="error" variant="dot"><AccessTimeIcon /></Badge>
-                            : <AccessTimeIcon />;
+    const shiftsIcon =
+        props.badgeActiveShifts ? <Badge color="error" variant="dot">
+                                      <AccessTimeIcon />
+                                  </Badge>
+                                : <AccessTimeIcon />;
 
     const volunteersIcon =
-        props.badgeVolunteers ? <Badge color="error" badgeContent={props.badgeVolunteers}><GroupIcon /></Badge>
-                              : <GroupIcon />;
+        props.badgeActiveVolunteers ? <Badge color="error" badgeContent={props.badgeActiveVolunteers}>
+                                          <GroupIcon />
+                                      </Badge>
+                                    : <GroupIcon />;
+
+    function activateItem(event: React.SyntheticEvent<Element, Event>, newValue: string) {
+        switch (newValue) {
+            case 'areas':
+            case 'shifts':
+            case 'volunteers':
+                route(`/schedule/${props.event}/${newValue}/`);
+                break;
+
+            default:
+                route(`/schedule/${props.event}/`);
+                break;
+        }
+    }
 
     return (
-        <BottomNavigation value={props.active}>
-            <BottomNavigationAction label="Overview"
-                                    value="overview"
-                                    icon={ <HomeIcon /> } />
-            <BottomNavigationAction label="Schedule"
-                                    value="schedule"
-                                    icon={scheduleIcon} />
-            <BottomNavigationAction label="Events"
-                                    value="events"
-                                    icon={eventIcon} />
-            <BottomNavigationAction label="Volunteers"
-                                    value="volunteers"
-                                    icon={volunteersIcon} />
-        </BottomNavigation>
+        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+            <BottomNavigation onChange={activateItem} value={props.active}>
+                <BottomNavigationAction label="Overview"
+                                        value="overview"
+                                        icon={ <HomeIcon /> } />
+                <BottomNavigationAction label="Shifts"
+                                        value="shifts"
+                                        icon={shiftsIcon} />
+                <BottomNavigationAction label="Events"
+                                        value="areas"
+                                        icon={eventsIcon} />
+                <BottomNavigationAction label="Volunteers"
+                                        value="volunteers"
+                                        icon={volunteersIcon} />
+            </BottomNavigation>
+        </Paper>
     );
 }

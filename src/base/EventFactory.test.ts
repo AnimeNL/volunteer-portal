@@ -79,6 +79,10 @@ describe('EventFactory', () => {
                     area: 'Towers',
                 }
             ],
+            meta: {
+                name: 'My Event',
+                timezone: 'Europe/Amsterdam',
+            },
             volunteers: [],
         });
 
@@ -86,6 +90,8 @@ describe('EventFactory', () => {
 
         expect(event).toBeInstanceOf(EventImpl);
         expect(event?.identifier).toBe(kEventIdentifier);
+        expect(event?.name).toBe('My Event');
+        expect(event?.timezone).toBe('Europe/Amsterdam');
     });
 
     it('should be able to issue an EventImpl object from the cache', async () => {
@@ -117,6 +123,9 @@ describe('EventFactory', () => {
                     area: 'Towers',
                 }
             ],
+            meta: {
+                name: 'My Event',
+            },
             volunteers: [
                 {
                     identifier: 'jamie-volunteer',
@@ -131,6 +140,8 @@ describe('EventFactory', () => {
 
         expect(event).toBeInstanceOf(EventImpl);
         expect(event?.identifier).toBe(kEventIdentifier);
+        expect(event?.name).toBe('My Event');
+        expect(event?.timezone).toBeUndefined();
     });
 
     it('should refuse to return an EventImpl object when there are network issues', async () => {

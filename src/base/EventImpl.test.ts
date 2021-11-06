@@ -47,6 +47,10 @@ describe('EventImpl', () => {
                     area: 'Towers',
                 }
             ],
+            meta: {
+                name: 'My Event',
+                timezone: 'Europe/Amsterdam',
+            },
             volunteers: [],
         });
 
@@ -108,6 +112,10 @@ describe('EventImpl', () => {
                     area: 'Towers',
                 },
             ],
+            meta: {
+                name: 'My Event',
+                timezone: 'Europe/Amsterdam',
+            },
             volunteers: [],
         });
 
@@ -178,6 +186,10 @@ describe('EventImpl', () => {
                     area: 'Towers',
                 },
             ],
+            meta: {
+                name: 'My Event',
+                timezone: 'Europe/Amsterdam',
+            },
             volunteers: [],
         });
 
@@ -218,6 +230,10 @@ describe('EventImpl', () => {
             areas: [],
             events: [],
             locations: [],
+            meta: {
+                name: 'My Event',
+                timezone: 'Europe/Amsterdam',
+            },
             volunteers: [
                 {
                     identifier: 'john-doe',

@@ -14,6 +14,16 @@ export interface Event {
      */
     readonly identifier: string;
 
+    /**
+     * Name of the event, which can be publicly displayed in a user interface.
+     */
+    readonly name: string;
+
+    /**
+     * Timezone in which the event will be taking place, when provided by the server.
+     */
+    readonly timezone?: string;
+
     // ---------------------------------------------------------------------------------------------
     // Event API
     // ---------------------------------------------------------------------------------------------

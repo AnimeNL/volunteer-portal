@@ -6,7 +6,7 @@ import moment from 'moment-timezone';
 
 import { Event, EventArea, EventInfo, EventLocation, EventSession, EventVolunteer } from './Event';
 import { IEventResponse, IEventResponseArea, IEventResponseEvent, IEventResponseLocation,
-         IEventResponseSession, IEventResponseVolunteer } from '../api/IEvent';
+         IEventResponseMeta, IEventResponseSession, IEventResponseVolunteer } from '../api/IEvent';
 
 /**
  * Interface that enables certain objects to be finalized after event initialization is complete.
@@ -34,6 +34,7 @@ function AscendingSessionComparator(lhs: EventSession, rhs: EventSession) {
  */
 export class EventImpl implements Event {
     #identifier: string;
+    #meta: IEventResponseMeta;
 
     #areas: Map<string, EventAreaImpl> = new Map();
     #locations: Map<string, EventLocationImpl> = new Map();
@@ -42,6 +43,8 @@ export class EventImpl implements Event {
 
     constructor(identifier: string, event: IEventResponse) {
         this.#identifier = identifier;
+        this.#meta = event.meta;
+
         this.#sessions = [];
 
         let finalizationQueue: Finalizer[] = [];
@@ -104,6 +107,8 @@ export class EventImpl implements Event {
     }
 
     get identifier() { return this.#identifier; }
+    get name() { return this.#meta.name; }
+    get timezone() { return this.#meta.timezone; }
 
     // ---------------------------------------------------------------------------------------------
     // Event API

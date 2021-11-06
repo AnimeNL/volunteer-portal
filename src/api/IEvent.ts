@@ -15,6 +15,9 @@ export interface IEventResponse {
     // Zero or more locations in which events will be taking place.
     locations: IEventResponseLocation[];
 
+    // Meta-information for this particular event. Must be given.
+    meta: IEventResponseMeta;
+
     // Zero or more volunteers who will be active during this event.
     volunteers: IEventResponseVolunteer[];
 }
@@ -45,6 +48,14 @@ export interface IEventResponseLocation {
 
     name: string;
     area: string;
+}
+
+/**
+ * Structure defining the available meta-information supplied for an event.
+ */
+export interface IEventResponseMeta {
+    name: string;
+    timezone?: string;
 }
 
 /**

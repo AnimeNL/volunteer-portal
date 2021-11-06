@@ -8,9 +8,9 @@ import { Configuration } from './Configuration';
 import { Event } from './Event';
 import { EventImpl } from './EventImpl';
 import { IEventResponse, IEventResponseArea, IEventResponseEvent, IEventResponseLocation,
-         IEventResponseSession, IEventResponseVolunteer } from '../api/IEvent';
+         IEventResponseMeta, IEventResponseSession, IEventResponseVolunteer } from '../api/IEvent';
 
-import { issueErrorAndReturnFalse, validateArray, validateBoolean, validateNumber,
+import { issueErrorAndReturnFalse, validateArray, validateBoolean, validateNumber, validateObject,
          validateOptionalString, validateString } from './TypeValidators';
 
 /**
@@ -78,6 +78,11 @@ export class EventFactory {
                 return false;
         }
 
+        if (!validateObject(response, kInterfaceName, 'meta') ||
+                !this.validateEventResponseMeta(response.meta)) {
+            return false;
+        }
+
         if (!validateArray(response, kInterfaceName, 'volunteers'))
             return false;
 
@@ -127,6 +132,16 @@ export class EventFactory {
         return validateString(location, kInterfaceName, 'identifier') &&
                validateString(location, kInterfaceName, 'name') &&
                validateString(location, kInterfaceName, 'area');
+    }
+
+    /**
+     * Validates that the given |meta| contains all required meta-information.
+     */
+    private validateEventResponseMeta(meta: any): meta is IEventResponseMeta {
+        const kInterfaceName = 'IEventResponseMeta';
+
+        return validateString(meta, kInterfaceName, 'name') &&
+               validateOptionalString(meta, kInterfaceName, 'timezone');
     }
 
     /**

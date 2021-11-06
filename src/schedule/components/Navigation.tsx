@@ -13,9 +13,10 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupIcon from '@mui/icons-material/Group';
 import HomeIcon from '@mui/icons-material/Home';
 import Paper from '@mui/material/Paper';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 // Active navigation that the user is on, as should be highlighted in the user interface.
-export type NavigationActiveOptions = 'overview' | 'shifts' | 'areas' | 'volunteers';
+export type NavigationActiveOptions = 'overview' | 'shifts' | 'areas' | 'volunteers' | 'admin';
 
 // Properties that can be passed to the <Navigation> component. Values will be valid for both the
 // mobile and desktop views of this component, even if their composition is entirely different.
@@ -34,6 +35,9 @@ export interface NavigationProps {
 
     // Identifier of the event for which navigation is being provided.
     event: string;
+
+    // Whether the navigation option to the administration screen should be displayed.
+    showAdministration?: boolean;
 };
 
 // The <Navigation> component powers the main navigation capability of the volunteer portal. On
@@ -66,6 +70,7 @@ export function Navigation(props: NavigationProps) {
 
     function activateItem(event: React.SyntheticEvent<Element, Event>, newValue: string) {
         switch (newValue) {
+            case 'admin':
             case 'areas':
             case 'shifts':
             case 'volunteers':
@@ -93,6 +98,10 @@ export function Navigation(props: NavigationProps) {
                 <BottomNavigationAction label="Volunteers"
                                         value="volunteers"
                                         icon={volunteersIcon} />
+                { props.showAdministration &&
+                    <BottomNavigationAction label="Admin"
+                                            value="admin"
+                                            icon={ <SettingsIcon /> } /> }
             </BottomNavigation>
         </Paper>
     );

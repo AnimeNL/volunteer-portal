@@ -11,6 +11,7 @@ import { ApplicationBar } from './components/ApplicationBar';
 import { ContentTheme } from '../ContentTheme';
 import { NavigationActiveOptions, Navigation } from './components/Navigation';
 
+import { AdministratorView } from './views/AdministratorView';
 import { AreaListView } from './views/AreaListView';
 import { EventListView } from './views/EventListView';
 import { LocationListView } from './views/LocationListView';
@@ -43,6 +44,7 @@ interface ScheduleAppState {
 // Supported views within this application are as follows:
 //
 //     /schedule/:event/                          OverviewView
+//     /schedule/:event/admin/                    AdministratorView
 //     /schedule/:event/areas/                    AreaListView
 //     /schedule/:event/areas/:area/              LocationListView
 //     /schedule/:event/areas/:area/:location/    EventListView
@@ -64,6 +66,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
     determineNavigationActiveOptions(): NavigationActiveOptions {
         const view = this.props.request?.split('/').shift() ?? 'overview';
         switch (view) {
+            case 'admin':
             case 'areas':
             case 'shifts':
             case 'volunteers':
@@ -79,7 +82,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
     // ---------------------------------------------------------------------------------------------
 
     render() {
-        const { environment, event } = useContext(AppContext);
+        const { environment, event, user } = useContext(AppContext);
         if (!event)
             return <></>;
 
@@ -89,6 +92,9 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
             <ContentTheme environment={environment}>
                 <ApplicationBar title={event.identifier}/>
                 <Router>
+                    { user.isAdministrator() &&
+                        <Route path="/schedule/:event/admin/" component={AdministratorView} /> }
+
                     <Route path="/schedule/:event/areas/:area/:location/" component={EventListView} />
                     <Route path="/schedule/:event/areas/:area/" component={LocationListView} />
                     <Route path="/schedule/:event/areas/" component={AreaListView} />
@@ -102,7 +108,8 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
                             badgeActiveEvents={12}
                             badgeActiveShifts={true}
                             badgeActiveVolunteers={7}
-                            event={this.props.event} />
+                            event={this.props.event}
+                            showAdministration={user.isAdministrator()} />
             </ContentTheme>
         );
     }

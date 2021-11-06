@@ -2,7 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
+import { useContext } from 'preact/hooks';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Box from '@mui/material/Box';
@@ -16,15 +17,25 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { SystemStyleObject, Theme } from '@mui/system';
-import { styled } from '@mui/material/styles';
+import { darken, lighten, styled } from '@mui/material/styles';
 
+import { AppContext } from '../../AppContext';
 import { NavigationActiveOptions, NavigationProps, navigateToOption } from './Navigation';
+import { kDesktopMenuWidthPx } from '../ResponsiveConstants';
 
 // Styling for the <DesktopNavigation> component. List items are changed to be round (as is the
 // case in Material You), paddings and colours are adjusted.
 const kStyles: Record<string, SystemStyleObject<Theme>> = {
     container: {
         paddingRight: 2,
+    },
+    header: {
+        borderRadius: 1,
+        width: `${kDesktopMenuWidthPx - 16}px`,
+        height: `${kDesktopMenuWidthPx / 2}px`,
+        overflow: 'hidden',
+        marginTop: 2,
+        marginBottom: 1,
     },
     item: {
         borderRadius: '32px',
@@ -67,6 +78,8 @@ interface NavigationOption {
 // right-hand side of the main content, to make better use of the available screen estate, without
 // polluting it with a full side-drawer.
 export function DesktopNavigation(props: NavigationProps) {
+    const { environment } = useContext(AppContext);
+
     const options: NavigationOption[] = [
         {
             id: 'overview',
@@ -106,20 +119,31 @@ export function DesktopNavigation(props: NavigationProps) {
     }
 
     const navigateFn = navigateToOption.bind(null, props.event);
+    const params = new URLSearchParams([
+        [ 'color', darken(environment.themeColor, .3) ],
+        [ 'title', /* the empty string= */ '' ],
+    ]);
 
     return (
-        <List sx={kStyles.container}>
-            { options.map(option =>
-                <ListItem disablePadding secondaryAction={option.badge}>
-                    <ListItemButton onClick={ _ => navigateFn(option.id) }
-                                    selected={props.active === option.id}
-                                    sx={kStyles.item}>
-                        <ListItemIcon>
-                            {option.icon}
-                        </ListItemIcon>
-                        <ListItemText primary={option.label} />
-                    </ListItemButton>
-                </ListItem>) }
-        </List>
+        <Fragment>
+            <Box sx={{ ...kStyles.header, backgroundColor: lighten(environment.themeColor, .7) }}>
+                <object type="image/svg+xml" style="margin-top: -35px"
+                        data={'/images/logo.svg?' + params}
+                        alt="J-POP Logo" />
+            </Box>
+            <List sx={kStyles.container}>
+                { options.map(option =>
+                    <ListItem disablePadding secondaryAction={option.badge}>
+                        <ListItemButton onClick={ _ => navigateFn(option.id) }
+                                        selected={props.active === option.id}
+                                        sx={kStyles.item}>
+                            <ListItemIcon>
+                                {option.icon}
+                            </ListItemIcon>
+                            <ListItemText primary={option.label} />
+                        </ListItemButton>
+                    </ListItem>) }
+            </List>
+        </Fragment>
     );
 }

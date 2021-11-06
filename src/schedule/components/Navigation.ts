@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import { route } from 'preact-router';
+
 // Active navigation that the user is on, as should be highlighted in the user interface.
 export type NavigationActiveOptions = 'overview' | 'shifts' | 'areas' | 'volunteers' | 'admin';
 
@@ -26,3 +28,19 @@ export interface NavigationProps {
     // Whether the navigation option to the administration screen should be displayed.
     showAdministration?: boolean;
 };
+
+// Performs a navigation to the selected |option| using preact-router.
+export function navigateToOption(event: string, option: NavigationActiveOptions) {
+    switch (option) {
+        case 'admin':
+        case 'areas':
+        case 'shifts':
+        case 'volunteers':
+            route(`/schedule/${event}/${option}/`);
+            break;
+
+        default:
+            route(`/schedule/${event}/`);
+            break;
+    }
+}

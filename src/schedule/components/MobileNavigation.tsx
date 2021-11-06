@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import { h } from 'preact';
-import { route } from 'preact-router';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Badge from '@mui/material/Badge';
@@ -15,7 +14,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import Paper from '@mui/material/Paper';
 import SettingsIcon from '@mui/icons-material/Settings';
 
-import { NavigationProps } from './Navigation';
+import { NavigationProps, navigateToOption } from './Navigation';
 
 // This component powers the main navigation capability of the volunteer portal, with a user
 // interface optimized for display on mobile devices. A bottom bar navigation will be displayed, in
@@ -41,24 +40,11 @@ export function MobileNavigation(props: NavigationProps) {
                                       </Badge>
                                     : <GroupIcon />;
 
-    function activateItem(event: React.SyntheticEvent<Element, Event>, newValue: string) {
-        switch (newValue) {
-            case 'admin':
-            case 'areas':
-            case 'shifts':
-            case 'volunteers':
-                route(`/schedule/${props.event}/${newValue}/`);
-                break;
-
-            default:
-                route(`/schedule/${props.event}/`);
-                break;
-        }
-    }
+    const navigateFn = navigateToOption.bind(null, props.event);
 
     return (
         <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
-            <BottomNavigation onChange={activateItem} value={props.active}>
+            <BottomNavigation onChange={(e, value) => navigateFn(value)} value={props.active}>
                 <BottomNavigationAction label="Overview"
                                         value="overview"
                                         icon={ <HomeIcon /> } />

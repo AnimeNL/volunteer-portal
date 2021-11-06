@@ -6,11 +6,18 @@ import { Component, h } from 'preact';
 import { Router, Route } from 'preact-router';
 import { useContext, useEffect } from 'preact/hooks';
 
+import Box from '@mui/material/Box';
+import Hidden from '@mui/material/Hidden';
+import Stack from '@mui/material/Stack';
+import { SystemStyleObject, Theme } from '@mui/system';
+
 import { AppContext } from '../AppContext';
 import { AppTitleListener, clearTitleListener, setTitleListener } from '../AppTitle';
 import { ApplicationBar } from './components/ApplicationBar';
 import { ContentTheme } from '../ContentTheme';
-import { NavigationActiveOptions, Navigation } from './components/Navigation';
+import { DesktopNavigation } from './components/DesktopNavigation';
+import { MobileNavigation } from './components/MobileNavigation';
+import { NavigationActiveOptions } from './components/Navigation';
 
 import { AdministratorView } from './views/AdministratorView';
 import { AreaListView } from './views/AreaListView';
@@ -20,6 +27,25 @@ import { OverviewView } from './views/OverviewView';
 import { SearchResultsView } from './views/SearchResultsView';
 import { VolunteerListView } from './views/VolunteerListView';
 import { VolunteerView } from './views/VolunteerView';
+
+import { kDesktopMaximumWidthPx, kDesktopMenuWidthPx } from './ResponsiveConstants';
+
+// Styling for the <ScheduleApp> component. See the component-level comment for a description of the
+// responsive behaviour that this component implements, which this styling exists to enable.
+const kStyles: Record<string, SystemStyleObject<Theme>> = {
+    container: {
+        margin: 'auto',
+        maxWidth: {
+            lg: kDesktopMaximumWidthPx,
+        }
+    },
+    content: {
+        width: `calc(100% - ${2 * kDesktopMenuWidthPx}px)`,
+    },
+    menuAndSpacing: {
+        width: kDesktopMenuWidthPx,
+    },
+}
 
 // Properties accepted by the <ScheduleApp> component.
 export interface ScheduleAppProps {
@@ -57,6 +83,15 @@ interface ScheduleAppState {
 //
 // Routing is done using the Preact router component. Additional logic is applied to make sure that
 // the <Navigation> component highlights the appropriate tile, depending on the active view.
+//
+// This view is responsive, in that a different layout is served to desktop users compared to
+// mobile users. The following differences exist:
+//
+//     * On desktop, the width of the application is capped to 1200 pixels.
+//     * On mobile, a bottom bar navigation will be shown, whereas on desktop the navigation will
+//       be shown as a regular list-based menu on the left-hand side of the content.
+//
+// Individual components may have further optimizations where they make sense to support.
 export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         implements AppTitleListener {
 
@@ -123,28 +158,52 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
 
                 <ApplicationBar title={this.state.title || defaultTitle} />
 
-                <Router>
-                    { user.isAdministrator() &&
-                        <Route path="/schedule/:event/admin/" component={AdministratorView} /> }
+                <Stack direction="row" sx={kStyles.container}>
 
-                    <Route path="/schedule/:event/areas/:area/:location/" component={EventListView} />
-                    <Route path="/schedule/:event/areas/:area/" component={LocationListView} />
-                    <Route path="/schedule/:event/areas/" component={AreaListView} />
-                    <Route path="/schedule/:event/search/:query*" component={SearchResultsView} />
-                    <Route path="/schedule/:event/shifts/" component={VolunteerView} />
-                    <Route path="/schedule/:event/volunteers/:identifier/" component={VolunteerView} />
-                    <Route path="/schedule/:event/volunteers/" component={VolunteerListView} />
+                    <Hidden lgDown>
+                        <Box sx={kStyles.menuAndSpacing}>
+                            <DesktopNavigation active={navigationActiveOption}
+                                               badgeActiveEvents={12}
+                                               badgeActiveShifts={true}
+                                               badgeActiveVolunteers={7}
+                                               event={this.props.event}
+                                               showAdministration={user.isAdministrator()} />
+                        </Box>
+                    </Hidden>
 
-                    <Route default component={OverviewView} />
-                </Router>
+                    <Box sx={kStyles.content}>
+                        <Router>
+                            { user.isAdministrator() &&
+                                <Route path="/schedule/:event/admin/" component={AdministratorView} /> }
 
-                <Navigation active={navigationActiveOption}
-                            badgeActiveEvents={12}
-                            badgeActiveShifts={true}
-                            badgeActiveVolunteers={7}
-                            event={this.props.event}
-                            showAdministration={user.isAdministrator()} />
+                            <Route path="/schedule/:event/areas/:area/:location/" component={EventListView} />
+                            <Route path="/schedule/:event/areas/:area/" component={LocationListView} />
+                            <Route path="/schedule/:event/areas/" component={AreaListView} />
+                            <Route path="/schedule/:event/search/:query*" component={SearchResultsView} />
+                            <Route path="/schedule/:event/shifts/" component={VolunteerView} />
+                            <Route path="/schedule/:event/volunteers/:identifier/" component={VolunteerView} />
+                            <Route path="/schedule/:event/volunteers/" component={VolunteerListView} />
 
+                            <Route default component={OverviewView} />
+                        </Router>
+                    </Box>
+
+                    <Hidden lgDown>
+                        <Box sx={kStyles.menuAndSpacing}>
+                            { /* deliberately empty */ }
+                        </Box>
+                    </Hidden>
+
+                </Stack>
+
+                <Hidden lgUp>
+                    <MobileNavigation active={navigationActiveOption}
+                                      badgeActiveEvents={12}
+                                      badgeActiveShifts={true}
+                                      badgeActiveVolunteers={7}
+                                      event={this.props.event}
+                                      showAdministration={user.isAdministrator()} />
+                </Hidden>
             </ContentTheme>
         );
     }

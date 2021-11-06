@@ -15,41 +15,14 @@ import HomeIcon from '@mui/icons-material/Home';
 import Paper from '@mui/material/Paper';
 import SettingsIcon from '@mui/icons-material/Settings';
 
-// Active navigation that the user is on, as should be highlighted in the user interface.
-export type NavigationActiveOptions = 'overview' | 'shifts' | 'areas' | 'volunteers' | 'admin';
+import { NavigationProps } from './Navigation';
 
-// Properties that can be passed to the <Navigation> component. Values will be valid for both the
-// mobile and desktop views of this component, even if their composition is entirely different.
-export interface NavigationProps {
-    // Which page of the navigation interface should be active?
-    active: NavigationActiveOptions;
-
-    // Badge to display for the number of active events, if any.
-    badgeActiveEvents?: number;
-
-    // Badge to display when the user's schedule has an active entry.
-    badgeActiveShifts?: boolean;
-
-    // Badge to display for the number of active volunteers, if any.
-    badgeActiveVolunteers?: number;
-
-    // Identifier of the event for which navigation is being provided.
-    event: string;
-
-    // Whether the navigation option to the administration screen should be displayed.
-    showAdministration?: boolean;
-};
-
-// The <Navigation> component powers the main navigation capability of the volunteer portal. On
-// mobile platforms, this displays a bottom-bar navigation in which the active item will be
-// highlighted, while the other items will be in a slightly smaller state.
+// This component powers the main navigation capability of the volunteer portal, with a user
+// interface optimized for display on mobile devices. A bottom bar navigation will be displayed, in
+// which the active item will be highlighted. Administrators get an additional option.
 //
 // https://mui.com/components/bottom-navigation/
-//
-// On desktop platforms, the <Navigation> component will instead produce a list that can be shown
-// on the left- or right-hand side of the main content, to make better use of the available screen
-// estate, without polluting it with a full side-drawer.
-export function Navigation(props: NavigationProps) {
+export function MobileNavigation(props: NavigationProps) {
     const eventsIcon =
         props.badgeActiveEvents ? <Badge color="error" badgeContent={props.badgeActiveEvents}>
                                       <EventNoteIcon />

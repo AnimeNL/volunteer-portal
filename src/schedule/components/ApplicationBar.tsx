@@ -12,10 +12,15 @@ import { SystemStyleObject, Theme } from '@mui/system';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
+import { kDesktopMenuWidthPx, kDesktopMaximumWidthPx } from '../ResponsiveConstants';
+
 // Styling used for the application bar. It's used for both the desktop view and for the mobile view
 // so there will be a fair amount of branching in this code, as the actual component will be kept
 // identical. (Unlike the bottom navigation drawer.)
 const kStyles: Record<string, SystemStyleObject<Theme>> = {
+    container: {
+        display: 'block',
+    },
     title: {
         flexGrow: 1,
 
@@ -24,12 +29,15 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
         whiteSpace: 'nowrap',
     },
     toolbar: {
-        width: {
-            md: 900,
+        margin: 'auto',
+
+        paddingX: {
+            lg: `${kDesktopMenuWidthPx}px`,
         },
-        margin: {
-            md: 'auto',
-        }
+
+        maxWidth: {
+            lg: `${kDesktopMaximumWidthPx}px`,
+        },
     },
 }
 
@@ -41,7 +49,7 @@ export interface ApplicationBarProps {
 
 export function ApplicationBar(props: ApplicationBarProps) {
     return (
-        <AppBar position="static">
+        <AppBar position="static" sx={kStyles.container}>
             <Toolbar sx={kStyles.toolbar}>
                 <Typography variant="h6" component="div" sx={kStyles.title}>
                     {props.title}

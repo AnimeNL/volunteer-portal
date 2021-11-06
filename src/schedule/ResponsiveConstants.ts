@@ -10,7 +10,7 @@ export const kDesktopMaximumWidthPx = 1600;
 
 // Width, in pixels, the main menu should occupy on desktop platforms. This is a fixed size, and
 // will be applied no matter the width that will be taken by the content.
-export const kDesktopMenuWidthPx = 250;
+export const kDesktopMenuWidthPx = 275;
 
 // Minimum width, in pixels, the main content should occupy on desktop platforms.
 export const kDesktopContentMinimumWidthPx = kDesktopMinimumWidthPx - 2 * kDesktopMenuWidthPx;

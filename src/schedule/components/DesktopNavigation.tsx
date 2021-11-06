@@ -27,15 +27,16 @@ import { kDesktopMenuWidthPx } from '../ResponsiveConstants';
 // the top of the item list based on the SVG image.
 const kStyles: Record<string, SystemStyleObject<Theme>> = {
     container: {
-        paddingRight: 2,
+        paddingX: 2,
     },
     header: {
         borderRadius: 1,
-        width: `${kDesktopMenuWidthPx - 16}px`,
+        width: `${kDesktopMenuWidthPx - 32}px`,
         height: `${kDesktopMenuWidthPx / 2}px`,
         overflow: 'hidden',
         marginTop: 2,
-        marginBottom: 1,
+        marginBottom: .75,
+        marginLeft: 2,
     },
     item: {
         borderRadius: theme => theme.spacing(1),

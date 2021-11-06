@@ -3,12 +3,21 @@
 // found in the LICENSE file.
 
 import { Component, h } from 'preact';
+import { Router, Route } from 'preact-router';
 import { useContext } from 'preact/hooks';
 
 import { AppContext } from '../AppContext';
-import { ApplicationBar } from './ApplicationBar';
+import { ApplicationBar } from './components/ApplicationBar';
 import { ContentTheme } from '../ContentTheme';
-import { NavigationActiveOptions, Navigation } from './Navigation';
+import { NavigationActiveOptions, Navigation } from './components/Navigation';
+
+import { AreaListView } from './views/AreaListView';
+import { EventListView } from './views/EventListView';
+import { LocationListView } from './views/LocationListView';
+import { OverviewView } from './views/OverviewView';
+import { SearchResultsView } from './views/SearchResultsView';
+import { VolunteerListView } from './views/VolunteerListView';
+import { VolunteerView } from './views/VolunteerView';
 
 // Properties accepted by the <ScheduleApp> component.
 export interface ScheduleAppProps {
@@ -39,6 +48,7 @@ interface ScheduleAppState {
 //     /schedule/:event/areas/:area/:location/    EventListView
 //     /schedule/:event/search/:query             SearchResultsView
 //     /schedule/:event/shifts/                   VolunteerView
+//     /schedule/:event/volunteers/               VolunteerListView
 //     /schedule/:event/volunteers/:identifier/   VolunteerView
 //
 // Routing is done using the Preact router component. Additional logic is applied to make sure that
@@ -78,9 +88,16 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
         return (
             <ContentTheme environment={environment}>
                 <ApplicationBar title={event.identifier}/>
-                <p>
-                    Hello, world!
-                </p>
+                <Router>
+                    <Route path="/schedule/:event/areas/:area/:location/" component={EventListView} />
+                    <Route path="/schedule/:event/areas/:area/" component={LocationListView} />
+                    <Route path="/schedule/:event/areas/" component={AreaListView} />
+                    <Route path="/schedule/:event/search/:query*" component={SearchResultsView} />
+                    <Route path="/schedule/:event/shifts/" component={VolunteerView} />
+                    <Route path="/schedule/:event/volunteers/:identifier/" component={VolunteerView} />
+                    <Route path="/schedule/:event/volunteers/" component={VolunteerListView} />
+                    <Route default component={OverviewView} />
+                </Router>
                 <Navigation active={navigationActiveOption}
                             badgeActiveEvents={12}
                             badgeActiveShifts={true}

@@ -2,8 +2,17 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
+
+import { AppTitle } from '../../AppTitle';
 
 export function OverviewView() {
-    return <p>OverviewView</p>;
+    return (
+        <Fragment>
+            <AppTitle />
+            <p>
+                OverviewView
+            </p>
+        </Fragment>
+    );
 }

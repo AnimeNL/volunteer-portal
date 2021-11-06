@@ -2,7 +2,9 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
+
+import { AppTitle } from '../../AppTitle';
 
 export interface EventListViewProps {
     area: string;
@@ -10,5 +12,12 @@ export interface EventListViewProps {
 };
 
 export function EventListView(props: EventListViewProps) {
-    return <p>EventListView({props.area}, {props.location})</p>;
+    return (
+        <Fragment>
+            <AppTitle title="Location" />
+            <p>
+                EventListView ({props.area}, {props.location})
+            </p>
+        </Fragment>
+    );
 }

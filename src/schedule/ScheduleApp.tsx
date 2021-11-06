@@ -4,9 +4,10 @@
 
 import { Component, h } from 'preact';
 import { Router, Route } from 'preact-router';
-import { useContext } from 'preact/hooks';
+import { useContext, useEffect } from 'preact/hooks';
 
 import { AppContext } from '../AppContext';
+import { AppTitleListener, clearTitleListener, setTitleListener } from '../AppTitle';
 import { ApplicationBar } from './components/ApplicationBar';
 import { ContentTheme } from '../ContentTheme';
 import { NavigationActiveOptions, Navigation } from './components/Navigation';
@@ -34,7 +35,8 @@ export interface ScheduleAppProps {
 // State maintained by the <ScheduleApp> component. This generally reflects state of the event that
 // is being displayed within the application.
 interface ScheduleAppState {
-    // TODO: Do we need any state?
+    // Title of the application. Visible both in the user interface and in the browser tab.
+    title?: string;
 }
 
 // The <ScheduleApp> component is the base component for the scheduling application, as it will be
@@ -55,7 +57,26 @@ interface ScheduleAppState {
 //
 // Routing is done using the Preact router component. Additional logic is applied to make sure that
 // the <Navigation> component highlights the appropriate tile, depending on the active view.
-export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
+export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
+        implements AppTitleListener {
+
+    public state: ScheduleAppState = { /* empty */ };
+
+    // ---------------------------------------------------------------------------------------------
+    // AppTitleListener implementation & lifetime.
+    // ---------------------------------------------------------------------------------------------
+
+    // Called when the application's title has been changed. This should be reflected in the title
+    // bar part of our user interface, as well as the browser's tab state.
+    onAppTitleChange(newTitle?: string) {
+        this.setState({
+            title: newTitle,
+        });
+    }
+
+    // Ensures that the title listener is active while this component has been mounted.
+    componentDidMount() { setTitleListener(this); }
+    componentWillUnmount() { clearTitleListener(); }
 
     // ---------------------------------------------------------------------------------------------
     // Navigation routines.
@@ -86,11 +107,22 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
         if (!event)
             return <></>;
 
+        const defaultTitle = event.name + ' ' + environment.themeTitle;
         const navigationActiveOption = this.determineNavigationActiveOptions();
+
+        useEffect(() => {
+            if (this.state.title)
+                document.title = `${this.state.title} | ${defaultTitle}`;
+            else
+                document.title = defaultTitle;
+
+        }, [ this.state.title ]);
 
         return (
             <ContentTheme environment={environment}>
-                <ApplicationBar title={event.identifier}/>
+
+                <ApplicationBar title={this.state.title || defaultTitle} />
+
                 <Router>
                     { user.isAdministrator() &&
                         <Route path="/schedule/:event/admin/" component={AdministratorView} /> }
@@ -102,14 +134,17 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
                     <Route path="/schedule/:event/shifts/" component={VolunteerView} />
                     <Route path="/schedule/:event/volunteers/:identifier/" component={VolunteerView} />
                     <Route path="/schedule/:event/volunteers/" component={VolunteerListView} />
+
                     <Route default component={OverviewView} />
                 </Router>
+
                 <Navigation active={navigationActiveOption}
                             badgeActiveEvents={12}
                             badgeActiveShifts={true}
                             badgeActiveVolunteers={7}
                             event={this.props.event}
                             showAdministration={user.isAdministrator()} />
+
             </ContentTheme>
         );
     }

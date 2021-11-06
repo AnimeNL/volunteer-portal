@@ -2,10 +2,11 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
 import { useContext } from 'preact/hooks';
 
 import { AppContext } from '../AppContext';
+import { ApplicationBar } from './ApplicationBar';
 
 // Properties accepted by the <ScheduleApp> component.
 export interface ScheduleAppProps {
@@ -18,6 +19,12 @@ export interface ScheduleAppProps {
 
 export function ScheduleApp(props: ScheduleAppProps) {
     const { event } = useContext(AppContext);
+    if (!event)
+        return <></>;
 
-    return <p>Schedule... {event?.identifier}</p>;
+    return (
+        <Fragment>
+            <ApplicationBar title={event.identifier}/>
+        </Fragment>
+    );
 }

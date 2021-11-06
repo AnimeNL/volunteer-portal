@@ -2,11 +2,12 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { Component, Fragment, h } from 'preact';
+import { Component, h } from 'preact';
 import { useContext } from 'preact/hooks';
 
 import { AppContext } from '../AppContext';
 import { ApplicationBar } from './ApplicationBar';
+import { ContentTheme } from '../ContentTheme';
 import { NavigationActiveOptions, Navigation } from './Navigation';
 
 // Properties accepted by the <ScheduleApp> component.
@@ -68,14 +69,14 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
     // ---------------------------------------------------------------------------------------------
 
     render() {
-        const { event } = useContext(AppContext);
+        const { environment, event } = useContext(AppContext);
         if (!event)
             return <></>;
 
         const navigationActiveOption = this.determineNavigationActiveOptions();
 
         return (
-            <Fragment>
+            <ContentTheme environment={environment}>
                 <ApplicationBar title={event.identifier}/>
                 <p>
                     Hello, world!
@@ -85,7 +86,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState> {
                             badgeActiveShifts={true}
                             badgeActiveVolunteers={7}
                             event={this.props.event} />
-            </Fragment>
+            </ContentTheme>
         );
     }
 }

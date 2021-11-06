@@ -7,6 +7,7 @@ import { useContext } from 'preact/hooks';
 
 import { AppContext } from '../AppContext';
 import { ApplicationBar } from './ApplicationBar';
+import { Navigation } from './Navigation';
 
 // Properties accepted by the <ScheduleApp> component.
 export interface ScheduleAppProps {
@@ -25,6 +26,13 @@ export function ScheduleApp(props: ScheduleAppProps) {
     return (
         <Fragment>
             <ApplicationBar title={event.identifier}/>
+            <p>
+                Hello, world!
+            </p>
+            <Navigation active="events"
+                        badgeEvents={12}
+                        badgeSchedule={true}
+                        badgeVolunteers={7} />
         </Fragment>
     );
 }

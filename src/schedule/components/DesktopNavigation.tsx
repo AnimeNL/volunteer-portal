@@ -23,8 +23,8 @@ import { AppContext } from '../../AppContext';
 import { NavigationActiveOptions, NavigationProps, navigateToOption } from './Navigation';
 import { kDesktopMenuWidthPx } from '../ResponsiveConstants';
 
-// Styling for the <DesktopNavigation> component. List items are changed to be round (as is the
-// case in Material You), paddings and colours are adjusted.
+// Styling for the <DesktopNavigation> component, particularly to enable the logo-esque image at
+// the top of the item list based on the SVG image.
 const kStyles: Record<string, SystemStyleObject<Theme>> = {
     container: {
         paddingRight: 2,
@@ -38,7 +38,7 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
         marginBottom: 1,
     },
     item: {
-        borderRadius: '32px',
+        borderRadius: theme => theme.spacing(1),
         marginBottom: 1,
     },
 };

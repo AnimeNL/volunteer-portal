@@ -5,10 +5,13 @@
 import { Fragment, h } from 'preact';
 import { useState } from 'preact/compat';
 
+import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
+import PersonIcon from '@mui/icons-material/Person';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
@@ -24,7 +27,6 @@ type VolunteerProps = { volunteer: EventVolunteer };
 function Volunteer(props: VolunteerProps) {
     const { volunteer } = props;
 
-    // TODO: When available, display an avatar for the volunteer
     // TODO: Display the volunteer's role within this event
     // TODO: Visually differentiate between volunteers, senior volunteers and staff
     // TODO: Visually identify the volunteer's availability
@@ -32,6 +34,11 @@ function Volunteer(props: VolunteerProps) {
 
     return (
         <ListItemButton>
+            <ListItemAvatar>
+                <Avatar alt={volunteer.name} src={volunteer.avatar}>
+                    <PersonIcon />
+                </Avatar>
+            </ListItemAvatar>
             <ListItemText primary={volunteer.name}
                           secondary="Volunteer" />
         </ListItemButton>

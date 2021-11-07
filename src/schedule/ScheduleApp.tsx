@@ -61,7 +61,7 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
 export interface ScheduleAppProps {
     // Identifier of the event to load. Retrieved from the URL. Data for this event will already
     // have been loaded by the <App> component, before routing the request to us.
-    event: string;
+    identifier: string;
 
     // Remainder of the request path, i.e. the portion that follows after the event identifier. Any
     // subsequent navigation within the schedule should be done based on this location.
@@ -197,26 +197,26 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                         <Hidden lgDown>
                             <Box sx={kStyles.menuAndSpacing}>
                                 <DesktopNavigation active={navigationActiveOption}
-                                                badgeActiveEvents={12}
-                                                badgeActiveShifts={true}
-                                                badgeActiveVolunteers={7}
-                                                event={this.props.event}
-                                                showAdministration={user.isAdministrator()} />
+                                                   badgeActiveEvents={12}
+                                                   badgeActiveShifts={true}
+                                                   badgeActiveVolunteers={7}
+                                                   event={this.props.identifier}
+                                                   showAdministration={user.isAdministrator()} />
                             </Box>
                         </Hidden>
 
                         <Box sx={kStyles.content}>
                             <Router>
                                 { user.isAdministrator() &&
-                                    <Route path="/schedule/:event/admin/" component={AdministratorView} app={this} /> }
+                                    <Route path="/schedule/:identifier/admin/" component={AdministratorView} app={this} /> }
 
-                                <Route path="/schedule/:event/areas/:area/:location/" component={EventListView} />
-                                <Route path="/schedule/:event/areas/:area/" component={LocationListView} />
-                                <Route path="/schedule/:event/areas/" component={AreaListView} />
-                                <Route path="/schedule/:event/search/:query*" component={SearchResultsView} />
-                                <Route path="/schedule/:event/shifts/" component={VolunteerView} />
-                                <Route path="/schedule/:event/volunteers/:identifier/" component={VolunteerView} />
-                                <Route path="/schedule/:event/volunteers/" component={VolunteerListView} />
+                                <Route path="/schedule/:identifier/areas/:area/:location/" component={EventListView} />
+                                <Route path="/schedule/:identifier/areas/:area/" component={LocationListView} />
+                                <Route path="/schedule/:identifier/areas/" component={AreaListView} />
+                                <Route path="/schedule/:identifier/search/:query*" component={SearchResultsView} />
+                                <Route path="/schedule/:identifier/shifts/" component={VolunteerView} />
+                                <Route path="/schedule/:identifier/volunteers/:identifier/" component={VolunteerView} />
+                                <Route path="/schedule/:identifier/volunteers/" component={VolunteerListView} event={event} />
 
                                 <Route default component={OverviewView} />
                             </Router>
@@ -232,11 +232,11 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
 
                     <Hidden lgUp>
                         <MobileNavigation active={navigationActiveOption}
-                                        badgeActiveEvents={12}
-                                        badgeActiveShifts={true}
-                                        badgeActiveVolunteers={7}
-                                        event={this.props.event}
-                                        showAdministration={user.isAdministrator()} />
+                                          badgeActiveEvents={12}
+                                          badgeActiveShifts={true}
+                                          badgeActiveVolunteers={7}
+                                          event={this.props.identifier}
+                                          showAdministration={user.isAdministrator()} />
                     </Hidden>
 
                 </Box>

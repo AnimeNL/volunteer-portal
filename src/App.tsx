@@ -146,7 +146,7 @@ export class App extends Component<{}, AppState> implements UserImplObserver {
 
                         { /* The schedule is only available for authenticated users. */ }
                         { this.state.authenticated &&
-                            <Route path="/schedule/:event/:request*" component={ScheduleApp} /> }
+                            <Route path="/schedule/:identifier/:request*" component={ScheduleApp} /> }
 
                         <Route default component={WelcomeApp} />
                     </Router>

@@ -238,14 +238,14 @@ describe('EventImpl', () => {
                 {
                     identifier: 'john-doe',
                     name: [ 'John', 'Doe' ],
-                    environments: [ 'Volunteer Club' ],
+                    environments: { 'Volunteer Club': 'Volunteer' },
 
                     avatar: '/john-doe.jpg',
                 },
                 {
                     identifier: 'jane',
                     name: [ 'Jane', '' ],
-                    environments: [ 'Volunteer Club' ],
+                    environments: { 'Volunteer Club': 'Volunteer' },
                 }
             ],
         });

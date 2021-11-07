@@ -77,7 +77,7 @@ export interface IEventResponseVolunteer {
     identifier: string;
 
     name: [ string, string ];
-    environments: string[];
+    environments: Record</* name= */ string, /* role= */ string>;
 
     accessCode?: string;
     avatar?: string;

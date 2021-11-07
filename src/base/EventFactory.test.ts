@@ -131,7 +131,7 @@ describe('EventFactory', () => {
                     identifier: 'jamie-volunteer',
 
                     name: [ 'Jamie', 'Volunteer' ],
-                    environments: [ 'TowerCon' ],
+                    environments: { 'TowerCon': 'Volunteer' },
                 }
             ],
         });

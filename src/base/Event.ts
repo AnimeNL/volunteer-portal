@@ -198,9 +198,9 @@ export interface EventVolunteer {
     readonly lastName: string;
 
     /**
-     * Array of the environments in which this volunteer will be participating.
+     * Object with the environments and roles in which this volunteer will be participating.
      */
-    readonly environments: string[];
+    readonly environments: Record</* name= */ string, /* role= */ string>;
 
     /**
      * Unique identifier for this volunteer. Should be unique within this event.

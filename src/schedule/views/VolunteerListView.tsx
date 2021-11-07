@@ -20,17 +20,27 @@ import { AppTitle } from '../../AppTitle';
 import { Event, EventVolunteer } from '../../base/Event';
 
 // Type defining what we mean by a "volunteer".
-type VolunteerProps = { volunteer: EventVolunteer };
+interface VolunteerProps {
+    volunteer: EventVolunteer;
+
+    // When known, the environment can be specified to specialize the volunteer's role that will be
+    // displayed, which can theoretically differ between environments.
+    environment?: string;
+};
 
 // The <Volunteer> component renders an individual volunteer, which always have to be displayed as
 // a list item. The volunteer's component will be themed based on their current occupation.
 function Volunteer(props: VolunteerProps) {
     const { volunteer } = props;
 
-    // TODO: Display the volunteer's role within this event
     // TODO: Visually differentiate between volunteers, senior volunteers and staff
     // TODO: Visually identify the volunteer's availability
     // TODO: Visually identify their current occupation
+
+    // The role a volunteer has may differ depending on the environment. When it hasn't been
+    // specifically included in the |props|, assume that this is not the case.
+    const role = props.environment ? volunteer.environments[props.environment]
+                                   : Object.values(volunteer.environments).shift();
 
     return (
         <ListItemButton>
@@ -40,18 +50,28 @@ function Volunteer(props: VolunteerProps) {
                 </Avatar>
             </ListItemAvatar>
             <ListItemText primary={volunteer.name}
-                          secondary="Volunteer" />
+                          secondary={role} />
         </ListItemButton>
     );
 }
 
 // Type defining what we mean by a "volunteer list".
-type VolunteerListProps = { volunteers: EventVolunteer[], index?: number, value?: number };
+interface VolunteerListProps {
+    volunteers: EventVolunteer[];
+
+    // When known, the environment can help specialize display of individual volunteers.
+    environment?: string;
+
+    // When used in a tab display, the full list doesn't always have to be displayed. The following
+    // two properties can be used to identify and deal with that situation.
+    index?: number;
+    value?: number;
+};
 
 // The <VolunteerList> component renders a list of volunteers. Each volunteer will be shown with
 // an appropriate amount of meta-information to make the list immediately actionable.
 function VolunteerList(props: VolunteerListProps) {
-    const { volunteers, index, value } = props;
+    const { volunteers, environment, index, value } = props;
 
     // The list will be hidden when used in a tab switcher, and it's not the selected item.
     const visible = index === undefined || index === value;
@@ -66,7 +86,8 @@ function VolunteerList(props: VolunteerListProps) {
             { visible &&
                 <Paper square={square} sx={{ marginTop: { lg: desktopMarginTop } }}>
                     <List>
-                        { volunteers.map(volunteer => <Volunteer volunteer={volunteer} />) }
+                        { volunteers.map(volunteer =>
+                            <Volunteer environment={environment} volunteer={volunteer} />) }
                     </List>
                 </Paper> }
         </div>
@@ -86,7 +107,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
 
     const environments: Record<string, EventVolunteer[]> = {};
     for (const volunteer of event.getVolunteers()) {
-        for (const environment of volunteer.environments) {
+        for (const environment of Object.keys(volunteer.environments)) {
             if (!environments.hasOwnProperty(environment))
                 environments[environment] = [];
 
@@ -113,7 +134,8 @@ export function VolunteerListView(props: VolunteerListViewProps) {
             return (
                 <Fragment>
                     <AppTitle title="Volunteers" />
-                    <VolunteerList volunteers={environments[environmentNames[0]]} />
+                    <VolunteerList environment={environmentNames[0]}
+                                   volunteers={environments[environmentNames[0]]} />
                 </Fragment>
             );
 
@@ -132,6 +154,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
 
                     { environmentNames.map((name, index) =>
                         <VolunteerList volunteers={environments[name]}
+                                       environment={name}
                                        value={selectedTabIndex}
                                        index={index} />) }
 

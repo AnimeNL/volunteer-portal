@@ -183,17 +183,19 @@ export class EventFactory {
                 return false;
         }
 
-        if (!validateArray(volunteer, kInterfaceName, 'environments'))
+        if (!validateObject(volunteer, kInterfaceName, 'environments'))
             return false;
 
-        if (volunteer.environments.length === 0)
-            return issueErrorAndReturnFalse(kInterfaceName, 'environments', 'should have entries');
-
-
-        for (let index = 0; index < volunteer.environments.length; ++index) {
-            if (!validateString(volunteer.environments, kInterfaceName + '.environments', index))
+        let environmentCount = 0;
+        for (const key in volunteer.environments) {
+            if (!validateString(volunteer.environments, kInterfaceName + '.environments', key))
                 return false;
+
+            ++environmentCount;
         }
+
+        if (environmentCount === 0)
+            return issueErrorAndReturnFalse(kInterfaceName, 'environments', 'should have entries');
 
         return validateString(volunteer, kInterfaceName, 'identifier') &&
                validateOptionalString(volunteer, kInterfaceName, 'accessCode') &&

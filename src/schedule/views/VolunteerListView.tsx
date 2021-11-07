@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
+import { route } from 'preact-router';
 import { useState } from 'preact/compat';
 
 import Avatar from '@mui/material/Avatar';
@@ -10,6 +11,7 @@ import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
 import Paper from '@mui/material/Paper';
 import PersonIcon from '@mui/icons-material/Person';
 import Tabs from '@mui/material/Tabs';
@@ -22,6 +24,10 @@ import { Event, EventVolunteer } from '../../base/Event';
 // Type defining what we mean by a "volunteer".
 interface VolunteerProps {
     volunteer: EventVolunteer;
+
+    // When known, the identifier will be used to link from this volunteer tile to a page on which
+    // their activities can be seen. Volunteers will not be clickable unless this has been provided.
+    identifier?: string;
 
     // When known, the environment can be specified to specialize the volunteer's role that will be
     // displayed, which can theoretically differ between environments.
@@ -37,21 +43,33 @@ function Volunteer(props: VolunteerProps) {
     // TODO: Visually identify the volunteer's availability
     // TODO: Visually identify their current occupation
 
+    // The component used for the volunteer's entry depends on whether or not we can linkify it. An
+    // ignore is necessary in the TSX later on, as the properties for both options differ slightly.
+    const ListComponent = props.identifier ? ListItemButton : ListItem;
+
+    function handleClick() {
+        if (props.identifier)
+            route(`/schedule/${props.identifier}/volunteers/${volunteer.identifier}/`);
+    }
+
     // The role a volunteer has may differ depending on the environment. When it hasn't been
     // specifically included in the |props|, assume that this is not the case.
     const role = props.environment ? volunteer.environments[props.environment]
                                    : Object.values(volunteer.environments).shift();
 
     return (
-        <ListItemButton>
-            <ListItemAvatar>
-                <Avatar alt={volunteer.name} src={volunteer.avatar}>
-                    <PersonIcon />
-                </Avatar>
-            </ListItemAvatar>
-            <ListItemText primary={volunteer.name}
-                          secondary={role} />
-        </ListItemButton>
+        <Fragment>
+            { /* @ts-ignore */ }
+            <ListComponent onClick={handleClick}>
+                <ListItemAvatar>
+                    <Avatar alt={volunteer.name} src={volunteer.avatar}>
+                        <PersonIcon />
+                    </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary={volunteer.name}
+                            secondary={role} />
+            </ListComponent>
+        </Fragment>
     );
 }
 
@@ -59,8 +77,10 @@ function Volunteer(props: VolunteerProps) {
 interface VolunteerListProps {
     volunteers: EventVolunteer[];
 
-    // When known, the environment can help specialize display of individual volunteers.
-    environment?: string;
+    // When known, the environment can help specialize display of individual volunteers, whereas the
+    // event identifier is necessary to be able to link volunteers to the right location.
+    identifier: string;
+    environment: string;
 
     // When used in a tab display, the full list doesn't always have to be displayed. The following
     // two properties can be used to identify and deal with that situation.
@@ -71,7 +91,7 @@ interface VolunteerListProps {
 // The <VolunteerList> component renders a list of volunteers. Each volunteer will be shown with
 // an appropriate amount of meta-information to make the list immediately actionable.
 function VolunteerList(props: VolunteerListProps) {
-    const { volunteers, environment, index, value } = props;
+    const { volunteers, environment, identifier, index, value } = props;
 
     // The list will be hidden when used in a tab switcher, and it's not the selected item.
     const visible = index === undefined || index === value;
@@ -87,7 +107,9 @@ function VolunteerList(props: VolunteerListProps) {
                 <Paper square={square} sx={{ marginTop: { lg: desktopMarginTop } }}>
                     <List>
                         { volunteers.map(volunteer =>
-                            <Volunteer environment={environment} volunteer={volunteer} />) }
+                            <Volunteer environment={environment}
+                                       identifier={identifier}
+                                       volunteer={volunteer} />) }
                     </List>
                 </Paper> }
         </div>
@@ -95,13 +117,13 @@ function VolunteerList(props: VolunteerListProps) {
 }
 
 // Properties available for the <VolunteerListView> component.
-type VolunteerListViewProps = { event: Event };
+type VolunteerListViewProps = { event: Event, identifier: string };
 
 // The <VolunteerListView> provides an overview of the volunteers who are participating in this
 // event. There are two views: a singular list without headers for users who only see volunteers
 // from a single environment, or multiple tabbed lists for folks who can access multiple.
 export function VolunteerListView(props: VolunteerListViewProps) {
-    const { event } = props;
+    const { event, identifier } = props;
 
     const [ selectedTabIndex, setSelectedTabIndex ] = useState(/* default tab= */ 0);
 
@@ -135,6 +157,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                 <Fragment>
                     <AppTitle title="Volunteers" />
                     <VolunteerList environment={environmentNames[0]}
+                                   identifier={identifier}
                                    volunteers={environments[environmentNames[0]]} />
                 </Fragment>
             );
@@ -155,6 +178,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                     { environmentNames.map((name, index) =>
                         <VolunteerList volunteers={environments[name]}
                                        environment={name}
+                                       identifier={identifier}
                                        value={selectedTabIndex}
                                        index={index} />) }
 

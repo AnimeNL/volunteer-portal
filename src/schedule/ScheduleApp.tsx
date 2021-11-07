@@ -37,13 +37,23 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
         margin: 'auto',
         maxWidth: {
             lg: kDesktopMaximumWidthPx,
-        }
+        },
     },
     content: {
-        width: `calc(100% - ${2 * kDesktopMenuWidthPx}px)`,
+        flexGrow: 1,
+        width: {
+            lg: `calc(100% - ${2 * kDesktopMenuWidthPx}px)`,
+        },
     },
     menuAndSpacing: {
         width: kDesktopMenuWidthPx,
+    },
+    root: {
+        minHeight: '100vh',
+        backgroundColor: theme => {
+            return theme.palette.mode === 'light' ? '#F5F5F5'   // Gray 50
+                                                  : '#212121';  // Gray 900
+        },
     },
 }
 
@@ -155,55 +165,58 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
 
         return (
             <ContentTheme environment={environment}>
+                <Box sx={kStyles.root}>
 
-                <ApplicationBar title={this.state.title || defaultTitle} />
+                    <ApplicationBar title={this.state.title || defaultTitle} />
 
-                <Stack direction="row" sx={kStyles.container}>
+                    <Stack direction="row" sx={kStyles.container}>
 
-                    <Hidden lgDown>
-                        <Box sx={kStyles.menuAndSpacing}>
-                            <DesktopNavigation active={navigationActiveOption}
-                                               badgeActiveEvents={12}
-                                               badgeActiveShifts={true}
-                                               badgeActiveVolunteers={7}
-                                               event={this.props.event}
-                                               showAdministration={user.isAdministrator()} />
+                        <Hidden lgDown>
+                            <Box sx={kStyles.menuAndSpacing}>
+                                <DesktopNavigation active={navigationActiveOption}
+                                                badgeActiveEvents={12}
+                                                badgeActiveShifts={true}
+                                                badgeActiveVolunteers={7}
+                                                event={this.props.event}
+                                                showAdministration={user.isAdministrator()} />
+                            </Box>
+                        </Hidden>
+
+                        <Box sx={kStyles.content}>
+                            <Router>
+                                { user.isAdministrator() &&
+                                    <Route path="/schedule/:event/admin/" component={AdministratorView} /> }
+
+                                <Route path="/schedule/:event/areas/:area/:location/" component={EventListView} />
+                                <Route path="/schedule/:event/areas/:area/" component={LocationListView} />
+                                <Route path="/schedule/:event/areas/" component={AreaListView} />
+                                <Route path="/schedule/:event/search/:query*" component={SearchResultsView} />
+                                <Route path="/schedule/:event/shifts/" component={VolunteerView} />
+                                <Route path="/schedule/:event/volunteers/:identifier/" component={VolunteerView} />
+                                <Route path="/schedule/:event/volunteers/" component={VolunteerListView} />
+
+                                <Route default component={OverviewView} />
+                            </Router>
                         </Box>
+
+                        <Hidden lgDown>
+                            <Box sx={kStyles.menuAndSpacing}>
+                                { /* deliberately empty */ }
+                            </Box>
+                        </Hidden>
+
+                    </Stack>
+
+                    <Hidden lgUp>
+                        <MobileNavigation active={navigationActiveOption}
+                                        badgeActiveEvents={12}
+                                        badgeActiveShifts={true}
+                                        badgeActiveVolunteers={7}
+                                        event={this.props.event}
+                                        showAdministration={user.isAdministrator()} />
                     </Hidden>
 
-                    <Box sx={kStyles.content}>
-                        <Router>
-                            { user.isAdministrator() &&
-                                <Route path="/schedule/:event/admin/" component={AdministratorView} /> }
-
-                            <Route path="/schedule/:event/areas/:area/:location/" component={EventListView} />
-                            <Route path="/schedule/:event/areas/:area/" component={LocationListView} />
-                            <Route path="/schedule/:event/areas/" component={AreaListView} />
-                            <Route path="/schedule/:event/search/:query*" component={SearchResultsView} />
-                            <Route path="/schedule/:event/shifts/" component={VolunteerView} />
-                            <Route path="/schedule/:event/volunteers/:identifier/" component={VolunteerView} />
-                            <Route path="/schedule/:event/volunteers/" component={VolunteerListView} />
-
-                            <Route default component={OverviewView} />
-                        </Router>
-                    </Box>
-
-                    <Hidden lgDown>
-                        <Box sx={kStyles.menuAndSpacing}>
-                            { /* deliberately empty */ }
-                        </Box>
-                    </Hidden>
-
-                </Stack>
-
-                <Hidden lgUp>
-                    <MobileNavigation active={navigationActiveOption}
-                                      badgeActiveEvents={12}
-                                      badgeActiveShifts={true}
-                                      badgeActiveVolunteers={7}
-                                      event={this.props.event}
-                                      showAdministration={user.isAdministrator()} />
-                </Hidden>
+                </Box>
             </ContentTheme>
         );
     }

@@ -71,6 +71,10 @@ export interface ScheduleAppProps {
 // State maintained by the <ScheduleApp> component. This generally reflects state of the event that
 // is being displayed within the application.
 interface ScheduleAppState {
+    // Whether Dark Mode should be enabled in the application. Will be toggled based on the device's
+    // current colour mode, but can be overridden by the user as well.
+    darkMode: boolean;
+
     // Title of the application. Visible both in the user interface and in the browser tab.
     title?: string;
 }
@@ -105,7 +109,9 @@ interface ScheduleAppState {
 export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         implements AppTitleListener {
 
-    public state: ScheduleAppState = { /* empty */ };
+    public state: ScheduleAppState = {
+        darkMode: false,
+    };
 
     // ---------------------------------------------------------------------------------------------
     // AppTitleListener implementation & lifetime.
@@ -122,6 +128,23 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
     // Ensures that the title listener is active while this component has been mounted.
     componentDidMount() { setTitleListener(this); }
     componentWillUnmount() { clearTitleListener(); }
+
+    // ---------------------------------------------------------------------------------------------
+    // Setting routines.
+    // ---------------------------------------------------------------------------------------------
+
+    // Returns whether dark mode has been enabled in the application.
+    getDarkMode(): boolean { return this.state.darkMode; }
+
+    // Toggles whether dark mode should be enabled in the application. This option is considered an
+    // override, and will take precedence over the device state, which is considered as a default.
+    setDarkMode(enabled: boolean): void {
+        // TODO: Persist |enabled|.
+
+        this.setState({
+            darkMode: !!enabled,
+        });
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Navigation routines.
@@ -164,7 +187,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         }, [ this.state.title ]);
 
         return (
-            <ContentTheme environment={environment}>
+            <ContentTheme environment={environment} darkMode={this.state.darkMode}>
                 <Box sx={kStyles.root}>
 
                     <ApplicationBar title={this.state.title || defaultTitle} />
@@ -185,7 +208,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                         <Box sx={kStyles.content}>
                             <Router>
                                 { user.isAdministrator() &&
-                                    <Route path="/schedule/:event/admin/" component={AdministratorView} /> }
+                                    <Route path="/schedule/:event/admin/" component={AdministratorView} app={this} /> }
 
                                 <Route path="/schedule/:event/areas/:area/:location/" component={EventListView} />
                                 <Route path="/schedule/:event/areas/:area/" component={LocationListView} />

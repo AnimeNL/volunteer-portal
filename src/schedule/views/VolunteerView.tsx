@@ -73,7 +73,6 @@ export function VolunteerView(props: VolunteerViewProps) {
     const role = [...new Set(Object.values(volunteer.environments))].join(', ');
 
     // TODO: Add a dialog to visualize this volunteer's access code.
-    // TODO: Open the dialer when clicking on the phone icon, when available.
     // TODO: Clicking on the volunteer's icon should open the photo uploader.
 
     return (
@@ -90,15 +89,22 @@ export function VolunteerView(props: VolunteerViewProps) {
                         <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
                                       primary={volunteer.name}
                                       secondary={role} />
-
-                        <Stack direction="row" spacing={2}>
-                            <IconButton color="primary" size="large" sx={kStyles.actionButton}>
-                                <VpnKeyIcon />
-                            </IconButton>
-                            <IconButton color="primary" size="large" sx={kStyles.actionButton}>
-                                <PhoneIcon />
-                            </IconButton>
-                        </Stack>
+                        { (volunteer.accessCode || volunteer.phoneNumber) &&
+                            <Stack direction="row" spacing={2}>
+                                { volunteer.accessCode &&
+                                    <IconButton color="primary"
+                                                size="large"
+                                                sx={kStyles.actionButton}>
+                                        <VpnKeyIcon />
+                                    </IconButton> }
+                                { volunteer.phoneNumber &&
+                                    <IconButton color="primary"
+                                                href={`tel:${volunteer.phoneNumber}`}
+                                                size="large"
+                                                sx={kStyles.actionButton}>
+                                        <PhoneIcon />
+                                    </IconButton> }
+                            </Stack> }
                     </ListItem>
                 </List>
 

@@ -21,6 +21,11 @@ import Typography from '@mui/material/Typography';
 import { AppTitle } from '../../AppTitle';
 import { Event, EventVolunteer } from '../../base/Event';
 
+// Returns whether the given |role| represents a senior volunteer.
+function isSenior(role?: string): boolean {
+    return role !== undefined && (role.includes('Senior') || role.includes('Staff'));
+}
+
 // Type defining what we mean by a "volunteer".
 interface VolunteerProps {
     volunteer: EventVolunteer;
@@ -39,7 +44,6 @@ interface VolunteerProps {
 function Volunteer(props: VolunteerProps) {
     const { volunteer } = props;
 
-    // TODO: Visually differentiate between volunteers, senior volunteers and staff
     // TODO: Visually identify the volunteer's availability
     // TODO: Visually identify their current occupation
 
@@ -67,7 +71,10 @@ function Volunteer(props: VolunteerProps) {
                     </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary={volunteer.name}
-                            secondary={role} />
+                              secondaryTypographyProps={{
+                                  sx: { fontWeight: isSenior(role) ? 'bold' : 'normal' }
+                              }}
+                              secondary={role} />
             </ListComponent>
         </Fragment>
     );

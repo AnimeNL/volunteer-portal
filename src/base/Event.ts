@@ -68,6 +68,11 @@ export interface Event {
     getVolunteer(identifier: string): EventVolunteer | undefined;
 
     /**
+     * Returns the volunteer identified by the given |name|, or undefined when not found.
+     */
+    getVolunteerByName(name: string): EventVolunteer | undefined;
+
+    /**
      * Returns an iterator that provides access to all volunteers known to the system.
      */
     getVolunteers(): IterableIterator<EventVolunteer>;

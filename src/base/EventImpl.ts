@@ -155,6 +155,15 @@ export class EventImpl implements Event {
         return this.#volunteers.get(identifier);
     }
 
+    getVolunteerByName(name: string): EventVolunteer | undefined {
+        for (const [ _, volunteer ] of this.#volunteers) {
+            if (volunteer.name === name)
+                return volunteer;
+        }
+
+        return undefined;
+    }
+
     getVolunteers(): IterableIterator<EventVolunteer> {
         return this.#volunteers.values();
     }

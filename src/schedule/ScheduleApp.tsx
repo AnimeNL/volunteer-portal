@@ -214,8 +214,8 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                 <Route path="/schedule/:identifier/areas/:area/" component={LocationListView} />
                                 <Route path="/schedule/:identifier/areas/" component={AreaListView} />
                                 <Route path="/schedule/:identifier/search/:query*" component={SearchResultsView} />
-                                <Route path="/schedule/:identifier/shifts/" component={VolunteerView} />
-                                <Route path="/schedule/:identifier/volunteers/:identifier/" component={VolunteerView} />
+                                <Route path="/schedule/:identifier/shifts/" component={VolunteerView} event={event} />
+                                <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/" component={VolunteerView} event={event} />
                                 <Route path="/schedule/:identifier/volunteers/" component={VolunteerListView} event={event} />
 
                                 <Route default component={OverviewView} />

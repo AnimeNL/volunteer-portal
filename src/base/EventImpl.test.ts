@@ -275,6 +275,7 @@ describe('EventImpl', () => {
         }
 
         expect(event.getVolunteer('frank')).toBeUndefined();
+        expect(event.getVolunteer('john-doe')).toStrictEqual(event.getVolunteerByName('John Doe'));
 
         let identifiers = [];
         for (const volunteer of event.getVolunteers())

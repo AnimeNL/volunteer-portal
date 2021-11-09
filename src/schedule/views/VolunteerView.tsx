@@ -4,9 +4,14 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useContext } from 'preact/compat';
+import { useContext, useState } from 'preact/compat';
 
 import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -15,14 +20,16 @@ import ListItem from '@mui/material/ListItem';
 import Paper from '@mui/material/Paper';
 import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
+import SmsIcon from '@mui/icons-material/Sms';
 import Stack from '@mui/material/Stack';
 import { SystemStyleObject, Theme, lighten } from '@mui/system';
 import Typography from '@mui/material/Typography';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
-import { Event } from '../../base/Event';
+import { Event, EventVolunteer } from '../../base/Event';
 import { SubTitle } from '../components/SubTitle';
 
 // Styles for the <VolunteerView> component. Used to highlight the sort of interactions that are
@@ -42,6 +49,23 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
         whiteSpace: 'nowrap',
     },
 };
+
+// Creates a message (in Dutch, because meh) containing the |accessCode| for the given volunteer,
+// which can be shared with them directly in case they forgot their code.
+function createAccessCodeLink(volunteer: EventVolunteer, type: 'sms' | 'whatsapp'): string {
+    const courtesy = `Hoi ${volunteer.firstName}, je toegangscode voor ${document.domain} is `;
+    const accessCode =
+        type === 'whatsapp' ? `*${volunteer.accessCode}*` : volunteer.accessCode;
+
+    const encodedMessage = encodeURIComponent(courtesy + accessCode);
+
+    switch (type) {
+        case 'sms':
+            return `sms://${volunteer.phoneNumber}?body=${encodedMessage}`;
+        case 'whatsapp':
+            return `https://wa.me/${volunteer.phoneNumber}?text=${encodedMessage}`;
+    }
+}
 
 // Properties passed to the <VolunteerView> component.
 export interface VolunteerViewProps {
@@ -72,8 +96,12 @@ export function VolunteerView(props: VolunteerViewProps) {
     // access to. A set is used to remove duplicate roles, which will be the common case.
     const role = [...new Set(Object.values(volunteer.environments))].join(', ');
 
-    // TODO: Add a dialog to visualize this volunteer's access code.
+    // Toggles whether the access code should be visible, which is done as part of a <Dialog>
+    // component. The component will only be added when an access code is known for this volunteer.
+    const [ accessCodeVisible, setAccessCodeVisible ] = useState(false);
+
     // TODO: Clicking on the volunteer's icon should open the photo uploader.
+    // TODO: Show the sessions this volunteer will be participating in.
 
     return (
         <Fragment>
@@ -93,6 +121,7 @@ export function VolunteerView(props: VolunteerViewProps) {
                             <Stack direction="row" spacing={2}>
                                 { volunteer.accessCode &&
                                     <IconButton color="primary"
+                                                onClick={e => setAccessCodeVisible(true)}
                                                 size="large"
                                                 sx={kStyles.actionButton}>
                                         <VpnKeyIcon />
@@ -107,7 +136,6 @@ export function VolunteerView(props: VolunteerViewProps) {
                             </Stack> }
                     </ListItem>
                 </List>
-
             </Paper>
             <SubTitle>Shifts</SubTitle>
             <Paper elevation={2} sx={{ p: 2 }}>
@@ -115,6 +143,30 @@ export function VolunteerView(props: VolunteerViewProps) {
                     <em>Shifts go here.</em>
                 </Typography>
             </Paper>
+            { volunteer.accessCode &&
+                <Dialog onClose={e => setAccessCodeVisible(false)}
+                        open={accessCodeVisible}>
+
+                    <DialogTitle>Access code</DialogTitle>
+                    <DialogContent>
+                        {volunteer.firstName}'s access code for {event.name} is
+                        <strong> {volunteer.accessCode}</strong>
+                    </DialogContent>
+                    { volunteer.phoneNumber &&
+                        <DialogActions sx={{ justifyContent: 'flex-start', p: 3, paddingTop: 0 }}>
+                            <Button href={createAccessCodeLink(volunteer, 'sms')}
+                                    startIcon={ <SmsIcon /> }
+                                    variant="outlined">
+                                SMS
+                            </Button>
+                            <Button href={createAccessCodeLink(volunteer, 'whatsapp')}
+                                    startIcon={ <WhatsAppIcon /> }
+                                    variant="outlined">
+                                WhatsApp
+                            </Button>
+                        </DialogActions> }
+                </Dialog> }
+
         </Fragment>
     );
 }

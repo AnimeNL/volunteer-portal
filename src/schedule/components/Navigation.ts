@@ -4,6 +4,8 @@
 
 import { route } from 'preact-router';
 
+import { Event } from '../../base/Event';
+
 // Active navigation that the user is on, as should be highlighted in the user interface.
 export type NavigationActiveOptions = 'overview' | 'shifts' | 'areas' | 'volunteers' | 'admin';
 
@@ -22,18 +24,26 @@ export interface NavigationProps {
     // Badge to display for the number of active volunteers, if any.
     badgeActiveVolunteers?: number;
 
-    // Identifier of the event for which navigation is being provided.
-    event: string;
+    // The event for which navigation is being provided.
+    event: Event;
 
     // Whether the navigation option to the administration screen should be displayed.
     showAdministration?: boolean;
 };
 
-// Performs a navigation to the selected |option| using preact-router.
-export function navigateToOption(event: string, option: NavigationActiveOptions) {
+// Performs a navigation to the selected |option| using preact-router. Optionally the |area| can
+// be specified, which is only valid when the |option| is "areas".
+export function navigateToOption(event: string, option: NavigationActiveOptions, area?: string) {
     switch (option) {
-        case 'admin':
         case 'areas':
+            if (area) {
+                route(`/schedule/${event}/${option}/${area}/`);
+                break;
+            }
+
+            /** deliberate fall-through */
+
+        case 'admin':
         case 'shifts':
         case 'volunteers':
             route(`/schedule/${event}/${option}/`);

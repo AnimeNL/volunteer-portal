@@ -11,13 +11,14 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupIcon from '@mui/icons-material/Group';
 import HomeIcon from '@mui/icons-material/Home';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { SystemStyleObject, Theme } from '@mui/system';
 import { darken, lighten, styled } from '@mui/material/styles';
+
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 import { AppContext } from '../../AppContext';
 import { NavigationActiveOptions, NavigationProps, navigateToOption } from './Navigation';
@@ -38,6 +39,9 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
         marginBottom: .75,
         marginLeft: 2,
     },
+    areas: {
+        marginLeft: 4,
+    },
     item: {
         borderRadius: theme => theme.spacing(1),
         marginBottom: 1,
@@ -52,7 +56,6 @@ const NumberBadge = styled(Box)(({ theme }) => ({
     borderRadius: theme.spacing(1),
     fontSize: theme.spacing(1.5),
     lineHeight: theme.spacing(2.25),
-    marginTop: theme.spacing(-1),
     pointerEvents: 'none',
 }));
 
@@ -62,7 +65,6 @@ const SolidBadge = styled(Box)(({ theme }) => ({
     width: theme.spacing(1),
     height: theme.spacing(1),
     borderRadius: theme.spacing(.5),
-    marginTop: theme.spacing(-1),
     pointerEvents: 'none',
 }));
 
@@ -80,6 +82,7 @@ interface NavigationOption {
 // polluting it with a full side-drawer.
 export function DesktopNavigation(props: NavigationProps) {
     const { environment } = useContext(AppContext);
+    const { event } = props;
 
     const options: NavigationOption[] = [
         {
@@ -119,7 +122,7 @@ export function DesktopNavigation(props: NavigationProps) {
         });
     }
 
-    const navigateFn = navigateToOption.bind(null, props.event);
+    const navigateFn = navigateToOption.bind(null, event.identifier);
     const params = new URLSearchParams([
         [ 'color', darken(environment.themeColor, .3) ],
         [ 'title', /* the empty string= */ '' ],
@@ -134,7 +137,7 @@ export function DesktopNavigation(props: NavigationProps) {
             </Box>
             <List sx={kStyles.container}>
                 { options.map(option =>
-                    <ListItem disablePadding secondaryAction={option.badge}>
+                    <Fragment>
                         <ListItemButton onClick={ _ => navigateFn(option.id) }
                                         selected={props.active === option.id}
                                         sx={kStyles.item}>
@@ -142,8 +145,20 @@ export function DesktopNavigation(props: NavigationProps) {
                                 {option.icon}
                             </ListItemIcon>
                             <ListItemText primary={option.label} />
+                            {option.badge}
                         </ListItemButton>
-                    </ListItem>) }
+                        { option.id === 'areas' &&
+                            <List dense sx={kStyles.areas}>
+                                { [ ...event.getAreas() ].map(area =>
+                                    <ListItemButton onClick={ _ => navigateFn(option.id, area.identifier) }
+                                                    sx={kStyles.item}>
+                                        <ListItemIcon>
+                                            <ArrowRightIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={area.name} />
+                                    </ListItemButton>) }
+                            </List> }
+                    </Fragment>) }
             </List>
         </Fragment>
     );

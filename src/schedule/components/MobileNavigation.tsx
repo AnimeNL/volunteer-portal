@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import { h } from 'preact';
+import { useState } from 'preact/compat';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Badge from '@mui/material/Badge';
@@ -11,10 +12,12 @@ import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupIcon from '@mui/icons-material/Group';
 import HomeIcon from '@mui/icons-material/Home';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import SettingsIcon from '@mui/icons-material/Settings';
 
-import { NavigationProps, navigateToOption } from './Navigation';
+import { NavigationActiveOptions, NavigationProps, navigateToOption } from './Navigation';
 
 // This component powers the main navigation capability of the volunteer portal, with a user
 // interface optimized for display on mobile devices. A bottom bar navigation will be displayed, in
@@ -22,29 +25,50 @@ import { NavigationProps, navigateToOption } from './Navigation';
 //
 // https://mui.com/components/bottom-navigation/
 export function MobileNavigation(props: NavigationProps) {
+    const { event } = props;
+
+    // Compose the activity icons part of the bottom navigation bar. Detail is deliberately lost
+    // as the numeric dots take up too much space within the menu.
     const eventsIcon =
-        props.badgeActiveEvents ? <Badge color="error" badgeContent={props.badgeActiveEvents}>
-                                      <EventNoteIcon />
-                                  </Badge>
+        props.badgeActiveEvents ? <Badge color="error" variant="dot"><EventNoteIcon /></Badge>
                                 : <EventNoteIcon />;
 
     const shiftsIcon =
-        props.badgeActiveShifts ? <Badge color="error" variant="dot">
-                                      <AccessTimeIcon />
-                                  </Badge>
+        props.badgeActiveShifts ? <Badge color="error" variant="dot"><AccessTimeIcon /></Badge>
                                 : <AccessTimeIcon />;
 
     const volunteersIcon =
-        props.badgeActiveVolunteers ? <Badge color="error" badgeContent={props.badgeActiveVolunteers}>
-                                          <GroupIcon />
-                                      </Badge>
+        props.badgeActiveVolunteers ? <Badge color="error" variant="dot"><GroupIcon /></Badge>
                                     : <GroupIcon />;
 
-    const navigateFn = navigateToOption.bind(null, props.event);
+    // Anchor elements are used to display the menu through which individual areas in the location
+    // can be selected, rather than having a full page for click-through.
+    const [ anchorElement, setAnchorElement ] = useState<Element | null>(null);
+
+    // Array with all of the areas that are part of the location.
+    const areas = [ ...event.getAreas() ];
+
+    // Handles navigation to one of the top-level bottom navigation options.
+    function handleNavigation(e: React.SyntheticEvent<Element, Event>, value: string) {
+        switch (value) {
+            case 'areas':
+                setAnchorElement(e.currentTarget);
+                break;
+            default:
+                navigateToOption(event.identifier, value as NavigationActiveOptions);
+                break;
+        }
+    }
+
+    // Handles navigation to a particular area, through the area specialization.
+    function handleAreaNavigation(areaIdentifier?: string) {
+        setAnchorElement(/* value= */ null);
+        navigateToOption(event.identifier, 'areas', areaIdentifier);
+    }
 
     return (
         <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
-            <BottomNavigation onChange={(e, value) => navigateFn(value)} value={props.active}>
+            <BottomNavigation onChange={handleNavigation} value={props.active}>
                 <BottomNavigationAction label="Overview"
                                         value="overview"
                                         icon={ <HomeIcon /> } />
@@ -62,6 +86,24 @@ export function MobileNavigation(props: NavigationProps) {
                                             value="admin"
                                             icon={ <SettingsIcon /> } /> }
             </BottomNavigation>
+            <Menu anchorEl={anchorElement}
+                  anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
+                  transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                  MenuListProps={{ sx: { minWidth: '35vw' } }}
+                  onClose={e => setAnchorElement(/* value= */ null)}
+                  open={!!anchorElement}>
+
+                { areas.map((area, index) =>
+                    <MenuItem divider={index === areas.length - 1}
+                              onClick={e => handleAreaNavigation(area.identifier)}
+                              sx={{ justifyContent: 'center' }}>
+                        {area.name}
+                    </MenuItem>) }
+
+                <MenuItem onClick={e => handleAreaNavigation(/* area= */ undefined)}
+                          sx={{ justifyContent: 'center' }}>Active events</MenuItem>
+
+            </Menu>
         </Paper>
     );
 }

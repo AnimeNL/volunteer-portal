@@ -200,7 +200,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                                    badgeActiveEvents={12}
                                                    badgeActiveShifts={true}
                                                    badgeActiveVolunteers={7}
-                                                   event={this.props.identifier}
+                                                   event={event}
                                                    showAdministration={user.isAdministrator()} />
                             </Box>
                         </Hidden>
@@ -235,7 +235,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                           badgeActiveEvents={12}
                                           badgeActiveShifts={true}
                                           badgeActiveVolunteers={7}
-                                          event={this.props.identifier}
+                                          event={event}
                                           showAdministration={user.isAdministrator()} />
                     </Hidden>
 

@@ -98,7 +98,7 @@ export function DesktopNavigation(props: NavigationProps) {
             badge: props.badgeActiveShifts && <SolidBadge />,
         },
         {
-            id: 'areas',
+            id: 'events',
             label: 'Events',
             icon: <EventNoteIcon />,
             badge: props.badgeActiveEvents &&
@@ -147,7 +147,7 @@ export function DesktopNavigation(props: NavigationProps) {
                             <ListItemText primary={option.label} />
                             {option.badge}
                         </ListItemButton>
-                        { option.id === 'areas' &&
+                        { option.id === 'events' &&
                             <List dense sx={kStyles.areas}>
                                 { [ ...event.getAreas() ].map(area =>
                                     <ListItemButton onClick={ _ => navigateFn(option.id, area.identifier) }

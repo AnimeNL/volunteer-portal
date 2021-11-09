@@ -51,7 +51,7 @@ export function MobileNavigation(props: NavigationProps) {
     // Handles navigation to one of the top-level bottom navigation options.
     function handleNavigation(e: React.SyntheticEvent<Element, Event>, value: string) {
         switch (value) {
-            case 'areas':
+            case 'events':
                 setAnchorElement(e.currentTarget);
                 break;
             default:
@@ -63,7 +63,7 @@ export function MobileNavigation(props: NavigationProps) {
     // Handles navigation to a particular area, through the area specialization.
     function handleAreaNavigation(areaIdentifier?: string) {
         setAnchorElement(/* value= */ null);
-        navigateToOption(event.identifier, 'areas', areaIdentifier);
+        navigateToOption(event.identifier, 'events', areaIdentifier);
     }
 
     return (
@@ -76,7 +76,7 @@ export function MobileNavigation(props: NavigationProps) {
                                         value="shifts"
                                         icon={shiftsIcon} />
                 <BottomNavigationAction label="Events"
-                                        value="areas"
+                                        value="events"
                                         icon={eventsIcon} />
                 <BottomNavigationAction label="Volunteers"
                                         value="volunteers"

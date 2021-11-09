@@ -7,7 +7,7 @@ import { route } from 'preact-router';
 import { Event } from '../../base/Event';
 
 // Active navigation that the user is on, as should be highlighted in the user interface.
-export type NavigationActiveOptions = 'overview' | 'shifts' | 'areas' | 'volunteers' | 'admin';
+export type NavigationActiveOptions = 'overview' | 'shifts' | 'events' | 'volunteers' | 'admin';
 
 // Properties that can be passed to the <Navigation> component. Values will be valid for both the
 // mobile and desktop views of this component, even if their composition is entirely different.
@@ -32,10 +32,10 @@ export interface NavigationProps {
 };
 
 // Performs a navigation to the selected |option| using preact-router. Optionally the |area| can
-// be specified, which is only valid when the |option| is "areas".
+// be specified, which is only valid when the |option| is "events".
 export function navigateToOption(event: string, option: NavigationActiveOptions, area?: string) {
     switch (option) {
-        case 'areas':
+        case 'events':
             if (area) {
                 route(`/schedule/${event}/${option}/${area}/`);
                 break;

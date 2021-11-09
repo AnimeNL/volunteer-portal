@@ -6,12 +6,12 @@ import { Fragment, h } from 'preact';
 
 import { AppTitle } from '../../AppTitle';
 
-export function AreaListView() {
+export function ActiveEventsView() {
     return (
         <Fragment>
-            <AppTitle title="Areas" />
+            <AppTitle title="Active events" />
             <p>
-                AreaListView
+                ActiveEventsView
             </p>
         </Fragment>
     );

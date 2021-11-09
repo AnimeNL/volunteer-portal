@@ -19,8 +19,8 @@ import { DesktopNavigation } from './components/DesktopNavigation';
 import { MobileNavigation } from './components/MobileNavigation';
 import { NavigationActiveOptions } from './components/Navigation';
 
+import { ActiveEventsView } from './views/ActiveEventsView';
 import { AdministratorView } from './views/AdministratorView';
-import { AreaListView } from './views/AreaListView';
 import { EventListView } from './views/EventListView';
 import { LocationListView } from './views/LocationListView';
 import { OverviewView } from './views/OverviewView';
@@ -87,9 +87,9 @@ interface ScheduleAppState {
 //
 //     /schedule/:event/                          OverviewView
 //     /schedule/:event/admin/                    AdministratorView
-//     /schedule/:event/areas/                    AreaListView
-//     /schedule/:event/areas/:area/              LocationListView
-//     /schedule/:event/areas/:area/:location/    EventListView
+//     /schedule/:event/events/                   ActiveEventsView
+//     /schedule/:event/events/:area/             LocationListView
+//     /schedule/:event/events/:area/:location/   EventListView
 //     /schedule/:event/search/:query             SearchResultsView
 //     /schedule/:event/shifts/                   VolunteerView
 //     /schedule/:event/volunteers/               VolunteerListView
@@ -156,7 +156,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         const view = this.props.request?.split('/').shift() ?? 'overview';
         switch (view) {
             case 'admin':
-            case 'areas':
+            case 'events':
             case 'shifts':
             case 'volunteers':
                 return view;
@@ -210,9 +210,9 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                 { user.isAdministrator() &&
                                     <Route path="/schedule/:identifier/admin/" component={AdministratorView} app={this} /> }
 
-                                <Route path="/schedule/:identifier/areas/:area/:location/" component={EventListView} />
-                                <Route path="/schedule/:identifier/areas/:area/" component={LocationListView} />
-                                <Route path="/schedule/:identifier/areas/" component={AreaListView} />
+                                <Route path="/schedule/:identifier/events/:area/:location/" component={EventListView} />
+                                <Route path="/schedule/:identifier/events/:area/" component={LocationListView} />
+                                <Route path="/schedule/:identifier/events/" component={ActiveEventsView} />
                                 <Route path="/schedule/:identifier/search/:query*" component={SearchResultsView} />
                                 <Route path="/schedule/:identifier/shifts/" component={VolunteerView} event={event} />
                                 <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/" component={VolunteerView} event={event} />

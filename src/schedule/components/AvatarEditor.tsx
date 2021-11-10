@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 import { h } from 'preact';
-import { useState } from 'preact/compat';
+import { createRef, useState } from 'preact/compat';
 
-import Button from '@mui/material/Button';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
+import LoadingButton from '@mui/lab/LoadingButton';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import Stack from '@mui/material/Stack';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
@@ -18,6 +19,9 @@ import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { styled } from '@mui/material/styles';
 
 import ReactAvatarEditor from 'react-avatar-editor';
+
+// Mime type of the image that should be uploaded.
+const kAvatarType = 'image/png';
 
 // The default avatar that should be shown if none is available for the user.
 const kDefaultAvatar = '/images/avatar-none.jpg';
@@ -36,14 +40,20 @@ export interface AvatarEditorProps {
     src?: string;
 
     // Callback that should be called when the editor is being closed.
-    onClose: () => void;
+    requestClose: () => void;
+
+    // Callback that should be called when the editor is requesting an upload.
+    requestUpload: (avatar: Blob) => Promise<void>;
 }
 
 // The <AvatarEditor> component allows user avatars to be selected, changed and amended based on
 // images available on the local device. The resulting image can be shared with the server, to make
 // sure that the updated information is visible to all other users as well.
 export function AvatarEditor(props: AvatarEditorProps) {
-    const { open, src, onClose } = props;
+    const { open, src, requestClose, requestUpload } = props;
+
+    // Reference to the editor that's being used for the avatar. May be NULL.
+    const editorRef = createRef<ReactAvatarEditor>();
 
     // The image that has been selected by the file upload component.
     const [ selectedImage, setSelectedImage ] = useState<File | null>(null);
@@ -66,10 +76,54 @@ export function AvatarEditor(props: AvatarEditorProps) {
     // with which this editor was opened, falling back to the default avatar if none was available.
     const image = selectedImage ?? src ?? kDefaultAvatar;
 
-    // TODO: Support returning the selected image on upload.
+    // Called when the upload button has been selected. This is an asynchronous function. A spinner
+    // will be shown on the upload button while the operation is in progress.
+    const [ uploadError, setUploadError ] = useState(false);
+    const [ uploading, setUploading ] = useState(false);
+
+    async function processUpload() {
+        // Note that the conditions are defensive: the reference should always be set by React, a
+        // scaled canvas should always be obtainable. The inner case handles the actual file upload,
+        // where additional safety mitigations are in place.
+        if (editorRef.current) {
+            const canvas = editorRef.current.getImageScaledToCanvas();
+            if (canvas) {
+                setUploadError(false);
+                setUploading(true);
+
+                try {
+                    canvas.toBlob(function (blob) {
+                        if (!blob) {
+                            setUploading(false);
+                            return;
+                        }
+
+                        // We were able to obtain a Blob, request for it to be uploaded.
+                        requestUpload(blob).then(() => {
+                            setUploading(false);
+                            requestClose();
+                        });
+
+                    }, kAvatarType);
+                } catch (e) {
+                    console.error(e);
+
+                    // Exceptions usually imply that the <canvas> element was tainted, which is
+                    // possible in the local debuggin environment.
+                    setUploadError(true);
+                    setUploading(false);
+                }
+
+                return;
+            }
+        }
+
+        // The impossible happened. Weeh. Better have some UX.
+        setUploadError(true);
+    }
 
     return (
-        <Dialog onClose={e => onClose()}
+        <Dialog onClose={e => uploading || requestClose()}
                 open={!!open}>
 
             <DialogTitle>Upload a new avatar</DialogTitle>
@@ -77,7 +131,9 @@ export function AvatarEditor(props: AvatarEditorProps) {
                 <ReactAvatarEditor width={250} height={250} scale={zoomLevel}
                                    border={[ 32, 0 ]} borderRadius={125}
                                    color={[ 255, 255, 255, .75 ]}
-                                   image={image} />
+                                   image={image}
+                                   /** @ts-ignore */
+                                   ref={editorRef} />
 
                 <Stack direction="row"
                        justifyContent="center">
@@ -98,10 +154,15 @@ export function AvatarEditor(props: AvatarEditorProps) {
                     </IconButton>
                 </Stack>
             </DialogContent>
-            <DialogActions sx={{ padding: 2 }}>
-                <Button variant="contained">
+            <DialogActions sx={{ padding: 2, paddingRight: 4 }}>
+                <LoadingButton variant="contained"
+                               color={ uploadError ? "error" : "primary" }
+                               loading={uploading}
+                               loadingPosition="start"
+                               startIcon={ <CloudUploadIcon /> }
+                               onClick={processUpload}>
                     Upload
-                </Button>
+                </LoadingButton>
             </DialogActions>
 
         </Dialog>

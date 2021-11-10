@@ -109,6 +109,12 @@ export function VolunteerView(props: VolunteerViewProps) {
     // to change the avatar for this particular volunteer.
     const [ avatarEditorVisible, setAvatarEditorVisible ] = useState(false);
 
+    // Called when the given |avatar| should be uploaded for this volunteer. It contains the exact
+    // image data (resizes and cropped) as it should be shared with the server.
+    async function requestAvatarUpload(avatar: Blob) {
+        await new Promise(resolve => setTimeout(resolve, 2500));
+    }
+
     // TODO: Clicking on the volunteer's icon should open the photo uploader.
     // TODO: Show the sessions this volunteer will be participating in.
 
@@ -177,7 +183,8 @@ export function VolunteerView(props: VolunteerViewProps) {
                 </Dialog> }
 
             { canEditAvatar &&
-                <AvatarEditor onClose={() => setAvatarEditorVisible(false)}
+                <AvatarEditor requestClose={() => setAvatarEditorVisible(false)}
+                              requestUpload={requestAvatarUpload}
                               open={avatarEditorVisible}
                               src={volunteer.avatar} /> }
 

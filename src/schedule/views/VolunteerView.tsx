@@ -29,6 +29,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
+import { AvatarEditor } from '../components/AvatarEditor';
 import { Event, EventVolunteer } from '../../base/Event';
 import { SubTitle } from '../components/SubTitle';
 
@@ -100,6 +101,14 @@ export function VolunteerView(props: VolunteerViewProps) {
     // component. The component will only be added when an access code is known for this volunteer.
     const [ accessCodeVisible, setAccessCodeVisible ] = useState(false);
 
+    // Whether the current |user| has the ability to edit the avatar of this |volunteer|.
+    const canEditAvatar = true;
+
+    // Toggles whether the avatar editing functionality should be visible, which is done as part of
+    // a <Dialog> component. The component will only be added when the current user has the ability
+    // to change the avatar for this particular volunteer.
+    const [ avatarEditorVisible, setAvatarEditorVisible ] = useState(false);
+
     // TODO: Clicking on the volunteer's icon should open the photo uploader.
     // TODO: Show the sessions this volunteer will be participating in.
 
@@ -109,7 +118,7 @@ export function VolunteerView(props: VolunteerViewProps) {
             <Paper elevation={2} sx={{ maxWidth: '100vw', marginTop: { lg: 2 } }}>
                 <List>
                     <ListItem>
-                        <ListItemAvatar>
+                        <ListItemAvatar onClick={e => setAvatarEditorVisible(true)}>
                             <Avatar alt={volunteer.name} src={volunteer.avatar}>
                                 <PersonIcon />
                             </Avatar>
@@ -166,6 +175,11 @@ export function VolunteerView(props: VolunteerViewProps) {
                             </Button>
                         </DialogActions> }
                 </Dialog> }
+
+            { canEditAvatar &&
+                <AvatarEditor onClose={() => setAvatarEditorVisible(false)}
+                              open={avatarEditorVisible}
+                              src={volunteer.avatar} /> }
 
         </Fragment>
     );

@@ -28,6 +28,7 @@
     "preact-markdown": "^2.0.0",
     "preact-render-to-string": "^5.1.19",
     "preact-router": "^3.2.1",
+    "react-avatar-editor": "^12.0.0",
     "ts-loader": "^9.2.6"
   },
   "devDependencies": {
@@ -35,6 +36,7 @@
     "@babel/plugin-proposal-class-properties": "^7.16.0",
     "@babel/preset-typescript": "^7.16.0",
     "@types/jest": "^27.0.2",
+    "@types/react-avatar-editor": "^10.3.6",
     "babel-loader": "^8.2.3",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^9.0.1",

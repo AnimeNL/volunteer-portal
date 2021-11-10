@@ -82,8 +82,8 @@ export interface VolunteerViewProps {
 // The <VolunteerView> component lists all information about a particular volunteer, and enables
 // the volunteer themselves, as well as seniors, to upload a modified photo to the server.
 export function VolunteerView(props: VolunteerViewProps) {
+    const { configuration, user } = useContext(AppContext);
     const { event, volunteerIdentifier } = props;
-    const { user } = useContext(AppContext);
 
     const volunteer = volunteerIdentifier ? event.getVolunteer(volunteerIdentifier)
                                           : event.getVolunteerByName(user.name);
@@ -115,7 +115,7 @@ export function VolunteerView(props: VolunteerViewProps) {
         if (!volunteer)
             return false;  // no volunteer, likely a race condition after unloading the component
 
-        const success = !!await volunteer.uploadAvatar(user, avatar);
+        const success = !!await volunteer.uploadAvatar(configuration, user, avatar);
 
         // If the |user| and the |volunteer| are one and the same, which we very securely decide on
         // based on their full name, the |user| object will be updated with the new avatar too.

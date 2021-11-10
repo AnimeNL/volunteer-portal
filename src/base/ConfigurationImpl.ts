@@ -27,6 +27,10 @@ export class ConfigurationImpl implements Configuration {
         return this.hostname + '/api/auth';
     }
 
+    getAvatarEndpoint(): string {
+        return this.hostname + '/api/avatar';
+    }
+
     getContentEndpoint(): string {
         return this.hostname + '/api/content';
     }

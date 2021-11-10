@@ -4,6 +4,7 @@
 
 import moment from 'moment-timezone';
 
+import { Configuration } from './Configuration';
 import { Event, EventArea, EventInfo, EventLocation, EventSession, EventVolunteer } from './Event';
 import { User } from './User';
 
@@ -314,12 +315,41 @@ class EventVolunteerImpl implements EventVolunteer {
         this.#response = response;
     }
 
-    async uploadAvatar(user: User, avatar: Blob): Promise<boolean> {
+    async uploadAvatar(configuration: Configuration, user: User, avatar: Blob): Promise<boolean> {
+        try {
+            const requestData = new FormData();
+            requestData.set('authToken', user.authToken);
+            requestData.set('userToken', this.#response.identifier);
+            requestData.set('event', this.#eventIdentifier);
+            requestData.set('avatar', avatar, 'upload.png');
+
+            const response = await fetch(configuration.getAvatarEndpoint(), {
+                method: 'POST',
+                body: requestData,
+            });
+
+            // When this clause hits, the server was not able to accept the request.
+            if (!response.ok)
+                return false;
+
+            const data = await response.json();
+            if (typeof data !== 'object')
+                return false;  // invalid response format, likely an error message of sorts
+
+            if (data.hasOwnProperty('error') || !data.hasOwnProperty('success')) {
+                console.error(data.error ?? 'Unknown server error', data);
+                return false;
+            }
+
+        } catch (e) {
+            console.error(e);
+            return false;
+        }
+
+        // If we hit this location, the |avatar| has been uploaded to the server. Update the local
+        // reference and bail out, letting the rest of the code do what it's supposed to do.
+
         this.#uploadedAvatarUrl = URL.createObjectURL(avatar);
-
-        // TODO: Actually upload the |avatar| to the server. The |user| and the |#eventIdentifier|
-        // should contain the other information necessary to complete this request.
-
         return true;
     }
 

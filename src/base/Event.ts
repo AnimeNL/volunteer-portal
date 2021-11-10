@@ -4,6 +4,7 @@
 
 import moment from 'moment-timezone';
 
+import { Configuration } from './Configuration';
 import { User } from './User';
 
 /**
@@ -193,7 +194,7 @@ export interface EventVolunteer {
      * Can be used to indicate that the |user| would like to upload the given |avatar| for this
      * volunteer. When successful, the local avatar state will be updated as well as the server's.
      */
-    uploadAvatar(user: User, avatar: Blob): Promise<boolean>;
+    uploadAvatar(configuration: Configuration, user: User, avatar: Blob): Promise<boolean>;
 
     /**
      * The volunteer's full name.

@@ -20,6 +20,12 @@ export interface Configuration {
     getAuthenticationEndpoint(): string;
 
     /**
+     * Returns a URL to the endpoint where avatars can be uploaded to.
+     * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apiavatar
+     */
+    getAvatarEndpoint(): string;
+
+    /**
      * Returns a URL to the endpoint where data of the Content API can be obtained.
      * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apicontent
      */

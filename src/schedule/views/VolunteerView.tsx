@@ -104,10 +104,10 @@ export function VolunteerView(props: VolunteerViewProps) {
     // Whether the current |user| has the ability to edit the avatar of this |volunteer|.
     const canEditAvatar = true;
 
-    // Toggles whether the avatar editing functionality should be visible, which is done as part of
-    // a <Dialog> component. The component will only be added when the current user has the ability
-    // to change the avatar for this particular volunteer.
-    const [ avatarEditorVisible, setAvatarEditorVisible ] = useState(false);
+    // Toggles whether a dialog should be visible with the volunteer's avatar. When the user has the
+    // ability to edit the avatar, this will open an editor. When they don't, a dialog will be
+    // shown with a larger version of the avatar, likely displaying more information.
+    const [ avatarDialogVisible, setAvatarDialogVisible ] = useState(false);
 
     // Called when the given |avatar| should be uploaded for this volunteer. It contains the exact
     // image data (resizes and cropped) as it should be shared with the server.
@@ -115,7 +115,6 @@ export function VolunteerView(props: VolunteerViewProps) {
         await new Promise(resolve => setTimeout(resolve, 2500));
     }
 
-    // TODO: Clicking on the volunteer's icon should open the photo uploader.
     // TODO: Show the sessions this volunteer will be participating in.
 
     return (
@@ -124,7 +123,7 @@ export function VolunteerView(props: VolunteerViewProps) {
             <Paper elevation={2} sx={{ maxWidth: '100vw', marginTop: { lg: 2 } }}>
                 <List>
                     <ListItem>
-                        <ListItemAvatar onClick={e => setAvatarEditorVisible(true)}>
+                        <ListItemAvatar onClick={e => setAvatarDialogVisible(true)}>
                             <Avatar alt={volunteer.name} src={volunteer.avatar}>
                                 <PersonIcon />
                             </Avatar>
@@ -183,10 +182,21 @@ export function VolunteerView(props: VolunteerViewProps) {
                 </Dialog> }
 
             { canEditAvatar &&
-                <AvatarEditor requestClose={() => setAvatarEditorVisible(false)}
+                <AvatarEditor requestClose={() => setAvatarDialogVisible(false)}
                               requestUpload={requestAvatarUpload}
-                              open={avatarEditorVisible}
+                              open={avatarDialogVisible}
                               src={volunteer.avatar} /> }
+
+            { (!canEditAvatar && volunteer.avatar) &&
+                <Dialog onClose={e => setAvatarDialogVisible(false)}
+                        open={avatarDialogVisible}>
+
+                    <DialogTitle>{volunteer.name}</DialogTitle>
+                    <DialogContent>
+                        <img src={volunteer.avatar} />
+                    </DialogContent>
+
+                </Dialog> }
 
         </Fragment>
     );

@@ -111,8 +111,18 @@ export function VolunteerView(props: VolunteerViewProps) {
 
     // Called when the given |avatar| should be uploaded for this volunteer. It contains the exact
     // image data (resizes and cropped) as it should be shared with the server.
-    async function requestAvatarUpload(avatar: Blob) {
-        await new Promise(resolve => setTimeout(resolve, 2500));
+    async function requestAvatarUpload(avatar: Blob): Promise<boolean> {
+        if (!volunteer)
+            return false;  // no volunteer, likely a race condition after unloading the component
+
+        const success = !!await volunteer.uploadAvatar(user, avatar);
+
+        // If the |user| and the |volunteer| are one and the same, which we very securely decide on
+        // based on their full name, the |user| object will be updated with the new avatar too.
+        if (user.name === volunteer.name)
+            user.avatar = volunteer.avatar;
+
+        return success;
     }
 
     // TODO: Show the sessions this volunteer will be participating in.

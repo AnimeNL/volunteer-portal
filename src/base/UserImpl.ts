@@ -56,6 +56,8 @@ export class UserImpl implements User {
     private userEvents?: Map<string, EventRole>;
     private userResponse?: IUserResponse;
 
+    private uploadedAvatarUrl?: string;
+
     constructor(cache: Cache, configuration: Configuration) {
         this.cache = cache;
         this.configuration = configuration;
@@ -295,11 +297,18 @@ export class UserImpl implements User {
         return this.userAuthToken;
     }
 
-    get avatar(): Readonly<string | undefined> {
+    get avatar(): string | undefined {
         if (!this.userResponse)
             throw new Error(kExceptionMessage);
 
-        return this.userResponse.avatar;
+        return this.uploadedAvatarUrl ?? this.userResponse.avatar;
+    }
+
+    set avatar(url: string | undefined) {
+        if (!this.userResponse)
+            throw new Error(kExceptionMessage);
+
+        this.uploadedAvatarUrl = url;
     }
 
     get emailAddress(): Readonly<string> {

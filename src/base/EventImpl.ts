@@ -5,6 +5,8 @@
 import moment from 'moment-timezone';
 
 import { Event, EventArea, EventInfo, EventLocation, EventSession, EventVolunteer } from './Event';
+import { User } from './User';
+
 import { IEventResponse, IEventResponseArea, IEventResponseEvent, IEventResponseLocation,
          IEventResponseMeta, IEventResponseSession, IEventResponseVolunteer } from '../api/IEvent';
 
@@ -75,8 +77,10 @@ export class EventImpl implements Event {
         }
 
         // (2) Initialize all the volunteer information.
-        for (const volunteer of event.volunteers)
-            this.#volunteers.set(volunteer.identifier, new EventVolunteerImpl(volunteer));
+        for (const volunteer of event.volunteers) {
+            this.#volunteers.set(
+                volunteer.identifier, new EventVolunteerImpl(identifier, volunteer));
+        }
 
         // (3) Initialize all the event and session information.
         for (const eventInfo of event.events) {
@@ -299,10 +303,24 @@ class EventSessionImpl implements EventSession {
  * response information with a slightly more accessible API.
  */
 class EventVolunteerImpl implements EventVolunteer {
+    #eventIdentifier: string;
     #response: IEventResponseVolunteer;
 
-    constructor(response: IEventResponseVolunteer) {
+    // The avatar as it has been uploaded during this session, if any.
+    #uploadedAvatarUrl?: string;
+
+    constructor(eventIdentifier: string, response: IEventResponseVolunteer) {
+        this.#eventIdentifier = eventIdentifier;
         this.#response = response;
+    }
+
+    async uploadAvatar(user: User, avatar: Blob): Promise<boolean> {
+        this.#uploadedAvatarUrl = URL.createObjectURL(avatar);
+
+        // TODO: Actually upload the |avatar| to the server. The |user| and the |#eventIdentifier|
+        // should contain the other information necessary to complete this request.
+
+        return true;
     }
 
     get name() { return `${this.#response.name[0]} ${this.#response.name[1]}`.trim(); }
@@ -311,6 +329,6 @@ class EventVolunteerImpl implements EventVolunteer {
     get environments() { return this.#response.environments; }
     get identifier() { return this.#response.identifier; }
     get accessCode() { return this.#response.accessCode; }
-    get avatar() { return this.#response.avatar; }
+    get avatar() { return this.#uploadedAvatarUrl ?? this.#response.avatar; }
     get phoneNumber() { return this.#response.phoneNumber; }
 }

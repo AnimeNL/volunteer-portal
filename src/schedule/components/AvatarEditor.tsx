@@ -43,7 +43,7 @@ export interface AvatarEditorProps {
     requestClose: () => void;
 
     // Callback that should be called when the editor is requesting an upload.
-    requestUpload: (avatar: Blob) => Promise<void>;
+    requestUpload: (avatar: Blob) => Promise<boolean>;
 }
 
 // The <AvatarEditor> component allows user avatars to be selected, changed and amended based on
@@ -99,8 +99,10 @@ export function AvatarEditor(props: AvatarEditorProps) {
                         }
 
                         // We were able to obtain a Blob, request for it to be uploaded.
-                        requestUpload(blob).then(() => {
+                        requestUpload(blob).then(success => {
+                            setUploadError(!success);
                             setUploading(false);
+
                             requestClose();
                         });
 

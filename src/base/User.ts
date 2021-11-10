@@ -49,18 +49,19 @@ export interface User {
     authToken: Readonly<string>;
 
     /**
-     * URL to the avatar representing the person who is authentication.
+     * URL to the avatar representing the person who is authentication. This may be changed by the
+     * application in case the user updates their own avatar.
      *
      * @throws Error when `authenticated` has not been set to TRUE.
      */
-    avatar: Readonly<string | undefined>;
+    avatar?: string;
 
     /**
      * The e-mail address that has been associated with the current access code.
      *
      * @throws Error when `authenticated` has not been set to TRUE.
      */
-     emailAddress: Readonly<string>;
+    emailAddress: Readonly<string>;
 
     /**
      * Object containing the roles that the user has in various events. There are three predefined

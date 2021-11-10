@@ -4,6 +4,8 @@
 
 import moment from 'moment-timezone';
 
+import { User } from './User';
+
 /**
  * Interface that defines how code is expected to interact with information about a specific event.
  * This builds on top of the `IEventResponse` information retrieved from the Event API.
@@ -187,6 +189,12 @@ export interface EventSession {
  * Interface that documents the information known about a particular volunteer for the event.
  */
 export interface EventVolunteer {
+    /**
+     * Can be used to indicate that the |user| would like to upload the given |avatar| for this
+     * volunteer. When successful, the local avatar state will be updated as well as the server's.
+     */
+    uploadAvatar(user: User, avatar: Blob): Promise<boolean>;
+
     /**
      * The volunteer's full name.
      */

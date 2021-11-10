@@ -103,7 +103,7 @@ export function AvatarEditor(props: AvatarEditorProps) {
                             setUploadError(!success);
                             setUploading(false);
 
-                            requestClose();
+                            handleDialogClose();
                         });
 
                     }, kAvatarType);
@@ -124,9 +124,21 @@ export function AvatarEditor(props: AvatarEditorProps) {
         setUploadError(true);
     }
 
+    // Handles closing the dialog. We block the request if an avatar upload is in progress. When
+    // it's not, state will be reset as error states may not be relevant next time.
+    function handleDialogClose() {
+        if (uploading)
+            return;
+
+        requestClose();
+
+        setUploadError(false);
+        setSelectedImage(null);
+        setZoomLevel(1);
+    }
+
     return (
-        <Dialog onClose={e => uploading || requestClose()}
-                open={!!open}>
+        <Dialog onClose={handleDialogClose} open={!!open}>
 
             <DialogTitle>Upload a new avatar</DialogTitle>
             <DialogContent dividers sx={{ padding: 0, paddingTop: 2, paddingBottom: 1 }}>

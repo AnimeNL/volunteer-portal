@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import { h } from 'preact';
-import { lazy } from 'preact/compat';
+import { useState } from 'preact/compat';
 
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
@@ -15,11 +15,17 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import Stack from '@mui/material/Stack';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import { styled } from '@mui/material/styles';
 
 import ReactAvatarEditor from 'react-avatar-editor';
 
 // The default avatar that should be shown if none is available for the user.
 const kDefaultAvatar = '/images/avatar-none.jpg';
+
+// Invisible input element, used to have an icon instead of a file upload bar.
+const InvisibleInput = styled('input')({
+    display: 'none',
+});
 
 // Properties accepted by the <AvatarEditor> component.
 export interface AvatarEditorProps {
@@ -39,8 +45,27 @@ export interface AvatarEditorProps {
 export function AvatarEditor(props: AvatarEditorProps) {
     const { open, src, onClose } = props;
 
-    // TODO: Support selecting a new file for upload.
-    // TODO: Support zooming the selected image in and out.
+    // The image that has been selected by the file upload component.
+    const [ selectedImage, setSelectedImage ] = useState<File | null>(null);
+
+    function onSelectedImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+        if (event.currentTarget && event.currentTarget.files?.length)
+            setSelectedImage(event.currentTarget.files[0]);
+        else
+            setSelectedImage(null);
+    }
+
+    // Zoom level for the image selected in the react-avatar-editor component.
+    const [ zoomLevel, setZoomLevel ] = useState(1);
+
+    // Helper functions to increase or decrease the zoom level of the selected avatar.
+    function decreaseZoomLevel() { setZoomLevel(Math.max(1, zoomLevel / 1.2)); }
+    function increaseZoomLevel() { setZoomLevel(Math.min(zoomLevel * 1.2, 5)); }
+
+    // The image that should be shown. A manually selected image takes priority, then the image
+    // with which this editor was opened, falling back to the default avatar if none was available.
+    const image = selectedImage ?? src ?? kDefaultAvatar;
+
     // TODO: Support returning the selected image on upload.
 
     return (
@@ -49,20 +74,26 @@ export function AvatarEditor(props: AvatarEditorProps) {
 
             <DialogTitle>Upload a new avatar</DialogTitle>
             <DialogContent dividers sx={{ padding: 0, paddingTop: 2, paddingBottom: 1 }}>
-                <ReactAvatarEditor width={250} height={250}
+                <ReactAvatarEditor width={250} height={250} scale={zoomLevel}
                                    border={[ 32, 0 ]} borderRadius={125}
                                    color={[ 255, 255, 255, .75 ]}
-                                   image={src ?? kDefaultAvatar} />
+                                   image={image} />
 
                 <Stack direction="row"
                        justifyContent="center">
-                    <IconButton sx={{ marginRight: 6 }}>
-                        <PhotoCameraIcon />
-                    </IconButton>
-                    <IconButton>
+                    <label htmlFor="avatar-editor-file">
+                        <InvisibleInput type="file" accept="image/*"
+                                        onChange={onSelectedImageChange}
+                                        id="avatar-editor-file" />
+
+                        <IconButton component="span">
+                            <PhotoCameraIcon />
+                        </IconButton>
+                    </label>
+                    <IconButton onClick={increaseZoomLevel} sx={{ marginLeft: 6 }}>
                         <ZoomInIcon />
                     </IconButton>
-                    <IconButton>
+                    <IconButton onClick={decreaseZoomLevel}>
                         <ZoomOutIcon />
                     </IconButton>
                 </Stack>

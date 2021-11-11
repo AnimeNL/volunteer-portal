@@ -68,6 +68,17 @@ function createAccessCodeLink(volunteer: EventVolunteer, type: 'sms' | 'whatsapp
     }
 }
 
+// Returns whether the given |volunteer| is a Senior volunteer for this convention. This is the case
+// when their role includes either Senior or Staff, using case-sensitive matching.
+function isSeniorVolunteer(volunteer?: EventVolunteer): boolean {
+    if (volunteer) {
+        const roles = [ ...Object.values(volunteer.environments) ];
+        return roles.some(role => role.includes('Senior') || role.includes('Staff'));
+    }
+
+    return false;
+}
+
 // Properties passed to the <VolunteerView> component.
 export interface VolunteerViewProps {
     // The event for which we want to display the volunteer's information.
@@ -85,8 +96,9 @@ export function VolunteerView(props: VolunteerViewProps) {
     const { configuration, user } = useContext(AppContext);
     const { event, volunteerIdentifier } = props;
 
+    const userVolunteer = event.getVolunteerByName(user.name);
     const volunteer = volunteerIdentifier ? event.getVolunteer(volunteerIdentifier)
-                                          : event.getVolunteerByName(user.name);
+                                          : userVolunteer;
 
     if (!volunteer) {
         route(`/schedule/${event.identifier}/volunteers/`);
@@ -101,8 +113,10 @@ export function VolunteerView(props: VolunteerViewProps) {
     // component. The component will only be added when an access code is known for this volunteer.
     const [ accessCodeVisible, setAccessCodeVisible ] = useState(false);
 
-    // Whether the current |user| has the ability to edit the avatar of this |volunteer|.
-    const canEditAvatar = true;
+    // Whether the current |user| has the ability to edit the avatar of this |volunteer|. This is
+    // the case for administrators, Senior and Staff volunteers, and for the volunteers themselves.
+    const canEditAvatar =
+        user.isAdministrator() || isSeniorVolunteer(userVolunteer) || user.name === volunteer.name;
 
     // Toggles whether a dialog should be visible with the volunteer's avatar. When the user has the
     // ability to edit the avatar, this will open an editor. When they don't, a dialog will be

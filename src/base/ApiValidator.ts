@@ -201,8 +201,46 @@ function validateNumeric(input: any, schema: Schema, path: string[], integer: bo
 // Validates that the given |input| corresponds to an object with the given |schema|. The |path|
 // will be used to display error messages in case any are seen.
 function validateObject(input: any, schema: Schema, path: string[]): input is object {
-    // TODO: implement support for objects
-    return false;
+    if (typeof input !== 'object')
+        return reportError(`Expected type object, got type ${typeof input}`, path, input);
+
+    if (input === null)
+        return reportError('Expected type object, got type null', path, input);
+
+    if (Array.isArray(input))
+        return reportError('Expected type object, got type array', path, input);
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation#section-6.1
+    // TODO: Both `enum` and `const` would require having some deepEqual function as opposed to
+    // (strict) instance comparison, does it make sense to compare that?
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation#section-6.5
+    if (schema.maxProperties !== undefined || schema.minProperties !== undefined) {
+        const properties = Object.getOwnPropertyNames(input);
+        if (schema.maxProperties !== undefined && properties.length > schema.maxProperties)
+            return reportError(`Value has more than ${schema.maxProperties} properties`, path, input);
+
+        if (schema.minProperties !== undefined && properties.length < schema.minProperties)
+            return reportError(`Value has less than ${schema.minProperties} properties`, path, input);
+    }
+
+    if (Array.isArray(schema.required)) {
+        for (const key of schema.required) {
+            if (!input.hasOwnProperty(key))
+                return reportError(`Value is expected to have property "${key}"`, path, input);
+        }
+    }
+
+    // TODO: Implement `dependentRequired`, which is easy enough, but missing in the TypeScript
+    // definitions of the JSON scheme creation dependency that we're using.
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2
+    // additionalProperties
+    // patternProperties
+    // propertyNames
+    // properties
+
+    return true;
 }
 
 // Validatse that the given |input| corresponds to a string, considering various options from the
@@ -238,5 +276,6 @@ export const validators = {
     validateInteger,
     validateNull,
     validateNumber,
+    validateObject,
     validateString,
 };

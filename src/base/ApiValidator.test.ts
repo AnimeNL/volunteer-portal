@@ -20,6 +20,10 @@ describe('ApiValidator', () => {
         lastError = undefined;
     });
 
+    // ---------------------------------------------------------------------------------------------
+    // Validation of scalar types
+    // ---------------------------------------------------------------------------------------------
+
     it('should be able to validate booleans', () => {
         expect(validators.validateBoolean(null, {}, [ 'IBool' ])).toBeFalsy();
         expect(lastError).toEqual('[IBool] Expected type boolean, got type object');
@@ -216,5 +220,50 @@ describe('ApiValidator', () => {
         }, [ 'IArray' ])).toBeFalsy();
 
         expect(lastError).toEqual('[IArray.2.0] Expected type boolean, got type number');
+
+        // Neither `enum` nor `const` are implemented for arrays. Change detector tests:
+        expect(validators.validateArray([], { enum: [ [ 2 ] ] }, [ 'IArray' ])).toBeTruthy();
+        expect(validators.validateArray([], { const: [ 2 ] }, [ 'IArray' ])).toBeTruthy();
+    });
+
+    it('should be able to validate objects', () => {
+        expect(validators.validateObject(null, {}, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject] Expected type object, got type null');
+
+        expect(validators.validateObject(true, {}, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject] Expected type object, got type boolean');
+
+        expect(validators.validateObject(3.14, {}, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject] Expected type object, got type number');
+
+        expect(validators.validateObject([], {}, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject] Expected type object, got type array');
+
+        expect(validators.validateObject({}, {}, [ 'IObject' ])).toBeTruthy();
+        expect(validators.validateObject({ a: 1 }, {}, [ 'IObject' ])).toBeTruthy();
+
+        expect(validators.validateObject({}, { maxProperties: 1 }, [ 'IObject' ])).toBeTruthy();
+        expect(validators.validateObject({ a: 1 }, { maxProperties: 1 }, [ 'IObject' ]))
+            .toBeTruthy();
+        expect(validators.validateObject({ a: 1, b: 2 }, { maxProperties: 1 }, [ 'IObject' ]))
+            .toBeFalsy();
+        expect(lastError).toEqual('[IObject] Value has more than 1 properties');
+
+        expect(validators.validateObject({ a: 1, b: 2 }, { minProperties: 1 }, [ 'IObject' ]))
+            .toBeTruthy();
+        expect(validators.validateObject({ a: 1 }, { minProperties: 1 }, [ 'IObject' ]))
+            .toBeTruthy();
+        expect(validators.validateObject({}, { minProperties: 1 }, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject] Value has less than 1 properties');
+
+        expect(validators.validateObject({ a: 1, b: 2 }, { required: ['b'] }, [ 'IObject' ]))
+            .toBeTruthy();
+        expect(validators.validateObject({ a: 1 }, { required: ['b'] }, [ 'IObject' ]))
+            .toBeFalsy();
+        expect(lastError).toEqual('[IObject] Value is expected to have property "b"');
+
+        // Neither `enum` nor `const` are implemented for objects. Change detector tests:
+        expect(validators.validateObject({}, { enum: [ { a: 1 } ] }, [ 'IObject' ])).toBeTruthy();
+        expect(validators.validateObject({}, { const: { a: 1 } }, [ 'IObject' ])).toBeTruthy();
     });
 });

@@ -1,0 +1,419 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "EventRole": {
+      "type": "string"
+    },
+    "IApplicationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "covidRequirements": {
+          "type": "boolean"
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "emailAddress": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "gdprRequirements": {
+          "type": "boolean"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "hotel": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "phoneNumber": {
+          "type": "string"
+        },
+        "preferences": {
+          "type": "string"
+        },
+        "shirtSize": {
+          "type": "string"
+        },
+        "whatsApp": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName",
+        "dateOfBirth",
+        "emailAddress",
+        "phoneNumber",
+        "gender",
+        "shirtSize",
+        "preferences",
+        "available",
+        "hotel",
+        "whatsApp",
+        "covidRequirements",
+        "gdprRequirements"
+      ],
+      "type": "object"
+    },
+    "IApplicationResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "accessCode": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IAuthRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "accessCode": {
+          "type": "string"
+        },
+        "emailAddress": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "emailAddress",
+        "accessCode"
+      ],
+      "type": "object"
+    },
+    "IAuthResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "authToken": {
+          "type": "string"
+        },
+        "authTokenExpiration": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "IContentResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "pages": {
+          "items": {
+            "$ref": "#/definitions/IContentResponsePage"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "type": "object"
+    },
+    "IContentResponsePage": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "modified": {
+          "type": "number"
+        },
+        "pathname": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "pathname",
+        "content",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "IEnvironmentResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "contactName": {
+          "type": "string"
+        },
+        "contactTarget": {
+          "type": "string"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/definitions/IEnvironmentResponseEvent"
+          },
+          "type": "array"
+        },
+        "themeColor": {
+          "type": "string"
+        },
+        "themeTitle": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "themeColor",
+        "themeTitle",
+        "events",
+        "contactName"
+      ],
+      "type": "object"
+    },
+    "IEnvironmentResponseEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "enableContent": {
+          "type": "boolean"
+        },
+        "enableRegistration": {
+          "type": "boolean"
+        },
+        "enableSchedule": {
+          "type": "boolean"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "enableContent",
+        "enableRegistration",
+        "enableSchedule",
+        "identifier",
+        "timezone"
+      ],
+      "type": "object"
+    },
+    "IEventResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "areas": {
+          "items": {
+            "$ref": "#/definitions/IEventResponseArea"
+          },
+          "type": "array"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/definitions/IEventResponseEvent"
+          },
+          "type": "array"
+        },
+        "locations": {
+          "items": {
+            "$ref": "#/definitions/IEventResponseLocation"
+          },
+          "type": "array"
+        },
+        "meta": {
+          "$ref": "#/definitions/IEventResponseMeta"
+        },
+        "volunteers": {
+          "items": {
+            "$ref": "#/definitions/IEventResponseVolunteer"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "areas",
+        "events",
+        "locations",
+        "meta",
+        "volunteers"
+      ],
+      "type": "object"
+    },
+    "IEventResponseArea": {
+      "additionalProperties": false,
+      "properties": {
+        "icon": {
+          "type": "string"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "identifier",
+        "name"
+      ],
+      "type": "object"
+    },
+    "IEventResponseEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "hidden": {
+          "type": "boolean"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "sessions": {
+          "items": {
+            "$ref": "#/definitions/IEventResponseSession"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "hidden",
+        "identifier",
+        "sessions"
+      ],
+      "type": "object"
+    },
+    "IEventResponseLocation": {
+      "additionalProperties": false,
+      "properties": {
+        "area": {
+          "type": "string"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "identifier",
+        "name",
+        "area"
+      ],
+      "type": "object"
+    },
+    "IEventResponseMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "IEventResponseSession": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "time": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "location",
+        "name",
+        "time"
+      ],
+      "type": "object"
+    },
+    "IEventResponseVolunteer": {
+      "additionalProperties": false,
+      "properties": {
+        "accessCode": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "environments": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "name": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "phoneNumber": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "identifier",
+        "name",
+        "environments"
+      ],
+      "type": "object"
+    },
+    "IUserResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "administrator": {
+          "type": "boolean"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "events": {
+          "additionalProperties": {
+            "$ref": "#/definitions/EventRole"
+          },
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "events",
+        "name"
+      ],
+      "type": "object"
+    }
+  }
+}

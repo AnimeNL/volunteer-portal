@@ -234,9 +234,43 @@ function validateObject(input: any, schema: Schema, path: string[]): input is ob
     // definitions of the JSON scheme creation dependency that we're using.
 
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2
-    // additionalProperties
-    // patternProperties
-    // properties
+    if (schema.patternProperties !== undefined || schema.properties !== undefined) {
+        const unevaluatedProperties = new Set(properties);
+
+        if (schema.patternProperties !== undefined) {
+            for (const [ pattern, patternSchema ] of Object.entries(schema.patternProperties)) {
+                const expression = new RegExp(pattern);
+
+                for (const property of unevaluatedProperties) {
+                    if (!expression.test(property))
+                        continue;
+
+                    unevaluatedProperties.delete(property);
+                    if (!input.hasOwnProperty(property))
+                        continue;
+
+                    if (!validateAny(input[property], patternSchema as Schema, [ ...path, property ]))
+                        return false;
+                }
+            }
+        }
+
+        if (schema.properties !== undefined) {
+            for (const [ property, propertySchema ] of Object.entries(schema.properties)) {
+                unevaluatedProperties.delete(property);
+                if (!input.hasOwnProperty(property))
+                    continue;
+
+                if (!validateAny(input[property], propertySchema as Schema, [ ...path, property ]))
+                    return false;
+            }
+        }
+
+        if (schema.additionalProperties === false) {
+            if (unevaluatedProperties.size > 0)
+                return reportError('Value includes unevaluated properties', path, input);
+        }
+    }
 
     if (schema.propertyNames !== undefined && schema.propertyNames.hasOwnProperty('pattern')) {
         const expression = new RegExp((schema.propertyNames as Schema).pattern!);

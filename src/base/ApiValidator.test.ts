@@ -275,6 +275,51 @@ describe('ApiValidator', () => {
         }, [ 'IObject' ])).toBeFalsy();
         expect(lastError).toEqual('[IObject] Value property "bar3" fails the pattern');
 
+        expect(validators.validateObject({ a: 1 }, {
+            properties: { a: { type: 'number' } }
+        }, [ 'IObject' ])).toBeTruthy();
+
+        expect(validators.validateObject({ a: 'string' }, {
+            properties: { a: { type: 'number' } }
+        }, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject.a] Expected type integer, got type string');
+
+        expect(validators.validateObject({ a: 1, b: 'text' }, {
+            properties: { a: { type: 'number' }, b: { type: 'string' } }
+        }, [ 'IObject' ])).toBeTruthy();
+
+        expect(validators.validateObject({ a: 1, b: 1, c: 'text', d: 'text' }, {
+            patternProperties: {
+                '^[ab]': { type: 'number' },
+                '^[cd]': { type: 'string' },
+            },
+        }, [ 'IObject' ])).toBeTruthy();
+
+        expect(validators.validateObject({ a: 1, b: 1, c: 'text', d: true }, {
+            patternProperties: {
+                '^[ab]': { type: 'number' },
+                '^[cd]': { type: 'string' },
+            },
+        }, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject.d] Expected type string, got type boolean');
+
+        expect(validators.validateObject({ a: 1, b: 2 }, {
+            properties: { a: { type: 'number' } },
+            additionalProperties: true,
+        }, [ 'IObject' ])).toBeTruthy();
+
+        expect(validators.validateObject({ a: 1, b: 2 }, {
+            properties: { a: { type: 'number' } },
+            additionalProperties: false,
+        }, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject] Value includes unevaluated properties');
+
+        expect(validators.validateObject({ a: 1, foobar: 2 }, {
+            patternProperties: { '^[a-z]$': { type: 'number' } },
+            additionalProperties: false,
+        }, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject] Value includes unevaluated properties');
+
         // Neither `enum` nor `const` are implemented for objects. Change detector tests:
         expect(validators.validateObject({}, { enum: [ { a: 1 } ] }, [ 'IObject' ])).toBeTruthy();
         expect(validators.validateObject({}, { const: { a: 1 } }, [ 'IObject' ])).toBeTruthy();

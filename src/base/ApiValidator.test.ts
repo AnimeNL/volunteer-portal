@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { setLoggerForTests, validators } from './ApiValidator';
+import { setLoggerForTests, validate, validators } from './ApiValidator';
 
 describe('ApiValidator', () => {
     let errors: [string, any][] = [];
@@ -261,6 +261,19 @@ describe('ApiValidator', () => {
         expect(validators.validateObject({ a: 1 }, { required: ['b'] }, [ 'IObject' ]))
             .toBeFalsy();
         expect(lastError).toEqual('[IObject] Value is expected to have property "b"');
+
+        expect(validators.validateObject({ foo: 1 }, {
+            propertyNames: { pattern: '^[a-z]+$' },
+        }, [ 'IObject' ])).toBeTruthy();
+
+        expect(validators.validateObject({ foo: 1, bar: 2 }, {
+            propertyNames: { pattern: '^[a-z]+$' },
+        }, [ 'IObject' ])).toBeTruthy();
+
+        expect(validators.validateObject({ foo: 1, bar3: 2 }, {
+            propertyNames: { pattern: '^[a-z]+$' },
+        }, [ 'IObject' ])).toBeFalsy();
+        expect(lastError).toEqual('[IObject] Value property "bar3" fails the pattern');
 
         // Neither `enum` nor `const` are implemented for objects. Change detector tests:
         expect(validators.validateObject({}, { enum: [ { a: 1 } ] }, [ 'IObject' ])).toBeTruthy();

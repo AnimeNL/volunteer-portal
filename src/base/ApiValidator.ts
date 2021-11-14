@@ -214,15 +214,14 @@ function validateObject(input: any, schema: Schema, path: string[]): input is ob
     // TODO: Both `enum` and `const` would require having some deepEqual function as opposed to
     // (strict) instance comparison, does it make sense to compare that?
 
-    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation#section-6.5
-    if (schema.maxProperties !== undefined || schema.minProperties !== undefined) {
-        const properties = Object.getOwnPropertyNames(input);
-        if (schema.maxProperties !== undefined && properties.length > schema.maxProperties)
-            return reportError(`Value has more than ${schema.maxProperties} properties`, path, input);
+    const properties = Object.getOwnPropertyNames(input);
 
-        if (schema.minProperties !== undefined && properties.length < schema.minProperties)
-            return reportError(`Value has less than ${schema.minProperties} properties`, path, input);
-    }
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation#section-6.5
+    if (schema.maxProperties !== undefined && properties.length > schema.maxProperties)
+        return reportError(`Value has more than ${schema.maxProperties} properties`, path, input);
+
+    if (schema.minProperties !== undefined && properties.length < schema.minProperties)
+        return reportError(`Value has less than ${schema.minProperties} properties`, path, input);
 
     if (Array.isArray(schema.required)) {
         for (const key of schema.required) {
@@ -237,8 +236,15 @@ function validateObject(input: any, schema: Schema, path: string[]): input is ob
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2
     // additionalProperties
     // patternProperties
-    // propertyNames
     // properties
+
+    if (schema.propertyNames !== undefined && schema.propertyNames.hasOwnProperty('pattern')) {
+        const expression = new RegExp((schema.propertyNames as Schema).pattern!);
+        for (const property of properties) {
+            if (!expression.test(property))
+                return reportError(`Value property "${property}" fails the pattern`, path, input);
+        }
+    }
 
     return true;
 }

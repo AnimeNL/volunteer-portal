@@ -49,6 +49,79 @@ function reportError(message: string, path: string[], context: any): false {
     return false;
 }
 
+// Validates whehter the given |input| is valid in accordance to the |schema|, whose expected type
+// has not been considered by the caller of this method.
+function validateAny(input: any, schema: Schema, path: string[]): input is any {
+    switch (schema.type) {
+        case 'array':
+            return validateArray(input, schema, path);
+        case 'boolean':
+            return validateBoolean(input, schema, path);
+        case 'integer':
+            return validateNumeric(input, schema, path, /* integer= */ true);
+        case 'null':
+            return validateNull(input, schema, path);
+        case 'number':
+            return validateNumeric(input, schema, path, /* integer= */ false);
+        case 'object':
+            return validateObject(input, schema, path);
+        case 'string':
+            return validateString(input, schema, path);
+    }
+
+    return reportError(`Invalid type given (${schema.type})`, path, input);
+}
+
+// Validates that the given |input| is an array, considering a few options from |schema| as per the
+// draft-handrews-json-schema-validation-01 specification.
+function validateArray(input: any, schema: Schema, path: string[]): input is any[] {
+    if (typeof input !== 'object' || !Array.isArray(input))
+        return reportError(`Expected type array, got type ${typeof input}`, path, input);
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation#section-6.1
+    // TODO: Both `enum` and `const` would require having some deepEqual function as opposed to
+    // (strict) instance comparison, does it make sense to compare that?
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation#section-6.4
+    if (schema.maxItems !== undefined && input.length > schema.maxItems)
+        return reportError(`Value has more than ${schema.maxItems} item(s)`, path, input);
+
+    if (schema.minItems !== undefined && input.length < schema.minItems)
+        return reportError(`Value has less than ${schema.minItems} item(s)`, path, input);
+
+    if (schema.uniqueItems !== undefined && schema.uniqueItems &&
+            input.length !== (new Set([...input])).size) {
+        return reportError('Items in this array are expected to be unique', path, input);
+    }
+
+    // TODO: Supporting `contains`, `maxContains` and `minContains` from the draft would be good,
+    // but the JSON schema generator we use doesn't emit them at the moment.
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2
+    // https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.4
+    //
+    // Note that array values for `items` were renamed to `prefixItems` in a later draft, but the
+    // TypeScript schema that is being imported doesn't support that yet.
+    if (schema.items !== undefined && Array.isArray(schema.items)) {
+        if (input.length !== schema.items.length)
+            return reportError(`Expected ${schema.items.length} items in this array`, path, input);
+
+        for (let index = 0; index < schema.items.length; ++index) {
+            if (!validateAny(input[index], schema.items[index] as Schema, [ ...path, `${index}` ]))
+                return false;
+        }
+    }
+
+    if (schema.items !== undefined && !Array.isArray(schema.items)) {
+        for (let index = 0; index < input.length; ++index) {
+            if (!validateAny(input[index], schema.items as Schema, [ ...path, `${index}` ]))
+                return false;
+        }
+    }
+
+    return true;
+}
+
 // Validates that the given |input| is a boolean, considering a few options from |schema| as per the
 // draft-handrews-json-schema-validation-01 specification.
 function validateBoolean(input: any, schema: Schema, path: string[]): input is boolean {
@@ -160,6 +233,7 @@ function validateString(input: any, schema: Schema, path: string[]): input is st
 
 // Export all the individual validators for use in testing functions.
 export const validators = {
+    validateArray,
     validateBoolean,
     validateInteger,
     validateNull,

@@ -156,4 +156,65 @@ describe('ApiValidator', () => {
         expect(validators.validateString('zz', { pattern: '^\\d+$' }, [ 'IString' ])).toBeFalsy();
         expect(lastError).toEqual('[IString] Value does not match the required pattern');
     });
+
+    // ---------------------------------------------------------------------------------------------
+    // Validation of complex types
+    // ---------------------------------------------------------------------------------------------
+
+    it('should be able to validate arrays', () => {
+        expect(validators.validateArray(null, {}, [ 'IArray' ])).toBeFalsy();
+        expect(lastError).toEqual('[IArray] Expected type array, got type object');
+
+        expect(validators.validateArray(true, {}, [ 'IArray' ])).toBeFalsy();
+        expect(lastError).toEqual('[IArray] Expected type array, got type boolean');
+
+        expect(validators.validateArray(3.14, {}, [ 'IArray' ])).toBeFalsy();
+        expect(lastError).toEqual('[IArray] Expected type array, got type number');
+
+        expect(validators.validateArray({}, {}, [ 'IArray' ])).toBeFalsy();
+        expect(lastError).toEqual('[IArray] Expected type array, got type object');
+
+        expect(validators.validateArray([], {}, [ 'IArray' ])).toBeTruthy();
+        expect(validators.validateArray([ 1, 2, 3 ], {}, [ 'IArray' ])).toBeTruthy();
+
+        expect(validators.validateArray([ 1 ], { maxItems: 2 }, [ 'IArray' ])).toBeTruthy();
+        expect(validators.validateArray([ 1, 2 ], { maxItems: 2 }, [ 'IArray' ])).toBeTruthy();
+        expect(validators.validateArray([ 1, 2, 3 ], { maxItems: 2 }, [ 'IArray' ])).toBeFalsy();
+        expect(lastError).toEqual('[IArray] Value has more than 2 item(s)');
+
+        expect(validators.validateArray([ 1, 2, 3 ], { minItems: 2 }, [ 'IArray' ])).toBeTruthy();
+        expect(validators.validateArray([ 1, 2 ], { minItems: 2 }, [ 'IArray' ])).toBeTruthy();
+        expect(validators.validateArray([ 1 ], { minItems: 2 }, [ 'IArray' ])).toBeFalsy();
+        expect(lastError).toEqual('[IArray] Value has less than 2 item(s)');
+
+        expect(validators.validateArray([ 1 ], { uniqueItems: false }, [ 'IArray' ])).toBeTruthy();
+        expect(validators.validateArray([ 1, 2 ], { uniqueItems: false }, ['IArray'])).toBeTruthy();
+        expect(validators.validateArray([ 1, 1 ], { uniqueItems: false }, ['IArray'])).toBeTruthy();
+        expect(validators.validateArray([ 1 ], { uniqueItems: true }, [ 'IArray' ])).toBeTruthy();
+        expect(validators.validateArray([ 1, 2 ], { uniqueItems: true }, ['IArray'])).toBeTruthy();
+        expect(validators.validateArray([ 1, 1 ], { uniqueItems: true }, ['IArray'])).toBeFalsy();
+        expect(lastError).toEqual('[IArray] Items in this array are expected to be unique');
+
+        expect(validators.validateArray([ 1, 2, 3 ], { items: { type: 'number' } }, [ 'IArray' ]))
+            .toBeTruthy();
+
+        expect(validators.validateArray([ 1, 2, '3' ], { items: { type: 'number' } }, [ 'IArray' ]))
+            .toBeFalsy();
+        expect(lastError).toEqual('[IArray.2] Expected type integer, got type string');
+
+        expect(validators.validateArray([ 1, '2', [ 3 ] ], {
+            items: [
+                { type: 'number' },
+                { type: 'string' },
+                {
+                    type: 'array',
+                    items: {
+                        type: 'boolean',  // <-- number given
+                    }
+                }
+            ]
+        }, [ 'IArray' ])).toBeFalsy();
+
+        expect(lastError).toEqual('[IArray.2.0] Expected type boolean, got type number');
+    });
 });

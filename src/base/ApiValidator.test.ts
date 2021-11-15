@@ -4,6 +4,9 @@
 
 import { setLoggerForTests, validate, validators } from './ApiValidator';
 
+import { IContentResponse } from '../api/IContent';
+import { IEnvironmentResponse } from '../api/IEnvironment';
+
 describe('ApiValidator', () => {
     let errors: [string, any][] = [];
     let lastError: string | undefined;
@@ -18,6 +21,92 @@ describe('ApiValidator', () => {
     afterEach(() => {
         errors = [];
         lastError = undefined;
+    });
+
+    it('should be able to validate known API types', () => {
+        expect(validate<IContentResponse>({ pages: [] }, 'IContentResponse')).toBeTruthy();
+        expect(validate<IContentResponse>({
+            pages: [
+                {
+                    pathname: '/test/index',
+                    content: 'Hello, world',
+                    modified: 1636905952,
+                },
+            ],
+        }, 'IContentResponse')).toBeTruthy();
+
+        expect(validate<IEnvironmentResponse>({
+            title: 'Festival',
+
+            themeColor: '#ff0000',
+            themeTitle: 'Festivalz',
+
+            events: [
+                {
+                    name: 'Festival 2022',
+                    enableContent: true,
+                    enableRegistration: false,
+                    enableSchedule: false,
+                    identifier: 'my-event',
+                    timezone: 'Europe/Amsterdam',
+                },
+            ],
+
+            contactName: 'administrator',
+            contactTarget: 'info@website.com',
+        }, 'IEnvironmentResponse')).toBeTruthy();
+
+        expect(validate<IEnvironmentResponse>({
+            identifier: 'my-event',
+        }, 'IEnvironmentResponse')).toBeFalsy();
+
+        expect(lastError).toEqual(
+            '[IEnvironmentResponse] Value is expected to have property "title"');
+
+        expect(validate<IContentResponse>([ true ], 'IContentResponse')).toBeFalsy();
+        expect(lastError).toEqual('[IContentResponse] Expected type object, got type array');
+
+        expect(validate<IContentResponse>({
+            pages: [
+                {
+                    pathname: '/test/index',
+                    // missing key: content
+                    modified: 1636905952,
+                },
+            ],
+        }, 'IContentResponse')).toBeFalsy();
+
+        expect(lastError).toEqual(
+            '[IContentResponse.pages.0] Value is expected to have property "content"');
+
+        expect(validate<IEnvironmentResponse>({
+            title: 'Festival',
+
+            themeColor: '#ff0000',
+            themeTitle: 'Festivalz',
+
+            events: [
+                {
+                    name: 'My event',
+                    enableContent: true,
+                    enableRegistration: false,
+                    enableSchedule: false,
+                    identifier: 2022,  // <-- unexpected type
+                    timezone: 'Europe/Amsterdam',
+                    },
+            ],
+
+            contactName: 'administrator',
+            contactTarget: 'info@website.com',
+        }, 'IEnvironmentResponse')).toBeFalsy();
+
+        expect(lastError).toEqual(
+            '[IEnvironmentResponse.events.0.identifier] Expected type string, got type number');
+    });
+
+    it('should fail validation for unknown API types', () => {
+        /// @ts-expect-error
+        expect(validate<IContentResponse>([], 'IInvalidApi')).toBeFalsy();
     });
 
     // ---------------------------------------------------------------------------------------------

@@ -24,11 +24,7 @@ export function validate<T>(input: any, inputApi: keyof typeof api.definitions):
     if (!Object.prototype.hasOwnProperty.call(api.definitions, inputApi))
         return false;
 
-    const definition = api.definitions[inputApi];
-    if (definition.type !== 'object')
-        throw new Error('The volunteer portal requires each API to be based on an object.');
-
-    return validateObject(input, definition as Schema, [ inputApi ]);
+    return validateAny(input, api.definitions[inputApi] as Schema, [ inputApi ]);
 }
 
 // Sets the logger to the given |logger|. Should only be used for testing purposes.
@@ -42,6 +38,9 @@ export function setLoggerForTests(logger: LoggerFunction): void { gLogger = logg
 const kInvalidConstValue = 'Value is not equal to the expected constant';
 const kInvalidEnumValue = 'Value is not included in the enumeration';
 
+// Prefix used to indicate local type references in the schema output.
+const kLocalReferencePrefix = '#/definitions/';
+
 // Reports the given |message| as an error, which was found at the given |path|. The boolean FALSE
 // will be returned, to indicate that validation could not be completed due to this issue.
 function reportError(message: string, path: string[], context: any): false {
@@ -50,8 +49,21 @@ function reportError(message: string, path: string[], context: any): false {
 }
 
 // Validates whehter the given |input| is valid in accordance to the |schema|, whose expected type
-// has not been considered by the caller of this method.
+// has not been considered by the caller of this method. Schemas have the ability to refer to other
+// types, which has been implemented as part of this function.
 function validateAny(input: any, schema: Schema, path: string[]): input is any {
+    if (schema.hasOwnProperty('$ref')) {
+        const reference = schema.$ref!;
+        if (!reference.startsWith(kLocalReferencePrefix))
+            return reportError(`Reference ${reference} is not local to the schema`, path, input);
+
+        const referenceType = reference.substring(kLocalReferencePrefix.length);
+        if (!Object.prototype.hasOwnProperty.call(api.definitions, referenceType))
+            return reportError(`Reference ${referenceType} is not known to the API`, path, input);
+
+        schema = ((api.definitions as any)[referenceType]) as Schema;
+    }
+
     switch (schema.type) {
         case 'array':
             return validateArray(input, schema, path);

@@ -5,7 +5,6 @@
       "type": "string"
     },
     "IApplicationRequest": {
-      "additionalProperties": false,
       "properties": {
         "available": {
           "type": "boolean"
@@ -65,7 +64,6 @@
       "type": "object"
     },
     "IApplicationResponse": {
-      "additionalProperties": false,
       "properties": {
         "accessCode": {
           "type": "string"
@@ -77,7 +75,6 @@
       "type": "object"
     },
     "IAuthRequest": {
-      "additionalProperties": false,
       "properties": {
         "accessCode": {
           "type": "string"
@@ -93,7 +90,6 @@
       "type": "object"
     },
     "IAuthResponse": {
-      "additionalProperties": false,
       "properties": {
         "authToken": {
           "type": "string"
@@ -105,7 +101,6 @@
       "type": "object"
     },
     "IContentResponse": {
-      "additionalProperties": false,
       "properties": {
         "pages": {
           "items": {
@@ -120,7 +115,6 @@
       "type": "object"
     },
     "IContentResponsePage": {
-      "additionalProperties": false,
       "properties": {
         "content": {
           "type": "string"
@@ -140,7 +134,6 @@
       "type": "object"
     },
     "IEnvironmentResponse": {
-      "additionalProperties": false,
       "properties": {
         "contactName": {
           "type": "string"
@@ -174,7 +167,6 @@
       "type": "object"
     },
     "IEnvironmentResponseEvent": {
-      "additionalProperties": false,
       "properties": {
         "enableContent": {
           "type": "boolean"
@@ -209,7 +201,6 @@
       "type": "object"
     },
     "IEventResponse": {
-      "additionalProperties": false,
       "properties": {
         "areas": {
           "items": {
@@ -249,7 +240,6 @@
       "type": "object"
     },
     "IEventResponseArea": {
-      "additionalProperties": false,
       "properties": {
         "icon": {
           "type": "string"
@@ -268,7 +258,6 @@
       "type": "object"
     },
     "IEventResponseEvent": {
-      "additionalProperties": false,
       "properties": {
         "hidden": {
           "type": "boolean"
@@ -291,7 +280,6 @@
       "type": "object"
     },
     "IEventResponseLocation": {
-      "additionalProperties": false,
       "properties": {
         "area": {
           "type": "string"
@@ -311,7 +299,6 @@
       "type": "object"
     },
     "IEventResponseMeta": {
-      "additionalProperties": false,
       "properties": {
         "name": {
           "type": "string"
@@ -326,7 +313,6 @@
       "type": "object"
     },
     "IEventResponseSession": {
-      "additionalProperties": false,
       "properties": {
         "description": {
           "type": "string"
@@ -354,7 +340,6 @@
       "type": "object"
     },
     "IEventResponseVolunteer": {
-      "additionalProperties": false,
       "properties": {
         "accessCode": {
           "type": "string"
@@ -391,7 +376,6 @@
       "type": "object"
     },
     "IUserResponse": {
-      "additionalProperties": false,
       "properties": {
         "administrator": {
           "type": "boolean"

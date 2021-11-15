@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 /**
- * @see https://github.com/AnimeNL/volunteer-portal/blob/master/API.md#apienvironment
+ * Response structure for the /api/environment call. Describes the information associated with the
+ * current "environment" the volunteer portal is running under, which is another way of explaining
+ * the portal's branding. This allows a single installation to service multiple teams.
  */
 export interface IEnvironmentResponse {
     title: string;

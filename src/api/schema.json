@@ -133,6 +133,17 @@
       ],
       "type": "object"
     },
+    "IEnvironment": {
+      "properties": {
+        "response": {
+          "$ref": "#/definitions/IEnvironmentResponse"
+        }
+      },
+      "required": [
+        "response"
+      ],
+      "type": "object"
+    },
     "IEnvironmentResponse": {
       "properties": {
         "contactName": {

@@ -21,8 +21,10 @@ let gLogger: LoggerFunction = console.error;
 // here, however, including such libraries add at least ~40 KiB to the compressed size of our
 // JavaScript library. As such, an internal implementation is used instead.
 export function validate<T>(input: any, inputApi: keyof typeof api.definitions): input is T {
-    if (!Object.prototype.hasOwnProperty.call(api.definitions, inputApi))
+    if (!Object.prototype.hasOwnProperty.call(api.definitions, inputApi)) {
+        console.warn(`Unable to validate definitionless type: ${inputApi}.`);
         return false;
+    }
 
     return validateAny(input, api.definitions[inputApi] as Schema, [ inputApi ]);
 }

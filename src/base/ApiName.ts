@@ -1,0 +1,25 @@
+// Copyright 2021 Peter Beverloo & AnimeCon. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
+
+import api from '../api/schema.json';
+
+// Full, unfiltered list of types known in the API. The ApiValidator infrastructure is able to
+// validate all structures that are known to this type definition.
+export type ApiType = keyof typeof api.definitions;
+
+// Internal filters used to remove specific names from the list of API types, to reduce this down to
+// a list of API names. We require a prefix ("I"), and want to drop entries containing either
+// "Request" or "Response" in their name, as they represent types rather than individual APIs.
+type Contains<Set, K extends string> = Set extends `${infer a}${K}${infer b}` ? Set : never;
+type HasPrefix<Set, K extends string> = Set extends `${K}${infer _}` ? never : Set;
+type HasSuffix<Set, K extends string> = Set extends `${infer _}${K}` ? Set : never;
+
+// Type definition for the API names that are available in the generated schema for the volunteer
+// portal application. Names that don't start with an "I" or have either "Request" or "Response" in
+// them will be filtered out, to restrict this type to top-level APIs.
+export type ApiName = Exclude<ApiType, HasPrefix<ApiType, 'I'> |
+                                       HasSuffix<ApiType, 'Request'> |
+                                       HasSuffix<ApiType, 'Response'> |
+                                       Contains<ApiType, 'Request'> |
+                                       Contains<ApiType, 'Response'>>;

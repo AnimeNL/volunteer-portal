@@ -3,9 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * Response structure for the /api/environment call. Describes the information associated with the
- * current "environment" the volunteer portal is running under, which is another way of explaining
- * the portal's branding. This allows a single installation to service multiple teams.
+ * The /api/environment call shares information associated with the current "environment" of the
+ * volunteer portal, which can be thought of as its branding. This is a convenient mechanism that
+ * allows multiple instances of the volunteer portal to run on a single installation.
+ */
+export interface IEnvironment {
+    response: IEnvironmentResponse;
+}
+
+/**
+ * Response shared by the server following an /api/environment call.
+ *
+ * @additionalProperties true
  */
 export interface IEnvironmentResponse {
     title: string;

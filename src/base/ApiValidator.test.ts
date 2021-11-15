@@ -104,11 +104,6 @@ describe('ApiValidator', () => {
             '[IEnvironmentResponse.events.0.identifier] Expected type string, got type number');
     });
 
-    it('should fail validation for unknown API types', () => {
-        /// @ts-expect-error
-        expect(validate<IContentResponse>([], 'IInvalidApi')).toBeFalsy();
-    });
-
     // ---------------------------------------------------------------------------------------------
     // Validation of scalar types
     // ---------------------------------------------------------------------------------------------

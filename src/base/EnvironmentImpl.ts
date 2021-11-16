@@ -22,7 +22,7 @@ const kExceptionMessage = 'The Environment object has not been successfully init
  * Implementation of the Environment interface, shared across the entire Volunteer Portal.
  */
 export class EnvironmentImpl implements Environment {
-    public static kCacheKey: string = 'portal-environment';
+    public static kCacheKey: string = 'portal-environment-v2';
 
     private configuration: Configuration;
     private loader: CachedLoader;

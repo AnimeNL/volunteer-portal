@@ -23,7 +23,7 @@ const kExceptionMessage = 'The Content object has not been successfully initiali
  * from the server, and is able to store this for offline consumption as well.
  */
 export class ContentImpl implements Content {
-    public static kCacheKey: string = 'portal-content';
+    public static kCacheKey: string = 'portal-content-v2';
 
     private configuration: Configuration;
     private loader: CachedLoader;

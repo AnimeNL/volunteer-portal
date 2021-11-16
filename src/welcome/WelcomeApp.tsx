@@ -89,7 +89,7 @@ export function WelcomeApp() {
                                 <ListItemIcon>
                                     <LanguageIcon />
                                 </ListItemIcon>
-                                <ListItemText primary={`${event.name} isn't taking volunteer registrations yet. Visit the website instead.`} />
+                                <ListItemText primary={`${event.name} isn't taking volunteer registrations. Visit the website instead.`} />
                             </ListItem>
                         }
                     </Fragment>

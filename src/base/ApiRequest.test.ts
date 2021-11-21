@@ -10,6 +10,7 @@ import { ApiRequest } from './ApiRequest';
 import { IAuth } from '../api/IAuth';
 import { IContent } from '../api/IContent';
 import { IEnvironment } from '../api/IEnvironment';
+import { IEvent } from '../api/IEvent';
 
 describe('ApiRequest', () => {
     it('is able to issue and validate requests for IAuth', async () => {
@@ -258,6 +259,88 @@ describe('ApiRequest', () => {
             const request = new ApiRequest<IEnvironment>('IEnvironment');
 
             await expect(() => request.issue()).rejects.toThrow();
+
+            expect(console.error).toHaveBeenCalledTimes(1);
+            restoreConsole();
+        }
+    });
+
+    it('is able to issue and validate requests for IEvent', async () => {
+        const kValidEventResponse = {
+            areas: [],
+            events: [],
+            locations: [],
+            meta: { name: 'EventCon 2021' },
+            volunteers: [],
+        };
+
+        // (1) Valid event response
+        {
+            fetchMock.mockOnceIf('/api/event?authToken=foo&event=bar', async request => ({
+                body: JSON.stringify(kValidEventResponse),
+                status: 200,
+            }));
+
+            const request = new ApiRequest<IEvent>('IEvent');
+            const response = await request.issue({
+                authToken: 'foo',
+                event: 'bar',
+            });
+
+            expect(request.api).toEqual('IEvent');
+            expect(response).toEqual(kValidEventResponse);
+        }
+
+        // (2) Invalid event response (non-ok response code)
+        {
+            fetchMock.mockOnceIf('/api/event?authToken=foo&event=bar', async request => ({
+                status: 403,
+            }));
+
+            const request = new ApiRequest<IEvent>('IEvent');
+            await expect(() => request.issue({
+                authToken: 'foo',
+                event: 'bar',
+            })).rejects.toThrow();
+        }
+
+        const kInvalidEventResponse = {
+            areas: [],
+            events: [
+                {
+                    identifier: 'my-event',
+                    hidden: false,
+                    sessions: [
+                        {
+                            location: 'my-location',
+                            name: 'My Wonderful Event',
+                            time: [
+                                1420074000,
+                                '1924995600',  // issue: should be a number
+                            ]
+                        }
+                    ]
+                }
+            ],
+            locations: [],
+            meta: { name: 'EventCon 2021' },
+            volunteers: [],
+        };
+
+        // (4) Invalid authentication response (incomplete response)
+        {
+            fetchMock.mockOnceIf('/api/event?authToken=foo&event=bar', async request => ({
+                body: JSON.stringify(kInvalidEventResponse),
+                status: 200,
+            }));
+
+            const restoreConsole = mockConsole();
+            const request = new ApiRequest<IEvent>('IEvent');
+
+            await expect(() => request.issue({
+                authToken: 'foo',
+                event: 'bar',
+            })).rejects.toThrow();
 
             expect(console.error).toHaveBeenCalledTimes(1);
             restoreConsole();

@@ -9,6 +9,7 @@ import { ApiRequestManager } from './ApiRequestManager';
 
 import { IAuth, IAuthResponse } from '../api/IAuth';
 import { IContent, IContentResponse } from '../api/IContent';
+import { IEvent, IEventResponse } from '../api/IEvent';
 
 describe('ApiRequestManager', () => {
     let restoreConsole: RestoreConsole | undefined = undefined;
@@ -134,7 +135,19 @@ describe('ApiRequestManager', () => {
 
         expect(contentRequestManager.determineCacheKey()).toEqual('IContent');
 
-        // TODO: Also add a test for IEvent, which contains GET parameters but no POST parameters,
-        // and should thus be considered cacheable. The cache key should contain suffices.
+        const eventRequestManager = new ApiRequestManager<IEvent>('IEvent', new class {
+            onFailedResponse(error: Error) {
+                throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
+            }
+            onSuccessResponse(response: IEventResponse) {
+                throw new Error('The `onSuccessResponse` callback was unexpectedly invoked.');
+            }
+        });
+
+        expect(eventRequestManager.determineCacheKey({ authToken: 'AT', event: 'EVT' }))
+            .toEqual('IEvent-AT-EVT');
+
+        expect(eventRequestManager.determineCacheKey({ event: 'EVT', authToken: 'AT' }))
+            .toEqual('IEvent-AT-EVT');
     });
 });

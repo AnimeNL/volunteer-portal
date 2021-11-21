@@ -11,6 +11,7 @@ const kEndpoints: { [key in ApiName]: string } = {
     IAuth: '/api/auth',
     IContent: '/api/content',
     IEnvironment: '/api/environment',
+    IEvent: '/api/event',
 };
 
 // Provides the ability to issue an API request, with known type information for both the request

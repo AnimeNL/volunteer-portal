@@ -245,6 +245,36 @@
       ],
       "type": "object"
     },
+    "IEvent": {
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/IEventRequest"
+        },
+        "response": {
+          "$ref": "#/definitions/IEventResponse"
+        }
+      },
+      "required": [
+        "request",
+        "response"
+      ],
+      "type": "object"
+    },
+    "IEventRequest": {
+      "properties": {
+        "authToken": {
+          "type": "string"
+        },
+        "event": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authToken",
+        "event"
+      ],
+      "type": "object"
+    },
     "IEventResponse": {
       "properties": {
         "areas": {
@@ -314,12 +344,13 @@
           "items": {
             "$ref": "#/definitions/IEventResponseSession"
           },
+          "minimum": 1,
           "type": "array"
         }
       },
       "required": [
-        "hidden",
         "identifier",
+        "hidden",
         "sessions"
       ],
       "type": "object"

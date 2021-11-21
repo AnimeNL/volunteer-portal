@@ -260,4 +260,19 @@ describe('ApiRequest', () => {
             restoreConsole();
         }
     });
+
+    it('allows requests to be aborted using the AbortController', async() => {
+        jest.useFakeTimers();
+
+        const controller = new AbortController();
+        const request = new ApiRequest<IContent>('IContent');
+
+        fetchMock.mockOnceIf('/api/content', async request => {
+            jest.advanceTimersByTime(/* msToRun= */ 150);
+            return JSON.stringify({ pages: [] });
+        });
+
+        setTimeout(() => controller.abort(), /* ms= */ 100);
+        await expect(() => request.issue(undefined, controller.signal)).rejects.toThrow();
+    });
 });

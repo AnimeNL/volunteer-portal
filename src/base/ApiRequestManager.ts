@@ -22,6 +22,7 @@ export interface ApiRequestObserver<T> {
 // The ApiRequestManager abstracts over the ApiRequest by enabling direct access, as well as cached
 // access (offline enabled) and timed updates in case the application is long living without reload.
 export class ApiRequestManager<T> {
+    private abortController?: AbortController;
     private request: ApiRequest<T>;
     private observer: ApiRequestObserver<T>;
 
@@ -32,18 +33,30 @@ export class ApiRequestManager<T> {
 
     // Issues a request on the API. The |request| is conditionally required if the |T| defines the
     // required request parameters. This method will resolve with a boolean indicating success,
-    // which will happen *after* any attached ApiRequestObserver(s) will have been informed.
+    // which will happen *after* any attached ApiRequestObserver(s) will have been informed. Any
+    // previous requests that were in progress will be immediately aborted.
     async issue(request: ApiRequestType<T>): Promise<boolean> {
-        // TODO: Only allow a single request to be in flight at once.
+        if (this.abortController)
+            this.abortController.abort();
+
         // TODO: Enable caching of responses, but ignore for later requests.
         // TODO: Enable responses to be automatically re-issued after a predefined period of time?
+
+        this.abortController = new AbortController();
 
         let response: ApiResponseType<T> | undefined;
 
         try {
-            response = await this.request.issue(request);
+            response = await this.request.issue(request, this.abortController.signal);
         } catch (error) {
-            await this.observer.onFailedResponse(error as Error);
+            const typedError = error instanceof Error ? error : new Error(`Error: ${error}`);
+            if (typedError.name === 'AbortError') {
+                // AbortError is thrown when we invalidate the signal from a previous request using
+                // the AbortController. This is intentional, and is not considered a failure.
+                return false;
+            }
+
+            await this.observer.onFailedResponse(typedError);
             return false;
         }
 

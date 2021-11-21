@@ -24,8 +24,9 @@ export class ApiRequest<T> {
 
     // Issues a request on the API. The |request| is conditionally required if the |T| defines the
     // required request parameters. When the request could be completed successfully, the promise
-    // will be resolved with the validated response. Otherwise an exception will be thrown.
-    async issue(request: ApiRequestType<T>): Promise<ApiResponseType<T>> {
+    // will be resolved with the validated response. Otherwise an exception will be thrown. When
+    // passed, the |signal| can be used to abort the request when it's in progress.
+    async issue(request: ApiRequestType<T>, signal?: AbortSignal): Promise<ApiResponseType<T>> {
         // If |request| is given, iterate over all key/value pairs. Values will be added to either
         // the |parameters| (when the key is defined to behave as such) or in the |body| in all
         // all cases, influencing how the data is communicated with the server.
@@ -60,7 +61,7 @@ export class ApiRequest<T> {
         const response = await fetch(qualifiedEndpoint, {
             cache: 'reload',
             method: body ? 'POST' : 'GET',
-            body,
+            body, signal,
         });
 
         if (!response.ok)

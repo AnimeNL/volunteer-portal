@@ -100,6 +100,17 @@
       },
       "type": "object"
     },
+    "IContent": {
+      "properties": {
+        "response": {
+          "$ref": "#/definitions/IContentResponse"
+        }
+      },
+      "required": [
+        "response"
+      ],
+      "type": "object"
+    },
     "IContentResponse": {
       "properties": {
         "pages": {
@@ -120,9 +131,15 @@
           "type": "string"
         },
         "modified": {
+          "maximum": 1893456000,
+          "minimum": 1262304000,
           "type": "number"
         },
         "pathname": {
+          "pattern": "^/",
+          "type": "string"
+        },
+        "title": {
           "type": "string"
         }
       },

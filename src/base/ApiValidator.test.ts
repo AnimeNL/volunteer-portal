@@ -463,6 +463,21 @@ describe('ApiValidator', () => {
             '[IObject] Value includes unevaluated properties',
             /* context= */ expect.anything());
 
+        expect(validators.validateObject({ a: 123, b: 456, c: 'value' }, {
+            additionalProperties: { type: 'number' },
+        }, [ 'IObject'])).toBeFalsy();
+        expect(console.error).toHaveBeenLastCalledWith(
+            '[IObject.c] Expected type integer, got type string',
+            /* context= */ expect.anything());
+
+        expect(validators.validateObject({ a: 1, b: 2, c: 'hi', d: 'world', e: true, f: false }, {
+            additionalProperties: { type: 'boolean' },
+            patternProperties: {
+                '^[ab]': { type: 'number' },
+                '^[cd]': { type: 'string' },
+            },
+        }, [ 'IObject' ])).toBeTruthy();
+
         // Neither `enum` nor `const` are implemented for objects. Change detector tests:
         expect(validators.validateObject({}, { enum: [ { a: 1 } ] }, [ 'IObject' ])).toBeTruthy();
         expect(validators.validateObject({}, { const: { a: 1 } }, [ 'IObject' ])).toBeTruthy();

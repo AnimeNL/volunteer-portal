@@ -219,11 +219,11 @@
         }
       },
       "required": [
+        "identifier",
         "name",
         "enableContent",
         "enableRegistration",
         "enableSchedule",
-        "identifier",
         "timezone"
       ],
       "type": "object"

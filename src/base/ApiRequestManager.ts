@@ -63,4 +63,30 @@ export class ApiRequestManager<T> {
         await this.observer.onSuccessResponse(response);
         return true;
     }
+
+    // Determines the cache key for the given |request|. When a string is returned, the request is
+    // deemed cacheable. In other cases the request (& associated response) cannot be cached, which
+    // usually happens because non-trivial amounts of data are being uploaded.
+    determineCacheKey(request: ApiRequestType<T>): string | undefined {
+        const composition: string[] = [ this.request.api ];
+        if (typeof request === 'object') {
+            // Note that sorting the |request|'s keys is significant, to ensure that composition
+            // parameters will be added to the cache key composition in a consistent order.
+            for (const key of Object.keys(request as object).sort()) {
+                switch (key) {
+                    case 'authToken':
+                    case 'event':
+                        composition.push((request as any)[key]);
+                        break;
+
+                    default:
+                        // One of the |request|'s parameters is not considered a request parameter,
+                        // so therefore we're unable to cache this request.
+                        return;
+                }
+            }
+        }
+
+        return composition.join('-');
+    }
 }

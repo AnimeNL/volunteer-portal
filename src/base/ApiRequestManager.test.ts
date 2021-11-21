@@ -7,6 +7,7 @@ import fetchMock from 'jest-fetch-mock';
 
 import { ApiRequestManager } from './ApiRequestManager';
 
+import { IAuth, IAuthResponse } from '../api/IAuth';
 import { IContent, IContentResponse } from '../api/IContent';
 
 describe('ApiRequestManager', () => {
@@ -105,5 +106,35 @@ describe('ApiRequestManager', () => {
 
         expect(await Promise.all(promii)).toEqual([ false, true ]);
         expect(responseCount).toEqual(1);
+    });
+
+    it('has the ability to determine whether a request is cacheable', async () => {
+        const authRequestManager = new ApiRequestManager<IAuth>('IAuth', new class {
+            onFailedResponse(error: Error) {
+                throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
+            }
+            onSuccessResponse(response: IAuthResponse) {
+                throw new Error('The `onSuccessResponse` callback was unexpectedly invoked.');
+            }
+        });
+
+        expect(authRequestManager.determineCacheKey({
+            emailAddress: 'foo@example.com',
+            accessCode: '1234',
+        })).toBeUndefined();
+
+        const contentRequestManager = new ApiRequestManager<IContent>('IContent', new class {
+            onFailedResponse(error: Error) {
+                throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
+            }
+            onSuccessResponse(response: IContentResponse) {
+                throw new Error('The `onSuccessResponse` callback was unexpectedly invoked.');
+            }
+        });
+
+        expect(contentRequestManager.determineCacheKey()).toEqual('IContent');
+
+        // TODO: Also add a test for IEvent, which contains GET parameters but no POST parameters,
+        // and should thus be considered cacheable. The cache key should contain suffices.
     });
 });

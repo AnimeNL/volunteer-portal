@@ -30,6 +30,7 @@ describe('ApiRequest', () => {
                 accessCode: '1234',
             });
 
+            expect(request.api).toEqual('IAuth');
             expect(response).toEqual(kValidAuthResponse);
         }
 
@@ -131,6 +132,7 @@ describe('ApiRequest', () => {
             const request = new ApiRequest<IContent>('IContent');
             const response = await request.issue();
 
+            expect(request.api).toEqual('IContent');
             expect(response).toEqual(kValidEmptyContent);
         }
 
@@ -227,6 +229,7 @@ describe('ApiRequest', () => {
             const request = new ApiRequest<IEnvironment>('IEnvironment');
             const response = await request.issue();
 
+            expect(request.api).toEqual('IEnvironment');
             expect(response).toEqual(kValidEnvironment);
         }
 

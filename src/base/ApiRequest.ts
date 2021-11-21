@@ -16,11 +16,14 @@ const kEndpoints: { [key in ApiName]: string } = {
 // Provides the ability to issue an API request, with known type information for both the request
 // and response information. Validation will be done by this class prior to announcing success.
 export class ApiRequest<T> {
-    private api: ApiName;
+    #api: ApiName;
 
     constructor(api: ApiName) {
-        this.api = api;
+        this.#api = api;
     }
+
+    // Returns the name of the API for which this ApiRequest instance exists.
+    get api() { return this.#api; }
 
     // Issues a request on the API. The |request| is conditionally required if the |T| defines the
     // required request parameters. When the request could be completed successfully, the promise
@@ -52,7 +55,7 @@ export class ApiRequest<T> {
 
         // Compose the qualified endpoint, which combines the endpoint with the |parameters|. The
         // hostname can be overridden by using the REACT_APP_API_HOST, for development purposes.
-        const endpoint = (process.env.REACT_APP_API_HOST || '') + kEndpoints[this.api];
+        const endpoint = (process.env.REACT_APP_API_HOST || '') + kEndpoints[this.#api];
         const qualifiedEndpoint = parameters ? endpoint + '?' + parameters.toString()
                                              : endpoint;
 
@@ -68,7 +71,7 @@ export class ApiRequest<T> {
             throw new Error(`Unable to fetch data from the server (${response.status}).`);
 
         const responseData = await response.json();
-        if (!validate<ApiResponseType<T>>(responseData, `${this.api}Response`))
+        if (!validate<ApiResponseType<T>>(responseData, `${this.#api}Response`))
             throw new Error('Unable to validate the fetched data from the server.');
 
         return responseData;

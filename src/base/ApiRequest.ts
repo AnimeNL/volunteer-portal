@@ -13,6 +13,7 @@ type ApiResponseType<T> = T extends { response: unknown } ? T['response'] : unde
 // Object containing the server endpoints for each of the known APIs. Missing entries will result in
 // type validation errors, which may occur after updating the schema.
 const kEndpoints: { [key in ApiName]: string } = {
+    IAuth: '/api/auth',
     IContent: '/api/content',
     IEnvironment: '/api/environment',
 };

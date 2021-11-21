@@ -7,10 +7,115 @@ import mockConsole from 'jest-mock-console';
 
 import { ApiRequest } from './ApiRequest';
 
+import { IAuth } from '../api/IAuth';
 import { IContent } from '../api/IContent';
 import { IEnvironment } from '../api/IEnvironment';
 
 describe('ApiRequest', () => {
+    it('is able to issue and validate requests for IAuth', async () => {
+        const kValidAuthResponse = {
+            authToken: 'auth-token-1234',
+        };
+
+        // (1) Valid authentication response
+        {
+            fetchMock.mockOnceIf('/api/auth', async request => ({
+                body: JSON.stringify(kValidAuthResponse),
+                status: 200,
+            }));
+
+            const request = new ApiRequest<IAuth>('IAuth');
+            const response = await request.issue({
+                emailAddress: 'foo@example.com',
+                accessCode: '1234',
+            });
+
+            expect(response).toEqual(kValidAuthResponse);
+        }
+
+        const kValidEmptyAuthResponse = {};
+
+        // (2) Valid empty authentication response
+        {
+            fetchMock.mockOnceIf('/api/auth', async request => ({
+                body: JSON.stringify(kValidEmptyAuthResponse),
+                status: 200,
+            }));
+
+            const request = new ApiRequest<IAuth>('IAuth');
+            const response = await request.issue({
+                emailAddress: 'foo@example.com',
+                accessCode: '1235',
+            });
+
+            expect(response).toEqual(kValidEmptyAuthResponse);
+        }
+
+        // (3) Invalid authentication response (non-ok response code)
+        {
+            fetchMock.mockOnceIf('/api/auth', async request => ({
+                status: 403,
+            }));
+
+            const request = new ApiRequest<IAuth>('IAuth');
+            await expect(() => request.issue({
+                emailAddress: 'foo@example.com',
+                accessCode: '1234',
+            })).rejects.toThrow();
+        }
+
+        const kInvalidAuthResponse = {
+            authToken: 'auth-token-1234',
+            authTokenExpiration: null,  // should be a number
+        };
+
+        // (4) Invalid authentication response (incomplete response)
+        {
+            fetchMock.mockOnceIf('/api/auth', async request => ({
+                body: JSON.stringify(kInvalidAuthResponse),
+                status: 200,
+            }));
+
+            const restoreConsole = mockConsole();
+            const request = new ApiRequest<IAuth>('IAuth');
+
+            await expect(() => request.issue({
+                emailAddress: 'foo@example.com',
+                accessCode: '1234',
+            })).rejects.toThrow();
+
+            expect(console.error).toHaveBeenCalledTimes(1);
+            restoreConsole();
+        }
+
+        // (5) Availability of the POST variables in the request body
+        {
+            fetchMock.mockOnceIf('/api/auth', async request => {
+                expect(request.method).toEqual('POST');
+                expect(request.bodyUsed).toBeFalsy();
+
+                // TODO: Test that the `emailAddress` and `accessCode` values are included in the
+                // |request|. It looks like jest-fetch-mock doesn't support FormData structures and
+                // ends up stringifying them instead ("[object FormData]").
+                //
+                // @see https://github.com/jefflau/jest-fetch-mock/issues/23
+
+                return {
+                    body: JSON.stringify(kValidEmptyAuthResponse),
+                    status: 200,
+                };
+            });
+
+            const request = new ApiRequest<IAuth>('IAuth');
+            const response = await request.issue({
+                emailAddress: 'foo@example.com',
+                accessCode: '1235',
+            });
+
+            expect(response).toEqual(kValidEmptyAuthResponse);
+        }
+    });
+
     it('is able to issue and validate requests for IContent', async () => {
         const kValidEmptyContent = {
             pages: [],

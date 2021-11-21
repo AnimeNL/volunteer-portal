@@ -74,6 +74,21 @@
       },
       "type": "object"
     },
+    "IAuth": {
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/IAuthRequest"
+        },
+        "response": {
+          "$ref": "#/definitions/IAuthResponse"
+        }
+      },
+      "required": [
+        "request",
+        "response"
+      ],
+      "type": "object"
+    },
     "IAuthRequest": {
       "properties": {
         "accessCode": {
@@ -95,6 +110,8 @@
           "type": "string"
         },
         "authTokenExpiration": {
+          "maximum": 1893456000,
+          "minimum": 1577836800,
           "type": "number"
         }
       },

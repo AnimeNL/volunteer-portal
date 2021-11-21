@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { ApiName } from './ApiName';
+import type { ApiName } from './ApiName';
 import { validate } from './ApiValidator';
 
 // Type request and response types of API calls is based on the input type, which defines both

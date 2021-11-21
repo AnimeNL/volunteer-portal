@@ -6,12 +6,6 @@ import { Schema } from 'ts-json-schema-generator';
 
 import api from '../api/schema.json';
 
-// Type of the logger function that will be used by the ApiValidator.
-type LoggerFunction = (message: string, context: any) => void;
-
-// The logger that should be used during validation. May be overwritten for tests.
-let gLogger: LoggerFunction = console.error;
-
 // Provides the ability to validate an arbirary object, given as |impact| & often received from the
 // cache or network, according to the syntax set by one of the volunteer portal's APIs, given as
 // the |inputApi|. Validation is done based on a predetermined schema, checked in to the source
@@ -29,9 +23,6 @@ export function validate<T>(input: any, inputApi: keyof typeof api.definitions):
     return validateAny(input, api.definitions[inputApi] as Schema, [ inputApi ]);
 }
 
-// Sets the logger to the given |logger|. Should only be used for testing purposes.
-export function setLoggerForTests(logger: LoggerFunction): void { gLogger = logger; }
-
 // -------------------------------------------------------------------------------------------------
 // Internal functionality that should not be accessed directly.
 // -------------------------------------------------------------------------------------------------
@@ -46,7 +37,7 @@ const kLocalReferencePrefix = '#/definitions/';
 // Reports the given |message| as an error, which was found at the given |path|. The boolean FALSE
 // will be returned, to indicate that validation could not be completed due to this issue.
 function reportError(message: string, path: string[], context: any): false {
-    gLogger(`[${path.join('.')}] ${message}`, context);
+    console.error(`[${path.join('.')}] ${message}`, context);
     return false;
 }
 

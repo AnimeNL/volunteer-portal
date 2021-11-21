@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import api from '../api/schema.json';
+import type api from '../api/schema.json';
 
 // Full, unfiltered list of types known in the API. The ApiValidator infrastructure is able to
 // validate all structures that are known to this type definition.

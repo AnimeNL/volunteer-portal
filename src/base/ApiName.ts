@@ -8,6 +8,11 @@ import type api from '../api/schema.json';
 // validate all structures that are known to this type definition.
 export type ApiType = keyof typeof api.definitions;
 
+// Type request and response types of API calls is based on the input type, which defines both
+// pieces of information. Validation is automatically applied based on the textual name.
+export type ApiRequestType<T> = T extends { request: unknown } ? T['request'] : void;
+export type ApiResponseType<T> = T extends { response: unknown } ? T['response'] : undefined;
+
 // Internal filters used to remove specific names from the list of API types, to reduce this down to
 // a list of API names. We require a prefix ("I"), and want to drop entries containing either
 // "Request" or "Response" in their name, as they represent types rather than individual APIs.

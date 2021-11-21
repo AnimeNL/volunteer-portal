@@ -2,13 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import type { ApiName } from './ApiName';
+import type { ApiName, ApiRequestType, ApiResponseType } from './ApiName';
 import { validate } from './ApiValidator';
-
-// Type request and response types of API calls is based on the input type, which defines both
-// pieces of information. Validation is automatically applied based on the textual name.
-type ApiRequestType<T> = T extends { request: unknown } ? T['request'] : void;
-type ApiResponseType<T> = T extends { response: unknown } ? T['response'] : undefined;
 
 // Object containing the server endpoints for each of the known APIs. Missing entries will result in
 // type validation errors, which may occur after updating the schema.
@@ -63,6 +58,7 @@ export class ApiRequest<T> {
         // Issue the actual request. When there is content in |body|, the request method will be
         // updated to POST automatically. Otherwise GET will be used.
         const response = await fetch(qualifiedEndpoint, {
+            cache: 'reload',
             method: body ? 'POST' : 'GET',
             body,
         });

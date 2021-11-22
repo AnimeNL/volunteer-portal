@@ -8,7 +8,7 @@ import { ApiRequest } from './ApiRequest';
 // Observer interface that users of the ApiRequestManager have to implement, which is used to inform
 // the user about successful or failed requests issued to the API. Return values have been removed
 // from the asynchronous methods to prevent misuse.
-export interface ApiRequestObserver<T> {
+export interface ApiRequestObserver<K extends ApiName> {
     // Called when an issued request has failed, and could not be completed. When available, the
     // |error| will be included with more information. Diagnostics will be shared to the console.
     onFailedResponse: (error: Error) => Promise<void> | void;
@@ -16,18 +16,18 @@ export interface ApiRequestObserver<T> {
     // Called when an issued request has succeeded. The |response| is the full, validated response
     // in accordance with the response type defined by the API. May be called multiple times during
     // the application's lifetime, in case multiple responses are being issued.
-    onSuccessResponse: (response: ApiResponseType<T>) => Promise<void> | void;
+    onSuccessResponse: (response: ApiResponseType<K>) => Promise<void> | void;
 }
 
 // The ApiRequestManager abstracts over the ApiRequest by enabling direct access, as well as cached
 // access (offline enabled) and timed updates in case the application is long living without reload.
-export class ApiRequestManager<T> {
+export class ApiRequestManager<K extends ApiName> {
     private abortController?: AbortController;
-    private request: ApiRequest<T>;
-    private observer: ApiRequestObserver<T>;
+    private request: ApiRequest<K>;
+    private observer: ApiRequestObserver<K>;
 
-    constructor(api: ApiName, observer: ApiRequestObserver<T>) {
-        this.request = new ApiRequest<T>(api);
+    constructor(api: K, observer: ApiRequestObserver<K>) {
+        this.request = new ApiRequest(api);
         this.observer = observer;
     }
 
@@ -35,7 +35,7 @@ export class ApiRequestManager<T> {
     // required request parameters. This method will resolve with a boolean indicating success,
     // which will happen *after* any attached ApiRequestObserver(s) will have been informed. Any
     // previous requests that were in progress will be immediately aborted.
-    async issue(request: ApiRequestType<T>): Promise<boolean> {
+    async issue(request: ApiRequestType<K>): Promise<boolean> {
         if (this.abortController)
             this.abortController.abort();
 
@@ -44,7 +44,7 @@ export class ApiRequestManager<T> {
 
         this.abortController = new AbortController();
 
-        let response: ApiResponseType<T> | undefined;
+        let response: ApiResponseType<K> | undefined;
 
         try {
             response = await this.request.issue(request, this.abortController.signal);
@@ -67,7 +67,7 @@ export class ApiRequestManager<T> {
     // Determines the cache key for the given |request|. When a string is returned, the request is
     // deemed cacheable. In other cases the request (& associated response) cannot be cached, which
     // usually happens because non-trivial amounts of data are being uploaded.
-    determineCacheKey(request: ApiRequestType<T>): string | undefined {
+    determineCacheKey(request: ApiRequestType<K>): string | undefined {
         const composition: string[] = [ this.request.api ];
         if (typeof request === 'object') {
             // Note that sorting the |request|'s keys is significant, to ensure that composition

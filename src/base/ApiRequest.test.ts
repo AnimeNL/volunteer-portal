@@ -25,7 +25,7 @@ describe('ApiRequest', () => {
                 status: 200,
             }));
 
-            const request = new ApiRequest<IAuth>('IAuth');
+            const request = new ApiRequest('IAuth');
             const response = await request.issue({
                 emailAddress: 'foo@example.com',
                 accessCode: '1234',
@@ -44,7 +44,7 @@ describe('ApiRequest', () => {
                 status: 200,
             }));
 
-            const request = new ApiRequest<IAuth>('IAuth');
+            const request = new ApiRequest('IAuth');
             const response = await request.issue({
                 emailAddress: 'foo@example.com',
                 accessCode: '1235',
@@ -59,7 +59,7 @@ describe('ApiRequest', () => {
                 status: 403,
             }));
 
-            const request = new ApiRequest<IAuth>('IAuth');
+            const request = new ApiRequest('IAuth');
             await expect(() => request.issue({
                 emailAddress: 'foo@example.com',
                 accessCode: '1234',
@@ -79,7 +79,7 @@ describe('ApiRequest', () => {
             }));
 
             const restoreConsole = mockConsole();
-            const request = new ApiRequest<IAuth>('IAuth');
+            const request = new ApiRequest('IAuth');
 
             await expect(() => request.issue({
                 emailAddress: 'foo@example.com',
@@ -108,7 +108,7 @@ describe('ApiRequest', () => {
                 };
             });
 
-            const request = new ApiRequest<IAuth>('IAuth');
+            const request = new ApiRequest('IAuth');
             const response = await request.issue({
                 emailAddress: 'foo@example.com',
                 accessCode: '1235',
@@ -130,7 +130,7 @@ describe('ApiRequest', () => {
                 status: 200,
             }));
 
-            const request = new ApiRequest<IContent>('IContent');
+            const request = new ApiRequest('IContent');
             const response = await request.issue();
 
             expect(request.api).toEqual('IContent');
@@ -154,7 +154,7 @@ describe('ApiRequest', () => {
                 status: 200,
             }));
 
-            const request = new ApiRequest<IContent>('IContent');
+            const request = new ApiRequest('IContent');
             const response = await request.issue();
 
             expect(response).toEqual(kValidContent);
@@ -166,7 +166,7 @@ describe('ApiRequest', () => {
                 status: 403,
             }));
 
-            const request = new ApiRequest<IContent>('IContent');
+            const request = new ApiRequest('IContent');
             await expect(() => request.issue()).rejects.toThrow();
         }
 
@@ -188,7 +188,7 @@ describe('ApiRequest', () => {
             }));
 
             const restoreConsole = mockConsole();
-            const request = new ApiRequest<IContent>('IContent');
+            const request = new ApiRequest('IContent');
 
             await expect(() => request.issue()).rejects.toThrow();
 
@@ -227,7 +227,7 @@ describe('ApiRequest', () => {
                 status: 200,
             }));
 
-            const request = new ApiRequest<IEnvironment>('IEnvironment');
+            const request = new ApiRequest('IEnvironment');
             const response = await request.issue();
 
             expect(request.api).toEqual('IEnvironment');
@@ -240,7 +240,7 @@ describe('ApiRequest', () => {
                 status: 403,
             }));
 
-            const request = new ApiRequest<IEnvironment>('IEnvironment');
+            const request = new ApiRequest('IEnvironment');
             await expect(() => request.issue()).rejects.toThrow();
         }
 
@@ -256,7 +256,7 @@ describe('ApiRequest', () => {
             }));
 
             const restoreConsole = mockConsole();
-            const request = new ApiRequest<IEnvironment>('IEnvironment');
+            const request = new ApiRequest('IEnvironment');
 
             await expect(() => request.issue()).rejects.toThrow();
 
@@ -281,7 +281,7 @@ describe('ApiRequest', () => {
                 status: 200,
             }));
 
-            const request = new ApiRequest<IEvent>('IEvent');
+            const request = new ApiRequest('IEvent');
             const response = await request.issue({
                 authToken: 'foo',
                 event: 'bar',
@@ -297,7 +297,7 @@ describe('ApiRequest', () => {
                 status: 403,
             }));
 
-            const request = new ApiRequest<IEvent>('IEvent');
+            const request = new ApiRequest('IEvent');
             await expect(() => request.issue({
                 authToken: 'foo',
                 event: 'bar',
@@ -335,7 +335,7 @@ describe('ApiRequest', () => {
             }));
 
             const restoreConsole = mockConsole();
-            const request = new ApiRequest<IEvent>('IEvent');
+            const request = new ApiRequest('IEvent');
 
             await expect(() => request.issue({
                 authToken: 'foo',
@@ -351,7 +351,7 @@ describe('ApiRequest', () => {
         jest.useFakeTimers();
 
         const controller = new AbortController();
-        const request = new ApiRequest<IContent>('IContent');
+        const request = new ApiRequest('IContent');
 
         fetchMock.mockOnceIf('/api/content', async request => {
             jest.advanceTimersByTime(/* msToRun= */ 150);

@@ -34,7 +34,7 @@ describe('ApiRequestManager', () => {
         }));
 
         const responses: IContentResponse[] = [];
-        const requestManager = new ApiRequestManager<IContent>('IContent', new class {
+        const requestManager = new ApiRequestManager('IContent', new class {
             onFailedResponse(error?: Error) {
                 throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
             }
@@ -61,7 +61,7 @@ describe('ApiRequestManager', () => {
         }));
 
         const errors: Error[] = [];
-        const requestManager = new ApiRequestManager<IContent>('IContent', new class {
+        const requestManager = new ApiRequestManager('IContent', new class {
             onFailedResponse(error: Error) {
                 errors.push(error);
             }
@@ -86,7 +86,7 @@ describe('ApiRequestManager', () => {
 
         let responseCount = 0;
 
-        const requestManager = new ApiRequestManager<IContent>('IContent', new class {
+        const requestManager = new ApiRequestManager('IContent', new class {
             onFailedResponse(error: Error) {
                 // Note that AbortError instances are suppressed when considering to invoke the
                 // onFailedResponse callback, as they're a direct consequence of our design.
@@ -110,7 +110,7 @@ describe('ApiRequestManager', () => {
     });
 
     it('has the ability to determine whether a request is cacheable', async () => {
-        const authRequestManager = new ApiRequestManager<IAuth>('IAuth', new class {
+        const authRequestManager = new ApiRequestManager('IAuth', new class {
             onFailedResponse(error: Error) {
                 throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
             }
@@ -124,7 +124,7 @@ describe('ApiRequestManager', () => {
             accessCode: '1234',
         })).toBeUndefined();
 
-        const contentRequestManager = new ApiRequestManager<IContent>('IContent', new class {
+        const contentRequestManager = new ApiRequestManager('IContent', new class {
             onFailedResponse(error: Error) {
                 throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
             }
@@ -135,7 +135,7 @@ describe('ApiRequestManager', () => {
 
         expect(contentRequestManager.determineCacheKey()).toEqual('IContent');
 
-        const eventRequestManager = new ApiRequestManager<IEvent>('IEvent', new class {
+        const eventRequestManager = new ApiRequestManager('IEvent', new class {
             onFailedResponse(error: Error) {
                 throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
             }

@@ -16,10 +16,10 @@ const kEndpoints: { [key in ApiName]: string } = {
 
 // Provides the ability to issue an API request, with known type information for both the request
 // and response information. Validation will be done by this class prior to announcing success.
-export class ApiRequest<T> {
-    #api: ApiName;
+export class ApiRequest<K extends ApiName> {
+    #api: K;
 
-    constructor(api: ApiName) {
+    constructor(api: K) {
         this.#api = api;
     }
 
@@ -30,7 +30,7 @@ export class ApiRequest<T> {
     // required request parameters. When the request could be completed successfully, the promise
     // will be resolved with the validated response. Otherwise an exception will be thrown. When
     // passed, the |signal| can be used to abort the request when it's in progress.
-    async issue(request: ApiRequestType<T>, signal?: AbortSignal): Promise<ApiResponseType<T>> {
+    async issue(request: ApiRequestType<K>, signal?: AbortSignal): Promise<ApiResponseType<K>> {
         // If |request| is given, iterate over all key/value pairs. Values will be added to either
         // the |parameters| (when the key is defined to behave as such) or in the |body| in all
         // all cases, influencing how the data is communicated with the server.
@@ -72,7 +72,7 @@ export class ApiRequest<T> {
             throw new Error(`Unable to fetch data from the server (${response.status}).`);
 
         const responseData = await response.json();
-        if (!validate<ApiResponseType<T>>(responseData, `${this.#api}Response`))
+        if (!validate<ApiResponseType<K>>(responseData, `${this.#api}Response`))
             throw new Error('Unable to validate the fetched data from the server.');
 
         return responseData;

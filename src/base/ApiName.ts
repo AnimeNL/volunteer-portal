@@ -2,16 +2,16 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import type { IAuth } from '../api/IAuth';
+import type { IContent } from '../api/IContent';
+import type { IEnvironment } from '../api/IEnvironment';
+import type { IEvent } from '../api/IEvent';
+
 import type api from '../api/schema.json';
 
 // Full, unfiltered list of types known in the API. The ApiValidator infrastructure is able to
 // validate all structures that are known to this type definition.
 export type ApiType = keyof typeof api.definitions;
-
-// Type request and response types of API calls is based on the input type, which defines both
-// pieces of information. Validation is automatically applied based on the textual name.
-export type ApiRequestType<T> = T extends { request: unknown } ? T['request'] : void;
-export type ApiResponseType<T> = T extends { response: unknown } ? T['response'] : undefined;
 
 // Internal filters used to remove specific names from the list of API types, to reduce this down to
 // a list of API names. We require a prefix ("I"), and want to drop entries containing either
@@ -28,3 +28,30 @@ export type ApiName = Exclude<ApiType, HasPrefix<ApiType, 'I'> |
                                        HasSuffix<ApiType, 'Response'> |
                                        Contains<ApiType, 'Request'> |
                                        Contains<ApiType, 'Response'>>;
+
+// Type mappings from string values to TypeScript types. Used to resolve typing information from
+// string identifiers passed to the ApiRequest<> and ApiRequestManager<> constructors.
+interface ApiTypeMapping {
+    IAuth: IAuth;
+    IContent: IContent;
+    IEnvironment: IEnvironment;
+    IEvent: IEvent;
+}
+
+// Type request and response types of API calls is based on the input type, which defines both
+// pieces of information. Validation is automatically applied based on the textual name.
+export type ApiRequestType<T extends keyof ApiTypeMapping> =
+    ApiTypeMapping[T] extends { request: unknown } ? ApiTypeMapping[T]['request'] : void;
+
+export type ApiResponseType<T extends keyof ApiTypeMapping> =
+    ApiTypeMapping[T] extends { response: unknown } ? ApiTypeMapping[T]['response'] : undefined;
+
+// Automatically verify that the API type mappings in |ApiTypeMappings| are complete, and that no
+// extra values are included in the interface either, when compared against the |ApiName| enum.
+type ApiTypeMappingIsComplete = Exclude<ApiName, keyof ApiTypeMapping>;
+type ApiTypeMappingIsRestrained = {
+    [K in keyof ApiTypeMapping]: Extract<ApiName, K> extends never
+        ? K : never }[keyof ApiTypeMapping];
+
+type Verify<Missing extends never = ApiTypeMappingIsComplete,
+            Extra extends never = ApiTypeMappingIsRestrained> = 0;

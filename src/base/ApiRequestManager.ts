@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import objectHash from 'object-hash';
+
 import type { ApiName, ApiRequestType, ApiResponseType } from './ApiName';
 import { ApiRequest } from './ApiRequest';
 import { Cache } from './Cache';
@@ -22,13 +24,15 @@ export interface ApiRequestObserver<K extends ApiName> {
 }
 
 // The ApiRequestManager abstracts over the ApiRequest by enabling direct access, as well as cached
-// access (offline enabled) and timed updates in case the application is long living without reload.
+// access (offline enabled) for requests that support such functionality, which do not rely on POST.
 export class ApiRequestManager<K extends ApiName> {
     private abortController?: AbortController;
     private cache: Cache;
 
     private request: ApiRequest<K>;
     private observer: ApiRequestObserver<K>;
+
+    private previousResponseHash?: string;
 
     constructor(api: K, observer: ApiRequestObserver<K>) {
         this.cache = new Cache();
@@ -47,9 +51,8 @@ export class ApiRequestManager<K extends ApiName> {
         const abortController = new AbortController();
         this.abortController = abortController;
 
-        // TODO: Enable responses to be automatically re-issued after a predefined period of time?
-
         const cacheKey = this.determineCacheKey(request);
+        const considerCache = cacheKey && !this.previousResponseHash;
 
         try {
             let responded = false;
@@ -62,19 +65,19 @@ export class ApiRequestManager<K extends ApiName> {
                         await this.storeInCache(cacheKey, response);
 
                     if (responded)
-                        await this.observer.onSuccessResponse(response);
+                        await this.maybeNotifySuccessResponse(response);
 
                     return response;
                 }),
 
                 // (2) When available, issue a request to load the response from the local cache.
                 // In most cases this will resolve first, but that is not guaranteed.
-                cacheKey ? this.requestFromCache(cacheKey) : Promise.reject()
+                considerCache ? this.requestFromCache(cacheKey) : Promise.reject()
             ]);
 
             responded = true;  // avoids double-invoking `onSuccessResponse` for no reason
 
-            await this.observer.onSuccessResponse(response);
+            await this.maybeNotifySuccessResponse(response);
             return true;
 
         } catch (aggregateError) {
@@ -100,6 +103,20 @@ export class ApiRequestManager<K extends ApiName> {
         } finally {
             this.abortController = undefined;
         }
+    }
+
+    // Notifies observers about the given |response|, unless its contents have not changed from the
+    // previous notification that was issued. In that case we silently ignore the (valid) response.
+    async maybeNotifySuccessResponse(response: ApiResponseType<K>): Promise<void> {
+        if (typeof response === 'object') {
+            const responseHash = objectHash(response);
+            if (responseHash === this.previousResponseHash)
+                return;  // the response data hasn't been invalidated
+
+            this.previousResponseHash = responseHash;
+        }
+
+        await this.observer.onSuccessResponse(response);
     }
 
     // Requests the given |cacheKey| from the local cache, expecting a response appropriate to the

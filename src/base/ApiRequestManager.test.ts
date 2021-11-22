@@ -25,7 +25,7 @@ describe('ApiRequestManager', () => {
     });
 
     it('is able to issue requests and receive successful responses', async () => {
-        const kValidContentResponse = {
+        const kFirstValidContentResponse = {
             pages: [
                 {
                     pathname: '/index.html',
@@ -35,10 +35,15 @@ describe('ApiRequestManager', () => {
             ]
         };
 
-        fetchMock.mockIf('/api/content', async request => ({
-            body: JSON.stringify(kValidContentResponse),
-            status: 200,
-        }));
+        const kSecondValidContentResponse = {
+            pages: [
+                {
+                    pathname: '/index.html',
+                    content: 'Have a good evening!',  // <-- updated
+                    modified: 1451606400,
+                }
+            ]
+        };
 
         const responses: IContentResponse[] = [];
         const requestManager = new ApiRequestManager('IContent', new class {
@@ -50,15 +55,36 @@ describe('ApiRequestManager', () => {
             }
         });
 
-        expect(await requestManager.issue()).toBeTruthy();
+        // The first response will always hit the network, no matter what happens.
+        fetchMock.mockOnceIf('/api/content', async request => ({
+            body: JSON.stringify(kFirstValidContentResponse),
+            status: 200,
+        }));
 
+        expect(await requestManager.issue()).toBeTruthy();
         expect(responses).toHaveLength(1);
-        expect(responses[0]).toEqual(kValidContentResponse);
+        expect(responses[0]).toEqual(kFirstValidContentResponse);
+
+        // The second response will hit the network, but will then be ignored because it's observed
+        // that the returned data has not been invalidated.
+        fetchMock.mockOnceIf('/api/content', async request => ({
+            body: JSON.stringify(kFirstValidContentResponse),
+            status: 200,
+        }));
 
         expect(await requestManager.issue()).toBeTruthy();
+        expect(responses).toHaveLength(1);
 
+        // The third update will go through to the network again, where the server will issue new
+        // data, which means that we will be receiving a callback for a successful response.
+        fetchMock.mockOnceIf('/api/content', async request => ({
+            body: JSON.stringify(kSecondValidContentResponse),
+            status: 200,
+        }));
+
+        expect(await requestManager.issue()).toBeTruthy();
         expect(responses).toHaveLength(2);
-        expect(responses[1]).toEqual(kValidContentResponse);
+        expect(responses[1]).toEqual(kSecondValidContentResponse);
     });
 
 
@@ -191,80 +217,6 @@ describe('ApiRequestManager', () => {
             expect(await contentRequestManager.issue()).toBeTruthy();
             expect(pages).toHaveLength(1);
         }
-    });
-
-    it('has the ability to invalidate cached content', async () => {
-        jest.useFakeTimers();
-
-        let responses: IContentResponse[] = [];
-
-        const contentRequestManager = new ApiRequestManager('IContent', new class {
-            onFailedResponse(error: Error) {
-                throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
-            }
-            onSuccessResponse(response: IContentResponse) {
-                responses.push(response);
-            }
-        });
-
-        // Request the IContent API. The cache is empty, so the returned response will be from the
-        // network. The response will immediately be cached in the local cache.
-        fetchMock.mockOnceIf('/api/content', async request => ({
-            body: JSON.stringify({
-                pages: [
-                    {
-                        pathname: '/index.html',
-                        content: 'Original page',
-                        modified: 1451606400,
-                    }
-                ]
-            }),
-            status: 200,
-        }));
-
-        expect(await contentRequestManager.issue()).toBeTruthy();
-        expect(responses).toHaveLength(1);
-        expect(responses[0].pages).toHaveLength(1);
-        expect(responses[0].pages[0].content).toEqual('Original page');
-
-        // Request the IContent API again. The cache is populated with the old data, so expect the
-        // initial response to equal that (from the cache), after which we receive an update about
-        // the updated content being made available.
-        fetchMock.mockOnceIf('/api/content', async request => {
-            await new Promise(resolve => setTimeout(resolve, /* ms= */ 100));
-
-            return {
-                body: JSON.stringify({
-                    pages: [
-                        {
-                            pathname: '/index.html',
-                            content: 'Updated page',
-                            modified: 1451606400,
-                        }
-                    ]
-                }),
-                status: 200,
-            };
-        });
-
-        expect(await contentRequestManager.issue()).toBeTruthy();
-        expect(responses).toHaveLength(2);
-        expect(responses[1].pages).toHaveLength(1);
-        expect(responses[1].pages[0].content).toEqual('Original page');
-
-        jest.advanceTimersByTime(/* msToRun= */ 150);
-
-        // Read some items from the cache, which the ApiRequestManager is most likely still waiting
-        // on while executing this part of the test. We don't have a better way of waiting for it.
-        for (let wait = 0; responses.length < 3 && wait < 5; ++wait)
-            await (new Cache).has('invalid-item');
-
-        expect(responses).toHaveLength(3);
-        expect(responses[2].pages).toHaveLength(1);
-        expect(responses[2].pages[0].content).toEqual('Updated page');
-
-        // TODO: Add a test for not calling onSuccessResponse when the response hasn't actually
-        // changed, for which we'll have to do a deep equality check or hash somehow.
     });
 
     it('has the ability to determine whether a request is cacheable', async () => {

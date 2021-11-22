@@ -4,6 +4,8 @@
 
 import type { ApiName, ApiRequestType, ApiResponseType } from './ApiName';
 import { ApiRequest } from './ApiRequest';
+import { Cache } from './Cache';
+import { validate } from './ApiValidator';
 
 // Observer interface that users of the ApiRequestManager have to implement, which is used to inform
 // the user about successful or failed requests issued to the API. Return values have been removed
@@ -23,10 +25,13 @@ export interface ApiRequestObserver<K extends ApiName> {
 // access (offline enabled) and timed updates in case the application is long living without reload.
 export class ApiRequestManager<K extends ApiName> {
     private abortController?: AbortController;
+    private cache: Cache;
+
     private request: ApiRequest<K>;
     private observer: ApiRequestObserver<K>;
 
     constructor(api: K, observer: ApiRequestObserver<K>) {
+        this.cache = new Cache();
         this.request = new ApiRequest(api);
         this.observer = observer;
     }
@@ -39,29 +44,73 @@ export class ApiRequestManager<K extends ApiName> {
         if (this.abortController)
             this.abortController.abort();
 
-        // TODO: Enable caching of responses, but ignore for later requests.
+        const abortController = new AbortController();
+        this.abortController = abortController;
+
         // TODO: Enable responses to be automatically re-issued after a predefined period of time?
 
-        this.abortController = new AbortController();
-
-        let response: ApiResponseType<K> | undefined;
+        const cacheKey = this.determineCacheKey(request);
 
         try {
-            response = await this.request.issue(request, this.abortController.signal);
-        } catch (error) {
-            const typedError = error instanceof Error ? error : new Error(`Error: ${error}`);
-            if (typedError.name === 'AbortError') {
-                // AbortError is thrown when we invalidate the signal from a previous request using
-                // the AbortController. This is intentional, and is not considered a failure.
+            const response = await Promise.any([
+                // (1) Issue the request to the network. When successful, and caching is available,
+                // immediately store the response value to the local cache as well.
+                this.request.issue(request, abortController.signal).then(async response => {
+                    if (cacheKey)
+                        await this.storeInCache(cacheKey, response);
+
+                    // TODO: `onSuccessResponse` if the |response| changed.
+
+                    return response;
+                }),
+
+                // (2) When available, issue a request to load the response from the local cache.
+                // In most cases this will resolve first, but that is not guaranteed.
+                cacheKey ? this.requestFromCache(cacheKey) : Promise.reject()
+            ]);
+
+            await this.observer.onSuccessResponse(response);
+            return true;
+
+        } catch (aggregateError) {
+            let error: Error;
+
+            // (1) Determine the exact |error| that happened. This should be an AggregateError
+            // thrown by Promise.any(), but caching behaviour may throw different errors.
+            if (aggregateError instanceof AggregateError && aggregateError.errors.length > 0)
+                error = aggregateError.errors[0];
+            else if (aggregateError instanceof Error)
+                error = aggregateError as Error;
+            else
+                error = new Error(`Error: ${aggregateError}`);
+
+            // AbortError is thrown when we invalidate the signal from a previous request using the
+            // AbortController. This is intentional, and is not considered a failure.
+            if (error.name === 'AbortError' && abortController.signal.aborted)
                 return false;
-            }
 
-            await this.observer.onFailedResponse(typedError);
+            await this.observer.onFailedResponse(error);
             return false;
-        }
 
-        await this.observer.onSuccessResponse(response);
-        return true;
+        } finally {
+            this.abortController = undefined;
+        }
+    }
+
+    // Requests the given |cacheKey| from the local cache, expecting a response appropriate to the
+    // current API. The response will be validated prior to being returned. Will throw an exception
+    // when either the |cacheKey| does not have any associated data, or that data does not validate.
+    async requestFromCache(cacheKey: string): Promise<ApiResponseType<K>> {
+        const responseData = await this.cache.get(cacheKey);
+        if (!validate<ApiResponseType<K>>(responseData, `${this.request.api}Response`))
+            throw new Error('Unable to validate the fetched data from the local cache.');
+
+        return responseData;
+    }
+
+    // Stores the given |response| in the local cache, keyed by the given |cacheKey|.
+    async storeInCache(cacheKey: string, response: ApiResponseType<K>): Promise<void> {
+        await this.cache.set(cacheKey, response);
     }
 
     // Determines the cache key for the given |request|. When a string is returned, the request is

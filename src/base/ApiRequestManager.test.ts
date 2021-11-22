@@ -6,16 +6,23 @@ import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 import fetchMock from 'jest-fetch-mock';
 
 import { ApiRequestManager } from './ApiRequestManager';
+import { Cache } from './Cache';
 
-import { IAuth, IAuthResponse } from '../api/IAuth';
-import { IContent, IContentResponse } from '../api/IContent';
-import { IEvent, IEventResponse } from '../api/IEvent';
+import { IAuthResponse } from '../api/IAuth';
+import { IContentResponse, IContentResponsePage } from '../api/IContent';
+import { IEventResponse } from '../api/IEvent';
 
 describe('ApiRequestManager', () => {
     let restoreConsole: RestoreConsole | undefined = undefined;
 
-    beforeEach(() => restoreConsole = mockConsole());
     afterEach(() => restoreConsole!());
+    beforeEach(async () => {
+        // (1) Install the moacked console, to catch console.error() messages.
+        restoreConsole = mockConsole();
+
+        // (2) Clear the cache, as this test suite depends on validating caching behaviour.
+        await (new Cache).clear();
+    });
 
     it('is able to issue requests and receive successful responses', async () => {
         const kValidContentResponse = {
@@ -107,6 +114,83 @@ describe('ApiRequestManager', () => {
 
         expect(await Promise.all(promii)).toEqual([ false, true ]);
         expect(responseCount).toEqual(1);
+    });
+
+    it('has the ability to cache request/response pairs', async () => {
+        const kValidContentResponse = {
+            pages: [
+                {
+                    pathname: '/index.html',
+                    content: 'Hello, world!',
+                    modified: 1451606400,
+                }
+            ]
+        };
+
+        // Request the IContent API and expect the results to be cached in the store.
+        {
+            let pages: IContentResponsePage[] = [];
+
+            const contentRequestManager = new ApiRequestManager('IContent', new class {
+                onFailedResponse(error: Error) {
+                    throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
+                }
+                onSuccessResponse(response: IContentResponse) {
+                    pages = response.pages;
+                }
+            });
+
+            fetchMock.mockOnceIf('/api/content', async request => ({
+                body: JSON.stringify(kValidContentResponse),
+                status: 200,
+            }));
+
+            expect(await contentRequestManager.issue()).toBeTruthy();
+            expect(pages).toHaveLength(1);
+        }
+
+        // Request the IContent API again, but have the network request return a non-ok status.
+        {
+            let pages: IContentResponsePage[] = [];
+
+            const contentRequestManager = new ApiRequestManager('IContent', new class {
+                onFailedResponse(error: Error) {
+                    throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
+                }
+                onSuccessResponse(response: IContentResponse) {
+                    pages = response.pages;
+                }
+            });
+
+            fetchMock.mockOnceIf('/api/content', async request => ({
+                status: 403,
+            }));
+
+            expect(await contentRequestManager.issue()).toBeTruthy();
+            expect(pages).toHaveLength(1);
+        }
+
+        // Request the IContent API again, and expect it to not have been overwritten by the non-OK
+        // response that was issued in the previous response.
+        {
+            let pages: IContentResponsePage[] = [];
+
+            const contentRequestManager = new ApiRequestManager('IContent', new class {
+                onFailedResponse(error: Error) {
+                    throw new Error('The `onFailedResponse` callback was unexpectedly invoked.');
+                }
+                onSuccessResponse(response: IContentResponse) {
+                    pages = response.pages;
+                }
+            });
+
+            fetchMock.mockOnceIf('/api/content', async request => ({
+                status: 403,
+            }));
+
+            expect(await contentRequestManager.issue()).toBeTruthy();
+            expect(pages).toHaveLength(1);
+        }
     });
 
     it('has the ability to determine whether a request is cacheable', async () => {

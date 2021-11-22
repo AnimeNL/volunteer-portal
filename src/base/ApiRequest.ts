@@ -18,13 +18,18 @@ const kEndpoints: { [key in ApiName]: string } = {
 // and response information. Validation will be done by this class prior to announcing success.
 export class ApiRequest<K extends ApiName> {
     #api: K;
+    #hash: number;
 
     constructor(api: K) {
         this.#api = api;
+        this.#hash = 0;
     }
 
     // Returns the name of the API for which this ApiRequest instance exists.
     get api() { return this.#api; }
+
+    // Returns the calculated hash from the latest response. Definitely a non-cryptographic value.
+    get hash() { return this.#hash; }
 
     // Issues a request on the API. The |request| is conditionally required if the |T| defines the
     // required request parameters. When the request could be completed successfully, the promise
@@ -71,9 +76,19 @@ export class ApiRequest<K extends ApiName> {
         if (!response.ok)
             throw new Error(`Unable to fetch data from the server (${response.status}).`);
 
+        const responseClone = response.clone();
         const responseData = await response.json();
+
         if (!validate<ApiResponseType<K>>(responseData, `${this.#api}Response`))
             throw new Error('Unable to validate the fetched data from the server.');
+
+        this.#hash = 0;
+
+        // Given that the |responseData| was successfully validated, re-consume the body from the
+        // |responseClone| and use that to calculate a hash of the returned content.
+        const buffer = new Uint8Array(await responseClone.arrayBuffer());
+        for (let i = 0; i < buffer.length; ++i)
+            this.#hash = (((this.#hash << 5) - this.#hash) + buffer[i]) | 0;
 
         return responseData;
     }

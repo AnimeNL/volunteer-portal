@@ -26,12 +26,15 @@ describe('ApiRequest', () => {
             }));
 
             const request = new ApiRequest('IAuth');
+            expect(request.hash).toEqual(0);
+
             const response = await request.issue({
                 emailAddress: 'foo@example.com',
                 accessCode: '1234',
             });
 
             expect(request.api).toEqual('IAuth');
+            expect(request.hash).not.toEqual(0);
             expect(response).toEqual(kValidAuthResponse);
         }
 
@@ -231,6 +234,8 @@ describe('ApiRequest', () => {
             const response = await request.issue();
 
             expect(request.api).toEqual('IEnvironment');
+            expect(request.hash).not.toEqual(0);
+
             expect(response).toEqual(kValidEnvironment);
         }
 

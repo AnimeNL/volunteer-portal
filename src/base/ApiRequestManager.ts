@@ -2,8 +2,6 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import objectHash from 'object-hash';
-
 import type { ApiName, ApiRequestType, ApiResponseType } from './ApiName';
 import { ApiRequest } from './ApiRequest';
 import { Cache } from './Cache';
@@ -32,7 +30,7 @@ export class ApiRequestManager<K extends ApiName> {
     private request: ApiRequest<K>;
     private observer: ApiRequestObserver<K>;
 
-    private previousResponseHash?: string;
+    private previousResponseHash?: number;
 
     constructor(api: K, observer: ApiRequestObserver<K>) {
         this.cache = new Cache();
@@ -109,7 +107,7 @@ export class ApiRequestManager<K extends ApiName> {
     // previous notification that was issued. In that case we silently ignore the (valid) response.
     async maybeNotifySuccessResponse(response: ApiResponseType<K>): Promise<void> {
         if (typeof response === 'object') {
-            const responseHash = objectHash(response);
+            const responseHash = this.request.hash;
             if (responseHash === this.previousResponseHash)
                 return;  // the response data hasn't been invalidated
 

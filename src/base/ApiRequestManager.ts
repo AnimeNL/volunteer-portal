@@ -52,6 +52,8 @@ export class ApiRequestManager<K extends ApiName> {
         const cacheKey = this.determineCacheKey(request);
 
         try {
+            let responded = false;
+
             const response = await Promise.any([
                 // (1) Issue the request to the network. When successful, and caching is available,
                 // immediately store the response value to the local cache as well.
@@ -59,7 +61,8 @@ export class ApiRequestManager<K extends ApiName> {
                     if (cacheKey)
                         await this.storeInCache(cacheKey, response);
 
-                    // TODO: `onSuccessResponse` if the |response| changed.
+                    if (responded)
+                        await this.observer.onSuccessResponse(response);
 
                     return response;
                 }),
@@ -68,6 +71,8 @@ export class ApiRequestManager<K extends ApiName> {
                 // In most cases this will resolve first, but that is not guaranteed.
                 cacheKey ? this.requestFromCache(cacheKey) : Promise.reject()
             ]);
+
+            responded = true;  // avoids double-invoking `onSuccessResponse` for no reason
 
             await this.observer.onSuccessResponse(response);
             return true;

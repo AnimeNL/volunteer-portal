@@ -4,6 +4,8 @@
 
 import moment from 'moment-timezone';
 
+import { IContentResponsePage } from '../api/IContent';
+
 /**
  * Defines the interface through which application content can be accessed. Such content is keyed
  * by its pathname and can be specific to the environment.
@@ -27,17 +29,10 @@ export interface Content {
     getPrefixed(prefix: string): ContentPage[];
 }
 
-/**
- * Details the information that will be made available for a particular piece of content. All data
- * contained within such objects should be considered immutable.
- */
-export interface ContentPage {
-    // Full pathname through which this content can be identified.
-    pathname: Readonly<string>;
-
-    // Contents of the page. May contain Markdown syntax.
-    content: Readonly<string>;
-
-    // Last modification time of the page. Indicated as a UNIX timestamp.
+export type ContentPage = Omit<Readonly<IContentResponsePage>, 'modified'> & {
+    /**
+     * Last modification time of content on the page, as a Moment time instance. The time has not
+     * been adjusted to any particular timezone.
+     */
     modified: Readonly<moment.Moment>;
 }

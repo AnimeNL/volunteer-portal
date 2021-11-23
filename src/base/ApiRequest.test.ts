@@ -7,11 +7,6 @@ import mockConsole from 'jest-mock-console';
 
 import { ApiRequest } from './ApiRequest';
 
-import { IAuth } from '../api/IAuth';
-import { IContent } from '../api/IContent';
-import { IEnvironment } from '../api/IEnvironment';
-import { IEvent } from '../api/IEvent';
-
 describe('ApiRequest', () => {
     it('is able to issue and validate requests for IAuth', async () => {
         const kValidAuthResponse = {

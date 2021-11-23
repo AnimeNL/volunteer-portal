@@ -122,6 +122,9 @@ export class ApiRequestManager<K extends ApiName> {
     // when either the |cacheKey| does not have any associated data, or that data does not validate.
     async requestFromCache(cacheKey: string): Promise<ApiResponseType<K>> {
         const responseData = await this.cache.get(cacheKey);
+        if (!responseData)
+            throw new Error('No response data has been cached for this request.');
+
         if (!validate<ApiResponseType<K>>(responseData, `${this.request.api}Response`))
             throw new Error('Unable to validate the fetched data from the local cache.');
 

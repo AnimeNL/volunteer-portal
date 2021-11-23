@@ -2,15 +2,10 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import moment from 'moment-timezone';
+import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 
-import { Cache } from './Cache';
-import { CachedLoader } from './CachedLoader';
-import { Configuration } from './Configuration';
-import { Environment, EnvironmentEvent } from './Environment';
-import { IEnvironmentResponse, IEnvironmentResponseEvent } from '../api/IEnvironment';
-
-import { validateArray, validateBoolean, validateOptionalString, validateString } from './TypeValidators';
+import type { Environment, EnvironmentEvent } from './Environment';
+import type { IEnvironmentResponse } from '../api/IEnvironment';
 
 /**
  * Message to include with the exception thrown when data is being accessed before the Environment
@@ -21,17 +16,12 @@ const kExceptionMessage = 'The Environment object has not been successfully init
 /**
  * Implementation of the Environment interface, shared across the entire Volunteer Portal.
  */
-export class EnvironmentImpl implements Environment {
-    public static kCacheKey: string = 'portal-environment-v2';
+export class EnvironmentImpl implements ApiRequestObserver<'IEnvironment'>, Environment {
+    private requestManager: ApiRequestManager<'IEnvironment'>;
+    private responseData?: IEnvironmentResponse;
 
-    private configuration: Configuration;
-    private loader: CachedLoader;
-
-    private data?: IEnvironmentResponse;
-
-    constructor(cache: Cache, configuration: Configuration) {
-        this.configuration = configuration;
-        this.loader = new CachedLoader(cache);
+    constructor() {
+        this.requestManager = new ApiRequestManager('IEnvironment', this);
     }
 
     /**
@@ -40,60 +30,16 @@ export class EnvironmentImpl implements Environment {
      * which it will be loaded from the server.
      */
     async initialize(): Promise<boolean> {
-        const environment = await this.loader.initialize({
-            cacheKey: EnvironmentImpl.kCacheKey,
-            url: this.configuration.getEnvironmentEndpoint(),
-            validationFn: EnvironmentImpl.prototype.validateEnvironmentResponse.bind(this),
-        });
-
-        if (!environment)
-            return false;
-
-        this.data = environment;
-        return true;
+        return this.requestManager.issue();
     }
 
-    /**
-     * Validates the given |environment| as data given in the IEnvironment response format. Error
-     * messages will be sent to the console's error buffer if the data could not be verified.
-     */
-    validateEnvironmentResponse(environment: any): environment is IEnvironmentResponse {
-        const kInterfaceName = 'IEnvironmentResponse';
+    // ---------------------------------------------------------------------------------------------
+    // ApiRequestObserver interface implementation
+    // ---------------------------------------------------------------------------------------------
 
-        if (!validateArray(environment, kInterfaceName, 'events'))
-            return false;
-
-        for (const event of environment.events) {
-            if (!this.validateEnvironmentResponseEvent(event))
-                return false;
-
-            if (!moment.tz.zone(event.timezone)) {
-                console.error(`Invalid timezone for event ${event.name}: ${event.timezone}.`);
-                return false;
-            }
-        }
-
-        return validateString(environment, kInterfaceName, 'title') &&
-               validateString(environment, kInterfaceName, 'themeColor') &&
-               validateString(environment, kInterfaceName, 'themeTitle') &&
-               validateString(environment, kInterfaceName, 'contactName') &&
-               validateOptionalString(environment, kInterfaceName, 'contactTarget');
-    }
-
-    /**
-     * Validates whether the given |event| is a valid IEnvironmentResponseEvent structure. This data
-     * will generally have been sourced from untrusted input, i.e. the network.
-     */
-    validateEnvironmentResponseEvent(event: any): event is IEnvironmentResponseEvent {
-        const kInterfaceName = 'IEnvironmentResponseEvent';
-
-        return validateString(event, kInterfaceName, 'name') &&
-               validateBoolean(event, kInterfaceName, 'enableContent') &&
-               validateBoolean(event, kInterfaceName, 'enableRegistration') &&
-               validateBoolean(event, kInterfaceName, 'enableSchedule') &&
-               validateString(event, kInterfaceName, 'identifier') &&
-               validateString(event, kInterfaceName, 'timezone') &&
-               validateOptionalString(event, kInterfaceName, 'website');
+    onFailedResponse(error: Error) { /* handled in the App */ }
+    onSuccessResponse(response: IEnvironmentResponse) {
+        this.responseData = response;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -101,44 +47,44 @@ export class EnvironmentImpl implements Environment {
     // ---------------------------------------------------------------------------------------------
 
     get title(): Readonly<string> {
-        if (!this.data)
+        if (!this.responseData)
             throw new Error(kExceptionMessage);
 
-        return this.data.title;
+        return this.responseData.title;
     }
 
     get themeColor(): Readonly<string> {
-        if (!this.data)
+        if (!this.responseData)
             throw new Error(kExceptionMessage);
 
-        return this.data.themeColor;
+        return this.responseData.themeColor;
     }
 
     get themeTitle(): Readonly<string> {
-        if (!this.data)
+        if (!this.responseData)
             throw new Error(kExceptionMessage);
 
-        return this.data.themeTitle;
+        return this.responseData.themeTitle;
     }
 
     get events(): ReadonlyArray<EnvironmentEvent> {
-        if (!this.data)
+        if (!this.responseData)
             throw new Error(kExceptionMessage);
 
-        return this.data.events;
+        return this.responseData.events;
     }
 
     get contactName(): Readonly<string> {
-        if (!this.data)
+        if (!this.responseData)
             throw new Error(kExceptionMessage);
 
-        return this.data.contactName;
+        return this.responseData.contactName;
     }
 
     get contactTarget(): undefined | Readonly<string> {
-        if (!this.data)
+        if (!this.responseData)
             throw new Error(kExceptionMessage);
 
-        return this.data.contactTarget;
+        return this.responseData.contactTarget;
     }
 }

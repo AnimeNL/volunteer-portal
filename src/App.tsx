@@ -49,7 +49,7 @@ export class App extends Component<{}, AppState> implements UserImplObserver {
         this.cache = new Cache();
         this.configuration = new ConfigurationImpl();
         this.content = new ContentImpl(this.cache, this.configuration);
-        this.environment = new EnvironmentImpl(this.cache, this.configuration);
+        this.environment = new EnvironmentImpl();
         this.eventFactory = new EventFactory(this.cache, this.configuration);
         this.user = new UserImpl(this.cache, this.configuration);
 

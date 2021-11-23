@@ -6,66 +6,46 @@ import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 import mockFetch from 'jest-fetch-mock';
 
 import { Cache } from './Cache';
-import { ConfigurationImpl } from './ConfigurationImpl';
 import { EnvironmentImpl } from './EnvironmentImpl';
 
 describe('EnvironmentImpl', () => {
     let restoreConsole: RestoreConsole | undefined = undefined;
 
-    beforeEach(() => restoreConsole = mockConsole());
     afterEach(() => restoreConsole!());
+    beforeEach(async () => {
+        // (1) Install the moacked console, to catch console.error() messages.
+        restoreConsole = mockConsole();
 
-    /**
-     * Creates an instance of the EnvironmentImpl object. The |environment| will be served through
-     * mocked HTTP fetches, with the appropriate response being given.
-     * 
-     * @param status The HTTP status code the mock server should respond with.
-     * @param environment The environment that should be returned by the mock server.
-     */
-    async function createInstance(status: number, environment: object) {
-        const cache = new Cache();
-        const configuration = new ConfigurationImpl();
-
-        // Always clear the cache prior to creating a new instance.
-        await cache.delete(EnvironmentImpl.kCacheKey);
-
-        mockFetch.mockOnceIf(configuration.getEnvironmentEndpoint(), async request => {
-            return {
-                body: JSON.stringify(environment),
-                status,
-            };
-        });
-
-        return {
-            cache,
-            environment: new EnvironmentImpl(cache, configuration)
-        };
-    }
+        // (2) Clear the cache, as this test suite depends on validating caching behaviour.
+        await (new Cache).clear();
+    });
 
     it('should reflect the values of a valid environment from the network', async () => {
-        const { cache, environment } = await createInstance(200, {
-            title: 'Volunteer Portal',
+        mockFetch.mockOnceIf('/api/environment', async request => ({
+            body: JSON.stringify({
+                title: 'Volunteer Portal',
 
-            themeColor: '#ff0000',
-            themeTitle: 'Voluntering Team',
+                themeColor: '#ff0000',
+                themeTitle: 'Voluntering Team',
 
-            events: [
-                {
-                    name: 'Event Name',
-                    enableContent: true,
-                    enableRegistration: true,
-                    enableSchedule: false,
-                    identifier: 'event-name',
-                    timezone: 'Europe/London',
-                    website: 'https://example.com/'
-                }
-            ],
+                events: [
+                    {
+                        name: 'Event Name',
+                        enableContent: true,
+                        enableRegistration: true,
+                        enableSchedule: false,
+                        identifier: 'event-name',
+                        timezone: 'Europe/London',
+                        website: 'https://example.com/'
+                    }
+                ],
 
-            contactName: 'Peter',
-            contactTarget: undefined,
-        });
+                contactName: 'Peter',
+            }),
+            status: 200,
+        }));
 
-        expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeFalsy();
+        const environment = new EnvironmentImpl();
         expect(await environment.initialize()).toBeTruthy();
 
         expect(environment.contactName).toEqual('Peter');
@@ -83,77 +63,17 @@ describe('EnvironmentImpl', () => {
         expect(environment.events[0].identifier).toEqual('event-name');
         expect(environment.events[0].timezone).toEqual('Europe/London');
         expect(environment.events[0].website).toEqual('https://example.com/');
-
-        expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeTruthy();
-    });
-
-    it('should reflect the values of a valid environment from the cache', async () => {
-        const { cache, environment } = await createInstance(404, {});
-
-        await cache.set(EnvironmentImpl.kCacheKey, {
-            title: 'Volunteer Portal',
-
-            themeColor: '#00ff00',
-            themeTitle: 'Volunteer Team',
-
-            events: [
-                {
-                    name: 'Event Name',
-                    enableContent: false,
-                    enableRegistration: false,
-                    enableSchedule: true,
-                    identifier: 'event-name',
-                    timezone: 'Europe/Amsterdam',
-                    /* website: omitted */
-                }
-            ],
-
-            contactName: 'Ferdi',
-            contactTarget: '0000-00-000',
-        });
-
-        expect(await cache.has(EnvironmentImpl.kCacheKey)).toBeTruthy();
-        expect(await environment.initialize()).toBeTruthy();
-
-        expect(environment.contactName).toEqual('Ferdi');
-        expect(environment.contactTarget).toEqual('0000-00-000');
-        expect(environment.title).toEqual('Volunteer Portal');
-
-        expect(environment.themeColor).toEqual('#00ff00');
-        expect(environment.themeTitle).toEqual('Volunteer Team');
-
-        expect(environment.events).toHaveLength(1);
-        expect(environment.events[0].name).toEqual('Event Name');
-        expect(environment.events[0].enableContent).toBeFalsy();
-        expect(environment.events[0].enableRegistration).toBeFalsy();
-        expect(environment.events[0].enableSchedule).toBeTruthy();
-        expect(environment.events[0].identifier).toEqual('event-name');
-        expect(environment.events[0].timezone).toEqual('Europe/Amsterdam');
-        expect(environment.events[0].website).toBeUndefined();
     });
 
     it('should fail when the API endpoint is unavailable', async () => {
-        const { environment } = await createInstance(404, {});
+        mockFetch.mockOnceIf('/api/environment', async request => ({
+            status: 403,
+        }));
 
-        // Failure because fetching the API endpoint returns a 404 status.
+        const environment = new EnvironmentImpl();
         expect(await environment.initialize()).toBeFalsy();
+
         expect(console.error).toHaveBeenCalledTimes(0);
-    });
-
-    it('should fail when the API endpoint returns invalid data', async () => {
-        const { environment } = await createInstance(200, { fruit: 'banana' });
-
-        // Failure because data fetched from the API endpoint does not match to [[IEnvironment]].
-        expect(await environment.initialize()).toBeFalsy();
-        expect(console.error).toHaveBeenCalledTimes(1);
-    });
-
-    it('should throw when accessing properties before a successful initialization', async () => {
-        const { environment } = await createInstance(404, {});
-
-        expect(() => environment.contactName).toThrowError();
-        expect(() => environment.contactTarget).toThrowError();
-        expect(() => environment.events).toThrowError();
         expect(() => environment.title).toThrowError();
     });
 });

@@ -6,6 +6,7 @@ import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 
 import type { Environment, EnvironmentEvent } from './Environment';
 import type { IEnvironmentResponse } from '../api/IEnvironment';
+import type { Invalidatable } from './Invalidatable';
 
 /**
  * Message to include with the exception thrown when data is being accessed before the Environment
@@ -20,8 +21,11 @@ export class EnvironmentImpl implements ApiRequestObserver<'IEnvironment'>, Envi
     private requestManager: ApiRequestManager<'IEnvironment'>;
     private responseData?: IEnvironmentResponse;
 
-    constructor() {
+    private observer?: Invalidatable;
+
+    constructor(observer?: Invalidatable) {
         this.requestManager = new ApiRequestManager('IEnvironment', this);
+        this.observer = observer;
     }
 
     /**
@@ -40,6 +44,9 @@ export class EnvironmentImpl implements ApiRequestObserver<'IEnvironment'>, Envi
     onFailedResponse(error: Error) { /* handled in the App */ }
     onSuccessResponse(response: IEnvironmentResponse) {
         this.responseData = response;
+
+        if (this.observer)
+            this.observer.invalidate();
     }
 
     // ---------------------------------------------------------------------------------------------

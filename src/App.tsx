@@ -12,6 +12,7 @@ import { ConfigurationImpl } from './base/ConfigurationImpl';
 import { ContentImpl } from './base/ContentImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
 import { EventFactory } from './base/EventFactory';
+import { Invalidatable } from './base/Invalidatable';
 import { UserImpl, UserImplObserver } from './base/UserImpl';
 
 import { LoadingApp } from './loading/LoadingApp';
@@ -29,7 +30,7 @@ interface AppState {
 
 // Main component of the Volunteer Portal application, which creates the app context and switches
 // between the four main sub-applications: Registration, Schedule and Welcome.
-export class App extends Component<{}, AppState> implements UserImplObserver {
+export class App extends Component<{}, AppState> implements Invalidatable, UserImplObserver {
     private cache: Cache;
     private configuration: ConfigurationImpl;
     private content: ContentImpl;
@@ -49,7 +50,7 @@ export class App extends Component<{}, AppState> implements UserImplObserver {
         this.cache = new Cache();
         this.configuration = new ConfigurationImpl();
         this.content = new ContentImpl(this.cache, this.configuration);
-        this.environment = new EnvironmentImpl();
+        this.environment = new EnvironmentImpl(/* observer= */ this);
         this.eventFactory = new EventFactory(this.cache, this.configuration);
         this.user = new UserImpl(this.cache, this.configuration);
 
@@ -93,6 +94,20 @@ export class App extends Component<{}, AppState> implements UserImplObserver {
     // Called when the <App> component is being removed. Stops observing the UserImpl object.
     componentWillUnmount() {
         this.user.removeObserver(this);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Invalidatable implementation.
+    // ---------------------------------------------------------------------------------------------
+
+    // Called when one of the data sources has been invalidated. This can mean that new data has
+    // been fetched from the server, but it can also mean that the user has been signed out. Calls
+    // made before the application has loaded will be ignored.
+    invalidate() {
+        if (!this.state.loaded)
+            return;
+
+        this.forceUpdate();
     }
 
     // ---------------------------------------------------------------------------------------------

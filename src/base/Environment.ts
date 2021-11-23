@@ -69,12 +69,6 @@ export interface EnvironmentEvent {
     identifier: Readonly<string>;
 
     /**
-     * Timezone in which the event takes place, e.g. _Europe/London_.
-     * @see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-     */
-    timezone: Readonly<string>;
-
-    /**
      * URL to the website of the broader event.
      */
     website?: Readonly<string>;

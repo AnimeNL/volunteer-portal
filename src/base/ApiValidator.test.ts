@@ -40,7 +40,6 @@ describe('ApiValidator', () => {
                     enableRegistration: false,
                     enableSchedule: false,
                     identifier: 'my-event',
-                    timezone: 'Europe/Amsterdam',
                 },
             ],
 
@@ -88,8 +87,7 @@ describe('ApiValidator', () => {
                     enableRegistration: false,
                     enableSchedule: false,
                     identifier: 2022,  // <-- unexpected type
-                    timezone: 'Europe/Amsterdam',
-                    },
+                },
             ],
 
             contactName: 'administrator',

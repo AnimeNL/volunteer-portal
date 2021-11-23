@@ -209,7 +209,6 @@ describe('ApiRequest', () => {
                     enableRegistration: true,
                     enableSchedule: false,
                     identifier: 'my-event',
-                    timezone: 'Europe/Amsterdam',
                     website: 'https://my-event.com',
                 }
             ],

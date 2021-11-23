@@ -35,7 +35,6 @@ describe('EnvironmentImpl', () => {
                         enableRegistration: true,
                         enableSchedule: false,
                         identifier: 'event-name',
-                        timezone: 'Europe/London',
                         website: 'https://example.com/'
                     }
                 ],
@@ -61,7 +60,6 @@ describe('EnvironmentImpl', () => {
         expect(environment.events[0].enableRegistration).toBeTruthy();
         expect(environment.events[0].enableSchedule).toBeFalsy();
         expect(environment.events[0].identifier).toEqual('event-name');
-        expect(environment.events[0].timezone).toEqual('Europe/London');
         expect(environment.events[0].website).toEqual('https://example.com/');
     });
 

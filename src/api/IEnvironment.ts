@@ -88,12 +88,6 @@ export interface IEnvironmentResponseEvent {
     enableSchedule: boolean;
 
     /**
-     * Identifier for the timezone in which this event will be taking place. Must be included as an
-     * identifier in the Timezone Database upon which our date library is based.
-     */
-    timezone: string;
-
-    /**
      * Fully qualified URL of the main website for this event. Can be referred to in various ways,
      * although the canonical usage is on the main page when content is not yet available.
      */

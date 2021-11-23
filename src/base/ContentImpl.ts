@@ -4,13 +4,11 @@
 
 import moment from 'moment-timezone';
 
-import { Cache } from './Cache';
-import { CachedLoader } from './CachedLoader';
-import { Configuration } from './Configuration';
-import { Content, ContentPage } from './Content';
-import { IContentResponse, IContentResponsePage } from '../api/IContent';
+import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 
-import { validateArray, validateNumber, validateString } from './TypeValidators';
+import type { Content, ContentPage } from './Content';
+import type { IContentResponse, IContentResponsePage } from '../api/IContent';
+import type { Invalidatable } from './Invalidatable';
 
 /**
  * Message to include with the exception thrown when data is being accessed before the content
@@ -19,39 +17,37 @@ import { validateArray, validateNumber, validateString } from './TypeValidators'
 const kExceptionMessage = 'The Content object has not been successfully initialized yet.';
 
 /**
- * Implementation of the Content interface. Has the ability to actually fetch and validate content
- * from the server, and is able to store this for offline consumption as well.
+ * Implementation of the Content interface, which provides the portal access to content pages that
+ * should be exposed to our visitors.
  */
-export class ContentImpl implements Content {
-    public static kCacheKey: string = 'portal-content-v2';
-
-    private configuration: Configuration;
-    private loader: CachedLoader;
+export class ContentImpl implements ApiRequestObserver<'IContent'>, Content {
+    private requestManager: ApiRequestManager<'IContent'>;
 
     private content?: Map<string, ContentPage>;
+    private observer?: Invalidatable;
 
-    constructor(cache: Cache, configuration: Configuration) {
-        this.configuration = configuration;
-        this.loader = new CachedLoader(cache);
+    constructor(observer?: Invalidatable) {
+        this.requestManager = new ApiRequestManager('IContent', this);
+        this.observer = observer;
     }
 
     /**
-     * Actually fetches the content information from the server through the defined API. The network
-     * request will race with a local cache request, which will be updated in-place once the new
-     * content is available.
+     * Initializes the content by issuing an API call request, and returns when that request has
+     * been completed successfully. The initial content may be sourced from the local cache.
      */
     async initialize(): Promise<boolean> {
-        const content = await this.loader.initialize({
-            cacheKey: ContentImpl.kCacheKey,
-            url: this.configuration.getContentEndpoint(),
-            validationFn: ContentImpl.prototype.validateContentResponse.bind(this),
-        });
+        return this.requestManager.issue();
+    }
 
-        if (!content)
-            return false;
+    // ---------------------------------------------------------------------------------------------
+    // ApiRequestObserver interface implementation
+    // ---------------------------------------------------------------------------------------------
 
+    onFailedResponse(error: Error) { /* handled in the App */ }
+    onSuccessResponse(response: IContentResponse) {
         this.content = new Map();
-        for (const page of content.pages) {
+
+        for (const page of response.pages) {
             this.content.set(page.pathname, {
                 ...page,
 
@@ -60,37 +56,8 @@ export class ContentImpl implements Content {
             });
         }
 
-        return true;
-    }
-
-    /**
-     * Validates the given |content| as data given in the IContentResponse response format. Error
-     * messages will be sent to the console's error buffer if the data could not be verified.
-     */
-    validateContentResponse(content: any): content is IContentResponse {
-        const kInterfaceName = 'IContentResponse';
-
-        if (!validateArray(content, kInterfaceName, 'pages'))
-            return false;
-
-        for (const page of content.pages) {
-            if (!this.validateContentResponsePage(page))
-                return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether the given |page| is a valid IContentResponsePage structure. This data will
-     * generally have been sourced from untrusted input, i.e. the network.
-     */
-    validateContentResponsePage(page: any): page is IContentResponsePage {
-        const kInterfaceName = 'IContentResponsePage';
-
-        return validateString(page, kInterfaceName, 'pathname') &&
-               validateString(page, kInterfaceName, 'content') &&
-               validateNumber(page, kInterfaceName, 'modified');
+        if (this.observer)
+            this.observer.invalidate();
     }
 
     // ---------------------------------------------------------------------------------------------

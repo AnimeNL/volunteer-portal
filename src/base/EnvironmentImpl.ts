@@ -29,9 +29,8 @@ export class EnvironmentImpl implements ApiRequestObserver<'IEnvironment'>, Envi
     }
 
     /**
-     * Initializes the environment by loading the configuration from the Environment API. The data
-     * will first be attempted to be read from session storage to avoid hitting the network, after
-     * which it will be loaded from the server.
+     * Initializes the content by issuing an API call request, and returns when that request has
+     * been completed successfully. The initial content may be sourced from the local cache.
      */
     async initialize(): Promise<boolean> {
         return this.requestManager.issue();

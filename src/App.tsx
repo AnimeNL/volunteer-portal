@@ -49,7 +49,7 @@ export class App extends Component<{}, AppState> implements Invalidatable, UserI
 
         this.cache = new Cache();
         this.configuration = new ConfigurationImpl();
-        this.content = new ContentImpl(this.cache, this.configuration);
+        this.content = new ContentImpl(/* observer= */ this);
         this.environment = new EnvironmentImpl(/* observer= */ this);
         this.eventFactory = new EventFactory(this.cache, this.configuration);
         this.user = new UserImpl(this.cache, this.configuration);

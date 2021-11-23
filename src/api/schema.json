@@ -228,9 +228,6 @@
         "name": {
           "type": "string"
         },
-        "timezone": {
-          "type": "string"
-        },
         "website": {
           "type": "string"
         }
@@ -240,8 +237,7 @@
         "name",
         "enableContent",
         "enableRegistration",
-        "enableSchedule",
-        "timezone"
+        "enableSchedule"
       ],
       "type": "object"
     },

@@ -67,7 +67,7 @@ export class EnvironmentImpl implements ApiRequestObserver<'IEnvironment'>, Envi
         return this.responseData.themeTitle;
     }
 
-    get events(): ReadonlyArray<EnvironmentEvent> {
+    get events(): Readonly<EnvironmentEvent>[] {
         if (!this.responseData)
             throw new Error(kExceptionMessage);
 

@@ -13,8 +13,6 @@ export interface IEnvironment {
 
 /**
  * Response shared by the server following an /api/environment call.
- *
- * @additionalProperties true
  */
 export interface IEnvironmentResponse {
     /**

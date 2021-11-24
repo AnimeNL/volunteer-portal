@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { EventRole } from '../api/IUser';
+import { IUserResponseEventRole } from '../api/IUser';
 import { IApplicationRequest } from '../api/IApplication';
 
 /**
@@ -70,7 +70,7 @@ export interface User {
      *
      * @throws Error when `authenticated` has not been set to TRUE.
      */
-    events: ReadonlyMap<string, EventRole>;
+    events: ReadonlyMap<string, IUserResponseEventRole>;
 
     /**
      * Returns whether the user is a portal administrator, which adjusts the application's behaviour

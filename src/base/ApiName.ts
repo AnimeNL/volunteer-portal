@@ -6,6 +6,7 @@ import type { IAuth } from '../api/IAuth';
 import type { IContent } from '../api/IContent';
 import type { IEnvironment } from '../api/IEnvironment';
 import type { IEvent } from '../api/IEvent';
+import type { IUser } from '../api/IUser';
 
 import type api from '../api/schema.json';
 
@@ -36,6 +37,7 @@ interface ApiTypeMapping {
     IContent: IContent;
     IEnvironment: IEnvironment;
     IEvent: IEvent;
+    IUser: IUser;
 }
 
 // Type request and response types of API calls is based on the input type, which defines both

@@ -5,7 +5,7 @@
 import { Cache } from './Cache';
 import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
-import { EventRole, IUserResponse } from '../api/IUser';
+import { IUserResponseEventRole, IUserResponse } from '../api/IUser';
 import { IApplicationResponse, IApplicationRequest } from '../api/IApplication';
 import { User } from './User';
 
@@ -53,7 +53,7 @@ export class UserImpl implements User {
     private userAccessCode?: string;
     private userAuthToken?: string;
     private userEmailAddress?: string;
-    private userEvents?: Map<string, EventRole>;
+    private userEvents?: Map<string, IUserResponseEventRole>;
     private userResponse?: IUserResponse;
 
     private uploadedAvatarUrl?: string;
@@ -318,7 +318,7 @@ export class UserImpl implements User {
         return this.userEmailAddress;
     }
 
-    get events(): ReadonlyMap<string, EventRole> {
+    get events(): ReadonlyMap<string, IUserResponseEventRole> {
         if (!this.userEvents)
             throw new Error(kExceptionMessage);
 

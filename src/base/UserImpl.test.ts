@@ -23,7 +23,7 @@ describe('UserImpl', () => {
     async function createInstance() {
         const cache = new Cache();
         const configuration = new ConfigurationImpl();
-        const user = new UserImpl(cache, configuration);
+        const user = new UserImpl(configuration);
 
         await cache.delete(UserImpl.kAuthCacheKey);
         await cache.delete(UserImpl.kUserCacheKey);
@@ -186,7 +186,7 @@ describe('UserImpl', () => {
         expect(await cache.has(UserImpl.kAuthCacheKey)).toBeTruthy();
         expect(await cache.has(UserImpl.kUserCacheKey)).toBeTruthy();
 
-        const secondUser = new UserImpl(cache, configuration);
+        const secondUser = new UserImpl(configuration);
         expect(secondUser.authenticated).toBeFalsy();
 
         mockFetch.mockOnceIf(configuration.getUserEndpoint(authToken), async request => {

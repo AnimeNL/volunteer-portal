@@ -13,7 +13,7 @@ import { ContentImpl } from './base/ContentImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
 import { EventFactory } from './base/EventFactory';
 import { Invalidatable } from './base/Invalidatable';
-import { UserImpl, UserImplObserver } from './base/UserImpl';
+import { UserImpl } from './base/UserImpl';
 
 import { LoadingApp } from './loading/LoadingApp';
 import { RegistrationApp } from './registration/RegistrationApp';
@@ -30,7 +30,7 @@ interface AppState {
 
 // Main component of the Volunteer Portal application, which creates the app context and switches
 // between the four main sub-applications: Registration, Schedule and Welcome.
-export class App extends Component<{}, AppState> implements Invalidatable, UserImplObserver {
+export class App extends Component<{}, AppState> implements Invalidatable {
     private cache: Cache;
     private configuration: ConfigurationImpl;
     private content: ContentImpl;
@@ -52,7 +52,7 @@ export class App extends Component<{}, AppState> implements Invalidatable, UserI
         this.content = new ContentImpl(/* observer= */ this);
         this.environment = new EnvironmentImpl(/* observer= */ this);
         this.eventFactory = new EventFactory(this.cache, this.configuration);
-        this.user = new UserImpl(this.cache, this.configuration);
+        this.user = new UserImpl(this.configuration);
 
         // Compose the app context. Preact uses instance equality to determine whether the context
         // changed, so we'll want to ensure the same instance will be reused when possible.
@@ -77,8 +77,6 @@ export class App extends Component<{}, AppState> implements Invalidatable, UserI
             this.user.initialize(),
         ]);
 
-        this.user.addObserver(this);
-
         if (!environmentInitialized) {
             this.setState({ error: `Unable to initialize the portal's environment.` });
         } else if (!contentInitialized) {
@@ -89,11 +87,6 @@ export class App extends Component<{}, AppState> implements Invalidatable, UserI
                 loaded: true,
             });
         }
-    }
-
-    // Called when the <App> component is being removed. Stops observing the UserImpl object.
-    componentWillUnmount() {
-        this.user.removeObserver(this);
     }
 
     // ---------------------------------------------------------------------------------------------

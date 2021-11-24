@@ -7,7 +7,7 @@ import moment from 'moment-timezone';
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 
 import type { Content, ContentPage } from './Content';
-import type { IContentResponse, IContentResponsePage } from '../api/IContent';
+import type { IContentResponse } from '../api/IContent';
 import type { Invalidatable } from './Invalidatable';
 
 /**

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import { get as kvGet, set as kvSet } from 'idb-keyval';
+
 import type { ApiName, ApiRequestType, ApiResponseType } from './ApiName';
 import { ApiRequest } from './ApiRequest';
-import { Cache } from './Cache';
 import { validate } from './ApiValidator';
 
 // Observer interface that users of the ApiRequestManager have to implement, which is used to inform
@@ -25,7 +26,6 @@ export interface ApiRequestObserver<K extends ApiName> {
 // access (offline enabled) for requests that support such functionality, which do not rely on POST.
 export class ApiRequestManager<K extends ApiName> {
     private abortController?: AbortController;
-    private cache: Cache;
 
     private request: ApiRequest<K>;
     private observer: ApiRequestObserver<K>;
@@ -33,7 +33,6 @@ export class ApiRequestManager<K extends ApiName> {
     private previousResponseHash?: number;
 
     constructor(api: K, observer: ApiRequestObserver<K>) {
-        this.cache = new Cache();
         this.request = new ApiRequest(api);
         this.observer = observer;
     }
@@ -121,7 +120,7 @@ export class ApiRequestManager<K extends ApiName> {
     // current API. The response will be validated prior to being returned. Will throw an exception
     // when either the |cacheKey| does not have any associated data, or that data does not validate.
     async requestFromCache(cacheKey: string): Promise<ApiResponseType<K>> {
-        const responseData = await this.cache.get(cacheKey);
+        const responseData = await kvGet(cacheKey);
         if (!responseData)
             throw new Error('No response data has been cached for this request.');
 
@@ -133,7 +132,7 @@ export class ApiRequestManager<K extends ApiName> {
 
     // Stores the given |response| in the local cache, keyed by the given |cacheKey|.
     async storeInCache(cacheKey: string, response: ApiResponseType<K>): Promise<void> {
-        await this.cache.set(cacheKey, response);
+        await kvSet(cacheKey, response);
     }
 
     // Determines the cache key for the given |request|. When a string is returned, the request is

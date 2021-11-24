@@ -2,6 +2,10 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import { del as kvDelete, get as kvGet, set as kvSet } from 'idb-keyval';
+
+import type { IAuthRequest } from '../api/IAuth';
+
 import { Cache } from './Cache';
 import { CachedLoader } from './CachedLoader';
 import { Configuration } from './Configuration';
@@ -34,7 +38,6 @@ export class UserImpl implements User {
     public static kAuthCacheKey: string = 'portal-auth';
     public static kUserCacheKey: string = 'portal-user';
 
-    private cache: Cache;
     private configuration: Configuration;
     private loader: CachedLoader;
 
@@ -47,9 +50,8 @@ export class UserImpl implements User {
     private uploadedAvatarUrl?: string;
 
     constructor(configuration: Configuration) {
-        this.cache = new Cache();
         this.configuration = configuration;
-        this.loader = new CachedLoader(this.cache);
+        this.loader = new CachedLoader(new Cache());
     }
 
     // Initializes the user interface. This is an operation that cannot fail: either we are able to
@@ -60,7 +62,7 @@ export class UserImpl implements User {
                      authTokenExpiration?: number,
                      emailAddress?: string): Promise<boolean> {
         if (!accessCode || !authToken) {
-            const cachedToken = await this.cache.get(UserImpl.kAuthCacheKey);
+            const cachedToken = await kvGet(UserImpl.kAuthCacheKey);
             if (!cachedToken || hasExpired(cachedToken.authTokenExpiration))
                 return false;
 
@@ -95,9 +97,11 @@ export class UserImpl implements User {
      * Authenticates the user based on the given credentials. Returns a promise that will resolve
      * with a boolean indicating whether the authentication has succeeded.
      */
-    async authenticate(emailAddress: string, accessCode: string): Promise<boolean> {
+    async authenticate(request: IAuthRequest): Promise<boolean> {
         let authToken: string | undefined;
         let authTokenExpiration: number | undefined;
+
+        const { emailAddress, accessCode } = request;
 
         try {
             const requestData = new FormData();
@@ -134,7 +138,7 @@ export class UserImpl implements User {
             return false;  // the server was not able to issue a token
 
         return this.initialize(accessCode, authToken, authTokenExpiration, emailAddress).then(async success => {
-            await this.cache.set(UserImpl.kAuthCacheKey, {
+            await kvSet(UserImpl.kAuthCacheKey, {
                 accessCode,
                 authToken,
                 authTokenExpiration,
@@ -181,7 +185,7 @@ export class UserImpl implements User {
         if (applicationResponse.error)
             return applicationResponse.error;
 
-        if (!await this.authenticate(application.emailAddress, applicationResponse.accessCode!))
+        if (!await this.authenticate({ emailAddress: application.emailAddress, accessCode: applicationResponse.accessCode! }))
             return 'Your application has been shared, but there is an issue with the server.';
 
         return null;  // all good
@@ -194,8 +198,8 @@ export class UserImpl implements User {
         if (!this.authenticated)
             return;  // the user isn't currently signed in
 
-        await this.cache.delete(UserImpl.kAuthCacheKey);
-        await this.cache.delete(UserImpl.kUserCacheKey);
+        await kvDelete(UserImpl.kAuthCacheKey);
+        await kvDelete(UserImpl.kUserCacheKey);
 
         this.userAuthToken = undefined;
         this.userEvents = undefined;

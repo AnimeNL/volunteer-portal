@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
+import { clear as kvClear } from 'idb-keyval';
 import mockFetch from 'jest-fetch-mock';
-
 import moment from 'moment-timezone';
 
-import { Cache } from './Cache';
 import { ContentImpl } from './ContentImpl';
 
 describe('ContentImpl', () => {
@@ -19,7 +18,7 @@ describe('ContentImpl', () => {
         restoreConsole = mockConsole();
 
         // (2) Clear the cache, as this test suite depends on validating caching behaviour.
-        await (new Cache).clear();
+        await kvClear();
     });
 
     it('should reflect the values of a valid content from the network', async () => {

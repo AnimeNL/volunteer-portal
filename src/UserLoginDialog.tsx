@@ -143,7 +143,7 @@ export class UserLoginDialog extends Component<UserLoginDialogProps, UserLoginDi
 
             this.setState({ authenticating: true });
 
-            const success = await user.authenticate(emailAddress, accessCode);
+            const success = await user.authenticate({ emailAddress, accessCode });
             if (success)
                 handleClose();
             else

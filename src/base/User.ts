@@ -2,8 +2,9 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { IUserResponseEventRole } from '../api/IUser';
-import { IApplicationRequest } from '../api/IApplication';
+import type { IUserResponseEventRole } from '../api/IUser';
+import type { IApplicationRequest } from '../api/IApplication';
+import type { IAuthRequest } from '../api/IAuth';
 
 /**
  * The interface through which the user's state can be accessed. Certain properties may only be
@@ -14,7 +15,7 @@ export interface User {
      * Authenticates the user based on the given credentials. Returns a promise that will resolve
      * with a boolean indicating whether the authentication has succeeded.
      */
-    authenticate(emailAddress: string, accessCode: string): Promise<boolean>;
+    authenticate(request: IAuthRequest): Promise<boolean>;
 
     /**
      * Submits an application for participation within a certain event. This method will return a

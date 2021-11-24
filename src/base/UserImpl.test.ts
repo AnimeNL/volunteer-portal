@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
-
+import { clear as kvClear } from 'idb-keyval';
 import mockFetch from 'jest-fetch-mock';
 
 import { Cache } from './Cache';
@@ -13,8 +13,18 @@ import { UserImpl } from './UserImpl';
 describe('UserImpl', () => {
     let restoreConsole: RestoreConsole | undefined = undefined;
 
-    beforeEach(() => restoreConsole = mockConsole());
     afterEach(() => restoreConsole!());
+    beforeEach(async () => {
+        // (1) Install the moacked console, to catch console.error() messages.
+        restoreConsole = mockConsole();
+
+        // (2) Clear the cache, as this test suite depends on validating caching behaviour.
+        await kvClear();
+    });
+
+    // ---------------------------------------------------------------------------------------------
+    // TODO: Clean up everything below this line.
+    // ---------------------------------------------------------------------------------------------
 
     /**
      * Creates an instance of the UserImpl object. Will return the configuration object used for
@@ -50,7 +60,7 @@ describe('UserImpl', () => {
             };
         });
 
-        expect(await user.authenticate('user@example.com', '1234')).toBeFalsy();
+        expect(await user.authenticate({ emailAddress: 'user@example.com', accessCode: '1234' })).toBeFalsy();
         expect(user.authenticated).toBeFalsy();
 
         mockFetch.mockOnceIf(configuration.getAuthenticationEndpoint(), async request => {
@@ -60,7 +70,7 @@ describe('UserImpl', () => {
             };
         });
 
-        expect(await user.authenticate('user@example.com', '1234')).toBeFalsy();
+        expect(await user.authenticate({ emailAddress: 'user@example.com', accessCode: '1234' })).toBeFalsy();
         expect(user.authenticated).toBeFalsy();
 
         mockFetch.mockOnceIf(configuration.getAuthenticationEndpoint(), async request => {
@@ -70,7 +80,7 @@ describe('UserImpl', () => {
             };
         });
 
-        expect(await user.authenticate('user@example.com', '1234')).toBeFalsy();
+        expect(await user.authenticate({ emailAddress: 'user@example.com', accessCode: '1234' })).toBeFalsy();
         expect(user.authenticated).toBeFalsy();
     });
 
@@ -87,7 +97,7 @@ describe('UserImpl', () => {
             };
         });
 
-        expect(await user.authenticate('user@example.com', '1234')).toBeFalsy();
+        expect(await user.authenticate({ emailAddress: 'user@example.com', accessCode: '1234' })).toBeFalsy();
         expect(user.authenticated).toBeFalsy();
     });
 
@@ -108,7 +118,7 @@ describe('UserImpl', () => {
             }
         });
 
-        expect(await user.authenticate('user@example.com', '1234')).toBeFalsy();
+        expect(await user.authenticate({ emailAddress: 'user@example.com', accessCode: '1234' })).toBeFalsy();
         expect(user.authenticated).toBeFalsy();
     });
 
@@ -134,7 +144,7 @@ describe('UserImpl', () => {
             }
         });
 
-        expect(await user.authenticate('user@example.com', '1234')).toBeTruthy();
+        expect(await user.authenticate({ emailAddress: 'user@example.com', accessCode: '1234' })).toBeTruthy();
         expect(user.authenticated).toBeTruthy();
 
         expect(user.accessCode).toEqual('1234');
@@ -180,7 +190,7 @@ describe('UserImpl', () => {
             }
         });
 
-        expect(await user.authenticate('user@example.com', '1234')).toBeTruthy();
+        expect(await user.authenticate({ emailAddress: 'user@example.com', accessCode: '1234' })).toBeTruthy();
         expect(user.authenticated).toBeTruthy();
 
         expect(await cache.has(UserImpl.kAuthCacheKey)).toBeTruthy();
@@ -224,7 +234,7 @@ describe('UserImpl', () => {
             }
         });
 
-        expect(await user.authenticate('user@example.com', '1234')).toBeTruthy();
+        expect(await user.authenticate({ emailAddress: 'user@example.com', accessCode: '1234' })).toBeTruthy();
         expect(user.authenticated).toBeTruthy();
 
         expect(await cache.has(UserImpl.kAuthCacheKey)).toBeTruthy();

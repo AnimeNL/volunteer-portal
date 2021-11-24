@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
+import { clear as kvClear } from 'idb-keyval';
 import fetchMock from 'jest-fetch-mock';
 
 import { ApiRequestManager } from './ApiRequestManager';
-import { Cache } from './Cache';
 
 import { IAuthResponse } from '../api/IAuth';
 import { IContentResponse, IContentResponsePage } from '../api/IContent';
@@ -21,7 +21,7 @@ describe('ApiRequestManager', () => {
         restoreConsole = mockConsole();
 
         // (2) Clear the cache, as this test suite depends on validating caching behaviour.
-        await (new Cache).clear();
+        await kvClear();
     });
 
     it('is able to issue requests and receive successful responses', async () => {

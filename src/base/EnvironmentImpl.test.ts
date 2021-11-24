@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
+import { clear as kvClear } from 'idb-keyval';
 import mockFetch from 'jest-fetch-mock';
 
-import { Cache } from './Cache';
 import { EnvironmentImpl } from './EnvironmentImpl';
 
 describe('EnvironmentImpl', () => {
@@ -17,7 +17,7 @@ describe('EnvironmentImpl', () => {
         restoreConsole = mockConsole();
 
         // (2) Clear the cache, as this test suite depends on validating caching behaviour.
-        await (new Cache).clear();
+        await kvClear();
     });
 
     it('should reflect the values of a valid environment from the network', async () => {

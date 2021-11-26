@@ -2,12 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import moment from 'moment-timezone';
-
+import type moment from 'moment-timezone';
 import type { IAvatarRequest } from '../api/IAvatar';
-
-import { Configuration } from './Configuration';
-import { User } from './User';
 
 /**
  * Interface that defines how code is expected to interact with information about a specific event.

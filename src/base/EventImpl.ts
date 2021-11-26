@@ -2,13 +2,17 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import moment from 'moment-timezone';
+
 import { ApiRequest } from './ApiRequest';
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 
+import type { Event, EventArea, EventInfo, EventLocation, EventSession,
+              EventVolunteer } from './Event';
 import type { IAvatarRequest } from '../api/IAvatar';
-
-import type { Event, EventArea, EventLocation, EventSession, EventVolunteer } from './Event';
-import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseLocation, IEventResponseMeta, IEventResponseVolunteer } from '../api/IEvent';
+import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseEvent,
+              IEventResponseLocation, IEventResponseMeta, IEventResponseSession,
+              IEventResponseVolunteer } from '../api/IEvent';
 import type { Invalidatable } from './Invalidatable';
 
 /**
@@ -96,7 +100,27 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
                 volunteer.identifier, new EventVolunteerImpl(this.request.event, volunteer));
         }
 
-        // (5) Run all the finalizers to make sure that the data is in order.
+        // (5) Initialize all the event and session information.
+        for (const eventInfo of response.events) {
+            const instance = new EventInfoImpl(eventInfo);
+
+            for (const sessionInfo of eventInfo.sessions) {
+                const location = this.#locations.get(sessionInfo.location);
+                if (!location) {
+                    console.warn('Invalid location given for session.', sessionInfo, response);
+                    continue;
+                }
+
+                // TODO: Create an interval tree out of all the sessions, to enable performant and
+                // quick look-up of active sessions at any given point in time.
+
+                location.addSession(instance.createSession(location, sessionInfo));
+            }
+
+            finalizationQueue.push(instance);
+        }
+
+        // (6) Run all the finalizers to make sure that the data is in order.
         for (const instance of finalizationQueue)
             instance.finalize();
 
@@ -221,6 +245,38 @@ class EventAreaImpl implements EventArea, Finalizer {
 }
 
 /**
+ * Implementation of the EventInfo interface, which abstracts over the IEventResponseEvent response
+ * information.
+ */
+class EventInfoImpl implements EventInfo, Finalizer {
+    #identifier: string;
+    #hidden: boolean;
+    #sessions: EventSession[];
+
+    constructor(response: IEventResponseEvent) {
+        this.#identifier = response.identifier;
+        this.#hidden = response.hidden;
+        this.#sessions = [];
+    }
+
+    createSession(location: EventLocation, response: IEventResponseSession): EventSession {
+        const session = new EventSessionImpl(this, location, response);
+
+        this.#sessions.push(session);
+        return session;
+    }
+
+    finalize() {
+        // Sort the sessions by their start time, in ascending order.
+        this.#sessions.sort(AscendingSessionComparator);
+    }
+
+    get identifier() { return this.#identifier; }
+    get hidden() { return this.#hidden; }
+    get sessions() { return this.#sessions; }
+}
+
+/**
  * Implementation of the EventLocation interface, which abstracts over the IEventResponseLocation
  * response information and adds the ability to cross-reference information.
  */
@@ -250,6 +306,41 @@ class EventLocationImpl implements EventLocation, Finalizer {
     get area() { return this.#area; }
     get name() { return this.#response.name; }
     get sessions() { return this.#sessions; }
+}
+
+/**
+ * Implementation of the EventSession interface, which abstracts over the IEventResponseSession
+ * response information. Times will be represented by MomentJS.
+ */
+class EventSessionImpl implements EventSession {
+    #event: EventInfo;
+    #location: EventLocation;
+
+    #name: string;
+    #description?: string;
+
+    #beginTime: moment.Moment;
+    #endTime: moment.Moment;
+
+    constructor(event: EventInfo, location: EventLocation, response: IEventResponseSession) {
+        this.#event = event;
+        this.#location = location;
+
+        this.#name = response.name;
+        this.#description = response.description;
+
+        this.#beginTime = moment(response.time[0] * 1000);
+        this.#endTime = moment(response.time[1] * 1000);
+    }
+
+    get event() { return this.#event; }
+    get location() { return this.#location; }
+
+    get name() { return this.#name; }
+    get description() { return this.#description; }
+
+    get startTime() { return this.#beginTime; }
+    get endTime() { return this.#endTime; }
 }
 
 /**

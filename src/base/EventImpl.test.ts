@@ -6,8 +6,6 @@ import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 import { clear as kvClear } from 'idb-keyval';
 import mockFetch from 'jest-fetch-mock';
 
-import type { IEventResponse } from '../api/IEvent';
-
 import { EventImpl } from './EventImpl';
 
 describe('EventImpl', () => {
@@ -36,7 +34,31 @@ describe('EventImpl', () => {
                         name: 'The Towers',
                     },
                 ],
-                events: [],
+                events: [
+                    {
+                        hidden: false,
+                        identifier: '34567',
+                        sessions: [
+                            {
+                                name: 'Triangular Dance',
+                                description: 'Walk around a triangle?!',
+                                location: 'square-tower',
+                                time: [ 1617573600, 1617663599 ],
+                            }
+                        ],
+                    },
+                    {
+                        hidden: true,
+                        identifier: '12345',
+                        sessions: [
+                            {
+                                name: 'Circular Dance',
+                                location: 'square-tower',
+                                time: [ 1617490800, 1617577199 ],
+                            },
+                        ],
+                    },
+                ],
                 locations: [
                     {
                         identifier: 'square-tower',
@@ -92,7 +114,9 @@ describe('EventImpl', () => {
         expect(event.location('identifier')).toBeUndefined();
         expect([ ...event.locations() ]).toHaveLength(0);
 
-        // TODO: Add the method calls?
+        expect(event.volunteer({ identifier: 'foo' })).toBeUndefined();
+        expect(event.volunteer({ name: 'foo' })).toBeUndefined();
+        expect([ ...event.volunteers() ]).toHaveLength(0);
     });
 
     it('should reflect the meta-information of a valid event from the network', async () => {
@@ -153,7 +177,35 @@ describe('EventImpl', () => {
         expect(tower.identifier).toEqual('square-tower');
         expect(tower.name).toEqual('Square Tower');
 
-        // TODO: Verify that the right sessions are included in the location.
+        expect(tower.sessions).toHaveLength(2);
+        expect([ ...tower.sessions.map(session => session.name) ]).toEqual([
+            'Circular Dance',
+            'Triangular Dance',
+        ]);
+
+        expect(tower.sessions[0].location).toStrictEqual(tower);
+    });
+
+    it('should reflect the events and sessions included in the network response', async () => {
+        const event = new EventImpl({ authToken: 'my-token', event: '2022-regular' });
+        expect(await event.initialize()).toBeTruthy();
+
+        const tower = event.location(/* identifier= */ 'square-tower')!;
+        expect(tower.sessions).toHaveLength(2);
+
+        const circularDance = tower.sessions[0];
+        expect(circularDance.name).toEqual('Circular Dance');
+        expect(circularDance.description).toBeUndefined();
+        expect(circularDance.location).toStrictEqual(tower);
+        expect(circularDance.startTime.toString()).toEqual('Sun Apr 04 2021 00:00:00 GMT+0100');
+        expect(circularDance.endTime.toString()).toEqual('Sun Apr 04 2021 23:59:59 GMT+0100');
+
+        const triangularDance = tower.sessions[1];
+        expect(triangularDance.name).toEqual('Triangular Dance');
+        expect(triangularDance.description).toEqual('Walk around a triangle?!');
+        expect(triangularDance.location).toStrictEqual(tower);
+        expect(triangularDance.startTime.toString()).toEqual('Sun Apr 04 2021 23:00:00 GMT+0100');
+        expect(triangularDance.endTime.toString()).toEqual('Mon Apr 05 2021 23:59:59 GMT+0100');
     });
 
     it('should reflect the volunteer information of a valid event from the network', async () => {

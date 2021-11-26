@@ -4,17 +4,14 @@
 
 import { del as kvDelete, get as kvGet, set as kvSet } from 'idb-keyval';
 
+import { ApiRequest } from './ApiRequest';
+import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
+
+import type { IApplicationRequest } from '../api/IApplication';
 import type { IAuthRequest } from '../api/IAuth';
-
-import { Cache } from './Cache';
-import { CachedLoader } from './CachedLoader';
-import { Configuration } from './Configuration';
-import { IUserResponseEventRole, IUserResponse } from '../api/IUser';
-import { IApplicationResponse, IApplicationRequest } from '../api/IApplication';
-import { User } from './User';
-
-import { validateObject, validateOptionalBoolean, validateOptionalString,
-         validateString } from './TypeValidators';
+import type { IUserResponseEventRole, IUserResponse } from '../api/IUser';
+import type { Invalidatable } from './Invalidatable';
+import type { User } from './User';
 
 /**
  * Returns whether the given |authTokenExpiration| details a date in the past.
@@ -30,66 +27,53 @@ function hasExpired(authTokenExpiration?: number): boolean {
 const kExceptionMessage = 'The user has not authenticated to their account yet.';
 
 /**
+ * Interface describing the authentication information as it can be cached for continuous state
+ * throughout multiple portal sessions.
+ */
+interface AuthenticationCache {
+    accessCode: string;
+    authToken: string;
+    authTokenExpiration?: number;
+    emailAddress: string;
+}
+
+/**
  * Implements the user state for the application. It's not required for people to be logged in while
  * using it, but being authenticated provides access to real-time registration updates and the
  * volunteer's personal schedule. This class implements the //api/auth behaviour.
  */
-export class UserImpl implements User {
+export class UserImpl implements ApiRequestObserver<'IUser'>, User {
     public static kAuthCacheKey: string = 'portal-auth';
-    public static kUserCacheKey: string = 'portal-user';
 
-    private configuration: Configuration;
-    private loader: CachedLoader;
-
-    private userAccessCode?: string;
-    private userAuthToken?: string;
-    private userEmailAddress?: string;
-    private userEvents?: Map<string, IUserResponseEventRole>;
-    private userResponse?: IUserResponse;
-
+    private requestManager: ApiRequestManager<'IUser'>;
+    private requestToken?: AuthenticationCache;
+    private response?: IUserResponse;
     private uploadedAvatarUrl?: string;
 
-    constructor(configuration: Configuration) {
-        this.configuration = configuration;
-        this.loader = new CachedLoader(new Cache());
+    private observer?: Invalidatable;
+
+    constructor(observer?: Invalidatable) {
+        this.requestManager = new ApiRequestManager('IUser', this);
+        this.observer = observer;
     }
 
-    // Initializes the user interface. This is an operation that cannot fail: either we are able to
-    // initialize the user state, which means that the user is authenticated, or we cannot, which
-    // means that the user is not authenticated. State will be cached for a server-defined period.
-    async initialize(accessCode?: string,
-                     authToken?: string,
-                     authTokenExpiration?: number,
-                     emailAddress?: string): Promise<boolean> {
-        if (!accessCode || !authToken) {
-            const cachedToken = await kvGet(UserImpl.kAuthCacheKey);
-            if (!cachedToken || hasExpired(cachedToken.authTokenExpiration))
-                return false;
+    /**
+     * Initializes the content by issuing an API call request, and returns when that request has
+     * been completed successfully. The initial content may be sourced from the local cache.
+     */
+     async initialize(token?: AuthenticationCache): Promise<boolean> {
+        // TODO: (Re)authentication failures should remove the cached token, so that subsequent
+        // loads will not attempt to use the cached information to resume the session.
 
-            accessCode = cachedToken.accessCode;
-            authToken = cachedToken.authToken;
-            authTokenExpiration = cachedToken.authTokenExpiration;
-            emailAddress = cachedToken.emailAddress;
-        }
+        token ??= await kvGet<AuthenticationCache>(UserImpl.kAuthCacheKey);
+        if (!token || hasExpired(token.authTokenExpiration))
+            return true;  // the user won't be signed in
 
-        if (!authToken)
-            return false;  // no authentication token is available
+        const result = await this.requestManager.issue({ authToken: token.authToken });
+        if (!result || !this.response)
+            return result;  // the user won't be signed in
 
-        const userResponse = await this.loader.initialize({
-            cacheKey: UserImpl.kUserCacheKey,
-            url: this.configuration.getUserEndpoint(authToken),
-            validationFn: UserImpl.prototype.validateUserResponse.bind(this),
-        });
-
-        if (!userResponse)
-            return false;  // the response could not be verified per the appropriate structure
-
-        this.userAccessCode = accessCode;
-        this.userAuthToken = authToken;
-        this.userEmailAddress = emailAddress;
-        this.userEvents = new Map(Object.entries(userResponse.events));
-        this.userResponse = userResponse;
-
+        this.requestToken = token;
         return true;
     }
 
@@ -98,94 +82,58 @@ export class UserImpl implements User {
      * with a boolean indicating whether the authentication has succeeded.
      */
     async authenticate(request: IAuthRequest): Promise<boolean> {
-        let authToken: string | undefined;
-        let authTokenExpiration: number | undefined;
-
-        const { emailAddress, accessCode } = request;
-
         try {
-            const requestData = new FormData();
-            requestData.set('emailAddress', emailAddress);
-            requestData.set('accessCode', accessCode);
+            const apiRequest = new ApiRequest('IAuth');
+            const apiResponse = await apiRequest.issue(request);
 
-            const response = await fetch(this.configuration.getAuthenticationEndpoint(), {
-                method: 'POST',
-                body: requestData,
-            });
+            if (!apiResponse.authToken || hasExpired(apiResponse.authTokenExpiration))
+                return false;
 
-            if (!response.ok)
-                return false;  // could not get a response from the API
+            const token: AuthenticationCache = {
+                authToken: apiResponse.authToken,
+                authTokenExpiration: apiResponse.authTokenExpiration,
+                ...request,
+            };
 
-            const responseData = await response.json();
-            if (typeof responseData !== 'object' || responseData === null)
-                throw new Error('Invalid data received from the authentication endpoint.');
+            if (!await this.initialize(token) || !this.authenticated)
+                return false;
 
-            if (responseData.hasOwnProperty('authToken')) {
-                if (typeof responseData.authToken === 'string')
-                    authToken = responseData.authToken as string;
+            await kvSet(UserImpl.kAuthCacheKey, token);
+            return true;
 
-                if (responseData.hasOwnProperty('authTokenExpiration') &&
-                        typeof responseData.authTokenExpiration === 'number') {
-                    authTokenExpiration = responseData.authTokenExpiration as number;
-                }
-            }
         } catch (exception) {
             console.error('Unable to interact with the authentication API:', exception);
-            return false;
         }
 
-        if (!authToken || hasExpired(authTokenExpiration))
-            return false;  // the server was not able to issue a token
-
-        return this.initialize(accessCode, authToken, authTokenExpiration, emailAddress).then(async success => {
-            await kvSet(UserImpl.kAuthCacheKey, {
-                accessCode,
-                authToken,
-                authTokenExpiration,
-                emailAddress,
-            });
-
-            return success;
-        });
+        return false;
     }
 
     /**
      * Submits the given |application| to the server. No caching can be applied, and availability of
-     * network connectivity is a requirement.
+     * network connectivity is a requirement. When the application was submitted successfully, the
+     * user will automatically be signed in to their account.
      */
-    async submitApplication(eventIdentifier: string, application: IApplicationRequest) {
-        let applicationResponse: IApplicationResponse | undefined;
+    async submitApplication(application: IApplicationRequest): Promise<string | null> {
+        let accessCode: string | undefined;
 
         try {
-            const requestData = new FormData();
+            const apiRequest = new ApiRequest('IApplication');
+            const apiResponse = await apiRequest.issue(application);
 
-            requestData.set('event', eventIdentifier);
-            for (const [ key, value ] of Object.entries(application))
-                requestData.set(key, value);
+            if (apiResponse.error)
+                return apiResponse.error;
 
-            const response = await fetch(this.configuration.getApplicationEndpoint(), {
-                method: 'POST',
-                body: requestData,
-            });
-
-            if (!response.ok)
-                return 'Unable to connect to the server: are you connected to the internet?';
-
-            const responseData = await response.json();
-            if (!this.validateApplicationResponse(responseData))
-                throw new Error('Invalid data received from the application endpoint.');
-
-            applicationResponse = responseData;
+            accessCode = apiResponse.accessCode;
 
         } catch (exception) {
             console.error('Unable to interact with the application API:', exception);
             return 'There is an issue with the server, your application could not be shared.';
         }
 
-        if (applicationResponse.error)
-            return applicationResponse.error;
+        if (!accessCode)
+            return 'Your application has been shared, but you were not automatically signed in.';
 
-        if (!await this.authenticate({ emailAddress: application.emailAddress, accessCode: applicationResponse.accessCode! }))
+        if (!await this.authenticate({ emailAddress: application.emailAddress, accessCode }))
             return 'Your application has been shared, but there is an issue with the server.';
 
         return null;  // all good
@@ -194,52 +142,27 @@ export class UserImpl implements User {
     /**
      * Signs the user out of their account. Will remove all current and cached data.
      */
-    async signOut() {
+     async signOut() {
         if (!this.authenticated)
             return;  // the user isn't currently signed in
 
         await kvDelete(UserImpl.kAuthCacheKey);
-        await kvDelete(UserImpl.kUserCacheKey);
 
-        this.userAuthToken = undefined;
-        this.userEvents = undefined;
-        this.userResponse = undefined;
+        this.requestToken = undefined;
+        this.response = undefined;
+        this.uploadedAvatarUrl = undefined;
     }
 
-    /**
-     * Validates whether the given |response| adheres to the structure and format expected from
-     * the IApplicationRequest format. Error messages will be sent to the console's error buffer if
-     * the data could not be verified.
-     */
-    validateApplicationResponse(response: any): response is IApplicationResponse {
-        const kInterfaceName = 'IApplicationResponse';
+    // ---------------------------------------------------------------------------------------------
+    // ApiRequestObserver interface implementation
+    // ---------------------------------------------------------------------------------------------
 
-        if (typeof response !== 'object')
-            return false;
+    onFailedResponse(error: Error) { /* handled in the App */ }
+    onSuccessResponse(response: IUserResponse) {
+        this.response = response;
 
-        return response.hasOwnProperty('accessCode')
-            ? validateString(response, kInterfaceName, 'accessCode')
-            : validateString(response, kInterfaceName, 'error');
-    }
-
-    /**
-     * Validates the given |user| as data given in the IUserResponse response format. Error
-     * messages will be sent to the console's error buffer if the data could not be verified.
-     */
-    validateUserResponse(userResponse: any): userResponse is IUserResponse {
-        const kInterfaceName = 'IUserResponse';
-
-        if (!validateObject(userResponse, kInterfaceName, 'events'))
-            return false;
-
-        for (const eventIdentifier of Object.keys(userResponse.events)) {
-            if (!validateString(userResponse.events, `${kInterfaceName}[events]`, eventIdentifier))
-                return false;
-        }
-
-        return validateOptionalBoolean(userResponse, kInterfaceName, 'administrator') &&
-               validateOptionalString(userResponse, kInterfaceName, 'avatar') &&
-               validateString(userResponse, kInterfaceName, 'name');
+        if (this.observer)
+            this.observer.invalidate();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -247,62 +170,62 @@ export class UserImpl implements User {
     // ---------------------------------------------------------------------------------------------
 
     get authenticated(): boolean {
-        return this.userResponse !== undefined;
+        return this.requestToken !== undefined;
     }
 
     get accessCode(): Readonly<string> {
-        if (!this.userAccessCode)
+        if (!this.requestToken)
             throw new Error(kExceptionMessage);
 
-        return this.userAccessCode;
+        return this.requestToken.accessCode;
     }
 
     get authToken(): Readonly<string> {
-        if (!this.userAuthToken)
+        if (!this.requestToken)
             throw new Error(kExceptionMessage);
 
-        return this.userAuthToken;
+        return this.requestToken.authToken;
     }
 
     get avatar(): string | undefined {
-        if (!this.userResponse)
+        if (!this.response)
             throw new Error(kExceptionMessage);
 
-        return this.uploadedAvatarUrl ?? this.userResponse.avatar;
+        return this.uploadedAvatarUrl ?? this.response.avatar;
     }
 
     set avatar(url: string | undefined) {
-        if (!this.userResponse)
+        if (!this.response)
             throw new Error(kExceptionMessage);
 
         this.uploadedAvatarUrl = url;
     }
 
     get emailAddress(): Readonly<string> {
-        if (!this.userEmailAddress)
+        if (!this.requestToken)
             throw new Error(kExceptionMessage);
 
-        return this.userEmailAddress;
+        return this.requestToken.emailAddress;
     }
 
     get events(): ReadonlyMap<string, IUserResponseEventRole> {
-        if (!this.userEvents)
+        if (!this.response)
             throw new Error(kExceptionMessage);
 
-        return this.userEvents;
+        return new Map(Object.entries(this.response.events));
     }
 
     isAdministrator(): boolean {
-        if (!this.userResponse)
+        if (!this.response)
             throw new Error(kExceptionMessage);
 
-        return !!this.userResponse.administrator;
+        return !!this.response.administrator;
     }
 
     get name(): Readonly<string> {
-        if (!this.userResponse)
+        if (!this.response)
             throw new Error(kExceptionMessage);
 
-        return this.userResponse.name;
+        return this.response.name;
     }
 }

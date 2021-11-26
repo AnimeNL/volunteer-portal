@@ -158,6 +158,11 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
         let application: IApplicationRequest = {} as IApplicationRequest;
         let validationErrors = [];
 
+        // Event identifier:
+        // -----------------------------------------------------------------------------------------
+
+        application.event = props.event.identifier;
+
         // Personal information:
         // -----------------------------------------------------------------------------------------
 
@@ -251,7 +256,7 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
             return;
 
         setSubmitting(true);
-        user.submitApplication(props.event.identifier, application).then(errorMessage => {
+        user.submitApplication(application).then(errorMessage => {
             setSubmitting(false);
 
             // Note: submitApplication() will only return a message when the application could not

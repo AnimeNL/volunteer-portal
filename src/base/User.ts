@@ -22,8 +22,7 @@ export interface User {
      * string with a user-presentable error message in case of issues, or NULL when there were no
      * issues. The application will have been redirected if that were the case.
      */
-    submitApplication(eventIdentifier: string,
-                      application: IApplicationRequest): Promise<string | null>;
+    submitApplication(application: IApplicationRequest): Promise<string | null>;
 
     /**
      * Signs the user out of their account. Will remove all current and cached data.

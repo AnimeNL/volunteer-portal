@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 import { Component, h } from 'preact';
-import { Router, RouterOnChangeArgs, Route, route } from 'preact-router';
+import { Router, RouterOnChangeArgs, Route } from 'preact-router';
 
 import { AppContext, IAppContext } from './AppContext';
 import { AppError } from './AppError';
-import { Cache } from './base/Cache';
-import { ConfigurationImpl } from './base/ConfigurationImpl';
 import { ContentImpl } from './base/ContentImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
 import { EventImpl } from './base/EventImpl';
@@ -31,8 +29,6 @@ interface AppState {
 // Main component of the Volunteer Portal application, which creates the app context and switches
 // between the four main sub-applications: Registration, Schedule and Welcome.
 export class App extends Component<{}, AppState> implements Invalidatable {
-    private cache: Cache;
-    private configuration: ConfigurationImpl;
     private content: ContentImpl;
     private environment: EnvironmentImpl;
     private user: UserImpl;
@@ -46,8 +42,6 @@ export class App extends Component<{}, AppState> implements Invalidatable {
     constructor() {
         super();
 
-        this.cache = new Cache();
-        this.configuration = new ConfigurationImpl();
         this.content = new ContentImpl(/* observer= */ this);
         this.environment = new EnvironmentImpl(/* observer= */ this);
         this.user = new UserImpl(/* observer= */ this);
@@ -55,7 +49,6 @@ export class App extends Component<{}, AppState> implements Invalidatable {
         // Compose the app context. Preact uses instance equality to determine whether the context
         // changed, so we'll want to ensure the same instance will be reused when possible.
         this.appContext = {
-            configuration: this.configuration,
             content: this.content,
             environment: this.environment,
             user: this.user,

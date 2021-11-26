@@ -133,6 +133,64 @@
       },
       "type": "object"
     },
+    "IAvatar": {
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/IAvatarRequest"
+        },
+        "response": {
+          "$ref": "#/definitions/IAvatarResponse"
+        }
+      },
+      "required": [
+        "request",
+        "response"
+      ],
+      "type": "object"
+    },
+    "IAvatarRequest": {
+      "properties": {
+        "authToken": {
+          "type": "string"
+        },
+        "avatar": {
+          "properties": {
+            "size": {
+              "type": "number"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "size",
+            "type"
+          ],
+          "type": "object"
+        },
+        "event": {
+          "type": "string"
+        },
+        "userToken": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authToken",
+        "avatar",
+        "event",
+        "userToken"
+      ],
+      "type": "object"
+    },
+    "IAvatarResponse": {
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "IContent": {
       "properties": {
         "response": {

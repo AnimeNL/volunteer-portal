@@ -4,6 +4,7 @@
 
 import type { IApplication } from '../api/IApplication';
 import type { IAuth } from '../api/IAuth';
+import type { IAvatar } from '../api/IAvatar';
 import type { IContent } from '../api/IContent';
 import type { IEnvironment } from '../api/IEnvironment';
 import type { IEvent } from '../api/IEvent';
@@ -36,6 +37,7 @@ export type ApiName = Exclude<ApiType, HasPrefix<ApiType, 'I'> |
 interface ApiTypeMapping {
     IApplication: IApplication;
     IAuth: IAuth;
+    IAvatar: IAvatar;
     IContent: IContent;
     IEnvironment: IEnvironment;
     IEvent: IEvent;

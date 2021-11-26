@@ -10,6 +10,7 @@ import { validate } from './ApiValidator';
 const kEndpoints: { [key in ApiName]: string } = {
     IApplication: '/api/application',
     IAuth: '/api/auth',
+    IAvatar: '/api/avatar',
     IContent: '/api/content',
     IEnvironment: '/api/environment',
     IEvent: '/api/event',

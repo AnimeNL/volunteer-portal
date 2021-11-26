@@ -54,9 +54,14 @@ export interface Event {
     // ---------------------------------------------------------------------------------------------
 
     /**
+     * Returns the area identified by the given |identifier|, or undefined when it does not exist.
+     */
+    area(identifier: string): EventArea | undefined;
+
+    /**
      * Returns an iterator with the areas that exist within the event.
      */
-    getAreas(): IterableIterator<EventArea>;
+    areas(): IterableIterator<EventArea>;
 
     /**
      * Returns the location identified by the given |identifier|, or undefined when not found.

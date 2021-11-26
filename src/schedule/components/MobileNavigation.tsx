@@ -46,7 +46,7 @@ export function MobileNavigation(props: NavigationProps) {
     const [ anchorElement, setAnchorElement ] = useState<Element | null>(null);
 
     // Array with all of the areas that are part of the location.
-    const areas = [ ...event.getAreas() ];
+    const areas = [ ...event.areas() ];
 
     // Handles navigation to one of the top-level bottom navigation options.
     function handleNavigation(e: React.SyntheticEvent<Element, Event>, value: string) {

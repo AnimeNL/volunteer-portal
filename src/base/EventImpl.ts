@@ -5,7 +5,7 @@
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 
 import type { Event, EventArea, EventLocation, EventSession, EventVolunteer } from './Event';
-import type { IEventRequest, IEventResponse, IEventResponseMeta } from '../api/IEvent';
+import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseMeta } from '../api/IEvent';
 import type { Invalidatable } from './Invalidatable';
 
 /**
@@ -26,7 +26,9 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     private observer?: Invalidatable;
 
     // Information made available after the Event was successfully retrieved.
-    private meta?: IEventResponseMeta;
+    #meta?: IEventResponseMeta;
+
+    #areas: Map<string, EventAreaImpl> = new Map();
 
     constructor(request: IEventRequest, observer?: Invalidatable) {
         this.requestManager = new ApiRequestManager('IEvent', this);
@@ -49,7 +51,25 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
     onFailedResponse(error: Error) { /* handled in the App */ }
     onSuccessResponse(response: IEventResponse) {
-        this.meta = response.meta;
+        let finalizationQueue: Finalizer[] = [];
+
+        // (1) Reset all the locally cached information to an empty state.
+        this.#meta = response.meta;
+
+        this.#areas = new Map();
+
+        // (2) Initialize all the area information.
+        for (const area of response.areas) {
+            const instance = new EventAreaImpl(area);
+
+            this.#areas.set(area.identifier, instance);
+
+            finalizationQueue.push(instance);
+        }
+
+        // (3) Run all the finalizers to make sure that the data is in order.
+        for (const instance of finalizationQueue)
+            instance.finalize();
 
         if (this.observer)
             this.observer.invalidate();
@@ -59,20 +79,20 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     // Event interface implementation
     // ---------------------------------------------------------------------------------------------
 
-    get initialized() { return !!this.meta; }
+    get initialized() { return !!this.#meta; }
     get identifier() { return this.request.event; }
     get name() {
-        if (!this.meta)
+        if (!this.#meta)
             throw new Error(kExceptionMessage);
 
-        return this.meta.name;
+        return this.#meta.name;
     }
 
     get timezone() {
-        if (!this.meta)
+        if (!this.#meta)
             throw new Error(kExceptionMessage);
 
-        return this.meta.timezone;
+        return this.#meta.timezone;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -87,8 +107,12 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     // Location API
     // ---------------------------------------------------------------------------------------------
 
-    getAreas(): IterableIterator<EventArea> {
-        return (new Map).values();
+    area(identifier: string): EventArea | undefined {
+        return this.#areas.get(identifier);
+    }
+
+    areas(): IterableIterator<EventArea> {
+        return this.#areas.values();
     }
 
     getLocation(identifier: string): EventLocation | undefined {
@@ -114,4 +138,35 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     getVolunteers(): IterableIterator<EventVolunteer> {
         return (new Map).values();
     }
+}
+
+/**
+ * Interface that enables certain objects to be finalized after event initialization is complete.
+ */
+ interface Finalizer { finalize(): void; }
+
+/**
+ * Implementation of the EventArea interface, which abstracts over the IEventResponseArea data.
+ */
+ class EventAreaImpl implements EventArea, Finalizer {
+    #response: IEventResponseArea;
+    #locations: EventLocation[];
+
+    constructor(response: IEventResponseArea) {
+        this.#response = response;
+        this.#locations = [];
+    }
+
+    addLocation(location: EventLocation) {
+        this.#locations.push(location);
+    }
+
+    finalize() {
+        this.#locations.sort((lhs, rhs) => lhs.name.localeCompare(rhs.name));
+    }
+
+    get identifier() { return this.#response.identifier; }
+    get name() { return this.#response.name; }
+    get icon() { return this.#response.icon; }
+    get locations() { return this.#locations; }
 }

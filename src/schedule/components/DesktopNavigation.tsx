@@ -149,7 +149,7 @@ export function DesktopNavigation(props: NavigationProps) {
                         </ListItemButton>
                         { option.id === 'events' &&
                             <List dense sx={kStyles.areas}>
-                                { [ ...event.getAreas() ].map(area =>
+                                { [ ...event.areas() ].map(area =>
                                     <ListItemButton onClick={ _ => navigateFn(option.id, area.identifier) }
                                                     sx={kStyles.item}>
                                         <ListItemIcon>

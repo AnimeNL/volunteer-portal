@@ -2,6 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import type { IApplication } from '../api/IApplication';
 import type { IAuth } from '../api/IAuth';
 import type { IContent } from '../api/IContent';
 import type { IEnvironment } from '../api/IEnvironment';
@@ -33,6 +34,7 @@ export type ApiName = Exclude<ApiType, HasPrefix<ApiType, 'I'> |
 // Type mappings from string values to TypeScript types. Used to resolve typing information from
 // string identifiers passed to the ApiRequest<> and ApiRequestManager<> constructors.
 interface ApiTypeMapping {
+    IApplication: IApplication;
     IAuth: IAuth;
     IContent: IContent;
     IEnvironment: IEnvironment;

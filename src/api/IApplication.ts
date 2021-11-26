@@ -3,9 +3,23 @@
 // found in the LICENSE file.
 
 /**
- * @see https://github.com/AnimeNL/volunteer-portal/blob/main/API.md#request-iapplicationrequest
+ * The /api/application endpoint allows new volunteers to submit an application to join the team
+ * in one of the future events. Signed in users will receive status updates on the progression of
+ * their application, displayed in the registration portal.
+ */
+export interface IApplication {
+    request: IApplicationRequest;
+    response: IApplicationResponse;
+}
+
+/**
+ * Request issued to the server when making an /api/user call. All information will be submitted to
+ * the server as a HTTP POST request, with the exception of the `event` parameter.
  */
  export interface IApplicationRequest {
+    // Identifier of the event for which an application is being made.
+    event: string;
+
     // Personal information:
     firstName: string;
     lastName: string;
@@ -28,7 +42,8 @@
 }
 
 /**
- * @see https://github.com/AnimeNL/volunteer-portal/blob/main/API.md#response-iapplicationresponse
+ * Response shared by the server following an /api/user call. Only one of |accessCode| and |error|
+ * will be shared, validation of which is expected to be done by the API request user.
  */
 export interface IApplicationResponse {
     // Iff the application was successful:

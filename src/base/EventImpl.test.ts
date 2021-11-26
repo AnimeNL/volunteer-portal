@@ -27,17 +27,33 @@ describe('EventImpl', () => {
             body: JSON.stringify({
                 areas: [
                     {
-                        identifier: 'Pyramids',
+                        identifier: 'pyramids',
                         name: 'The Pyramids',
                         icon: '/images/pyramid.png',
                     },
                     {
-                        identifier: 'Towers',
+                        identifier: 'towers',
                         name: 'The Towers',
                     },
                 ],
                 events: [],
-                locations: [],
+                locations: [
+                    {
+                        identifier: 'square-tower',
+                        name: 'Square Tower',
+                        area: 'towers',
+                    },
+                    {
+                        identifier: 'square-pyramid',
+                        name: 'Square Pyramid',
+                        area: 'pyramids',
+                    },
+                    {
+                        identifier: 'round-tower',
+                        name: 'Round Tower',
+                        area: 'towers',
+                    },
+                ],
                 meta: {
                     name: 'Event Name',
                     timezone: 'Europe/Amsterdam',
@@ -59,6 +75,9 @@ describe('EventImpl', () => {
         expect(event.area('identifier')).toBeUndefined();
         expect([ ...event.areas() ]).toHaveLength(0);
 
+        expect(event.location('identifier')).toBeUndefined();
+        expect([ ...event.locations() ]).toHaveLength(0);
+
         // TODO: Add the method calls?
     });
 
@@ -74,23 +93,53 @@ describe('EventImpl', () => {
         const event = new EventImpl({ authToken: 'my-token', event: '2022-regular' });
         expect(await event.initialize()).toBeTruthy();
 
-        expect(event.area(/* identifier= */ 'Pyramids')).not.toBeUndefined();
-        expect(event.area(/* identifier= */ 'Towers')).not.toBeUndefined();
+        expect(event.area(/* identifier= */ 'pyramids')).not.toBeUndefined();
+        expect(event.area(/* identifier= */ 'towers')).not.toBeUndefined();
 
         expect([ ...event.areas() ].map(area => area.name)).toEqual([
             'The Pyramids',
             'The Towers',
         ]);
 
-        const pyramids = event.area(/* identifier= */ 'Pyramids')!;
-        expect(pyramids.identifier).toEqual('Pyramids');
+        const pyramids = event.area(/* identifier= */ 'pyramids')!;
+        expect(pyramids.identifier).toEqual('pyramids');
         expect(pyramids.name).toEqual('The Pyramids');
         expect(pyramids.icon).toEqual('/images/pyramid.png');
 
-        const towers = event.area(/* identifier= */ 'Towers')!;
+        expect(pyramids.locations).toHaveLength(1);
+
+        const towers = event.area(/* identifier= */ 'towers')!;
         expect(towers.icon).toBeUndefined();
 
-        // TODO: Validate that each area has the correct location associations.
+        expect(towers.locations).toHaveLength(2);
+        expect(towers.locations.map(location => location.name)).toEqual([
+            'Round Tower',
+            'Square Tower',
+        ]);
+    });
+
+    it('should reflect the location information of a valid event from the network', async () => {
+        const event = new EventImpl({ authToken: 'my-token', event: '2022-regular' });
+        expect(await event.initialize()).toBeTruthy();
+
+        expect(event.location(/* identifier= */ 'round-tower')).not.toBeUndefined();
+        expect(event.location(/* identifier= */ 'square-tower')).not.toBeUndefined();
+
+        expect([ ...event.locations() ].map(location => location.name)).toEqual([
+            'Square Tower',
+            'Square Pyramid',
+            'Round Tower',
+        ]);
+
+        const tower = event.location(/* identifier= */ 'square-tower')!;
+        expect(tower.area).not.toBeUndefined();
+        expect(tower.area.name).toEqual('The Towers');
+        expect(tower.area.locations.includes(tower));
+
+        expect(tower.identifier).toEqual('square-tower');
+        expect(tower.name).toEqual('Square Tower');
+
+        // TODO: Verify that the right sessions are included in the location.
     });
 
     it('should fail when the API endpoint is unavailable', async () => {

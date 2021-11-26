@@ -5,7 +5,7 @@
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 
 import type { Event, EventArea, EventLocation, EventSession, EventVolunteer } from './Event';
-import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseMeta } from '../api/IEvent';
+import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseLocation, IEventResponseMeta } from '../api/IEvent';
 import type { Invalidatable } from './Invalidatable';
 
 /**
@@ -29,6 +29,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     #meta?: IEventResponseMeta;
 
     #areas: Map<string, EventAreaImpl> = new Map();
+    #locations: Map<string, EventLocationImpl> = new Map();
 
     constructor(request: IEventRequest, observer?: Invalidatable) {
         this.requestManager = new ApiRequestManager('IEvent', this);
@@ -67,7 +68,23 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
             finalizationQueue.push(instance);
         }
 
-        // (3) Run all the finalizers to make sure that the data is in order.
+        // (3) Initialize all the location information.
+        for (const location of response.locations) {
+            const area = this.#areas.get(location.area);
+            if (!area) {
+                console.warn('Invalid area given for location. Ignoring.', location);
+                continue;
+            }
+
+            const instance = new EventLocationImpl(location, area);
+
+            this.#locations.set(instance.identifier, instance);
+            area.addLocation(instance);
+
+            finalizationQueue.push(instance);
+        }
+
+        // (4) Run all the finalizers to make sure that the data is in order.
         for (const instance of finalizationQueue)
             instance.finalize();
 
@@ -115,12 +132,12 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
         return this.#areas.values();
     }
 
-    getLocation(identifier: string): EventLocation | undefined {
-        return undefined;
+    location(identifier: string): EventLocation | undefined {
+        return this.#locations.get(identifier);
     }
 
-    getLocations(): IterableIterator<EventLocation> {
-        return (new Map).values();
+    locations(): IterableIterator<EventLocation> {
+        return this.#locations.values();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -143,12 +160,27 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 /**
  * Interface that enables certain objects to be finalized after event initialization is complete.
  */
- interface Finalizer { finalize(): void; }
+interface Finalizer { finalize(): void; }
+
+/**
+ * Comparator to use when an array containing sessions should be sorted in ascending order. A stable
+ * sort is used where, for equal start times, the events will then be sorted by end time.
+ */
+function AscendingSessionComparator(lhs: EventSession, rhs: EventSession) {
+    const lhsValue = lhs.startTime.valueOf();
+    const rhsValue = rhs.startTime.valueOf();
+
+    const diff = lhsValue - rhsValue;
+    if (!diff)
+        return lhs.endTime.valueOf() - rhs.endTime.valueOf();
+
+    return diff;
+}
 
 /**
  * Implementation of the EventArea interface, which abstracts over the IEventResponseArea data.
  */
- class EventAreaImpl implements EventArea, Finalizer {
+class EventAreaImpl implements EventArea, Finalizer {
     #response: IEventResponseArea;
     #locations: EventLocation[];
 
@@ -169,4 +201,36 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     get name() { return this.#response.name; }
     get icon() { return this.#response.icon; }
     get locations() { return this.#locations; }
+}
+
+/**
+ * Implementation of the EventLocation interface, which abstracts over the IEventResponseLocation
+ * response information and adds the ability to cross-reference information.
+ */
+class EventLocationImpl implements EventLocation, Finalizer {
+    #response: IEventResponseLocation;
+
+    #area: EventAreaImpl;
+    #sessions: EventSession[];
+
+    constructor(response: IEventResponseLocation, area: EventAreaImpl) {
+        this.#response = response;
+
+        this.#area = area;
+        this.#sessions = [];
+    }
+
+    addSession(session: EventSession) {
+        this.#sessions.push(session);
+    }
+
+    finalize() {
+        // Sort the sessions by their start time, in ascending order.
+        this.#sessions.sort(AscendingSessionComparator);
+    }
+
+    get identifier() { return this.#response.identifier; }
+    get area() { return this.#area; }
+    get name() { return this.#response.name; }
+    get sessions() { return this.#sessions; }
 }

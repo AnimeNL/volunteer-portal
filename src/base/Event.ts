@@ -66,12 +66,12 @@ export interface Event {
     /**
      * Returns the location identified by the given |identifier|, or undefined when not found.
      */
-    getLocation(identifier: string): EventLocation | undefined;
+    location(identifier: string): EventLocation | undefined;
 
     /**
      * Returns an iterator that provides access to all locations for the event.
      */
-    getLocations(): IterableIterator<EventLocation>;
+    locations(): IterableIterator<EventLocation>;
 
     // ---------------------------------------------------------------------------------------------
     // Volunteer API

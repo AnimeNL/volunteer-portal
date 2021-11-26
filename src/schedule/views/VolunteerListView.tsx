@@ -135,7 +135,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
     const [ selectedTabIndex, setSelectedTabIndex ] = useState(/* default tab= */ 0);
 
     const environments: Record<string, EventVolunteer[]> = {};
-    for (const volunteer of event.getVolunteers()) {
+    for (const volunteer of event.volunteers()) {
         for (const environment of Object.keys(volunteer.environments)) {
             if (!environments.hasOwnProperty(environment))
                 environments[environment] = [];

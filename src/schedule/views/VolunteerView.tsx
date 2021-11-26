@@ -96,8 +96,8 @@ export function VolunteerView(props: VolunteerViewProps) {
     const { configuration, user } = useContext(AppContext);
     const { event, volunteerIdentifier } = props;
 
-    const userVolunteer = event.getVolunteerByName(user.name);
-    const volunteer = volunteerIdentifier ? event.getVolunteer(volunteerIdentifier)
+    const userVolunteer = event.volunteer({ name: user.name });
+    const volunteer = volunteerIdentifier ? event.volunteer({ identifier: volunteerIdentifier })
                                           : userVolunteer;
 
     if (!volunteer) {
@@ -129,7 +129,7 @@ export function VolunteerView(props: VolunteerViewProps) {
         if (!volunteer)
             return false;  // no volunteer, likely a race condition after unloading the component
 
-        const success = !!await volunteer.uploadAvatar(configuration, user, avatar);
+        const success = !!await volunteer.uploadAvatar({ avatar, authToken: user.authToken });
 
         // If the |user| and the |volunteer| are one and the same, which we very securely decide on
         // based on their full name, the |user| object will be updated with the new avatar too.

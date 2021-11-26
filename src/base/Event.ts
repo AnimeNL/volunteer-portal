@@ -4,6 +4,8 @@
 
 import moment from 'moment-timezone';
 
+import type { IAvatarRequest } from '../api/IAvatar';
+
 import { Configuration } from './Configuration';
 import { User } from './User';
 
@@ -78,19 +80,15 @@ export interface Event {
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns the volunteer identified by the given |identifier|, or undefined when not found.
+     * Returns the volunteer identified by the given |identifier| (O(1) operation), the volunteer by
+     * the given |name| (O(n) operation), or undefined when not found.
      */
-    getVolunteer(identifier: string): EventVolunteer | undefined;
-
-    /**
-     * Returns the volunteer identified by the given |name|, or undefined when not found.
-     */
-    getVolunteerByName(name: string): EventVolunteer | undefined;
+    volunteer(query: { identifier?: string; name?: string; }): EventVolunteer | undefined;
 
     /**
      * Returns an iterator that provides access to all volunteers known to the system.
      */
-    getVolunteers(): IterableIterator<EventVolunteer>;
+    volunteers(): IterableIterator<EventVolunteer>;
 }
 
 /**
@@ -203,10 +201,11 @@ export interface EventSession {
  */
 export interface EventVolunteer {
     /**
-     * Can be used to indicate that the |user| would like to upload the given |avatar| for this
-     * volunteer. When successful, the local avatar state will be updated as well as the server's.
+     * Uploads the avatar contained in |request| for this volunteer. The event and userToken for
+     * the volunteer can be added automagically, the other properties are required. A boolean will
+     * be returned indicating whether the upload was successful.
      */
-    uploadAvatar(configuration: Configuration, user: User, avatar: Blob): Promise<boolean>;
+    uploadAvatar(request: Omit<IAvatarRequest, 'event' | 'userToken'>): Promise<boolean>;
 
     /**
      * The volunteer's full name.

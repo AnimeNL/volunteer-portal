@@ -2,10 +2,13 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import { ApiRequest } from './ApiRequest';
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 
+import type { IAvatarRequest } from '../api/IAvatar';
+
 import type { Event, EventArea, EventLocation, EventSession, EventVolunteer } from './Event';
-import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseLocation, IEventResponseMeta } from '../api/IEvent';
+import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseLocation, IEventResponseMeta, IEventResponseVolunteer } from '../api/IEvent';
 import type { Invalidatable } from './Invalidatable';
 
 /**
@@ -30,6 +33,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
     #areas: Map<string, EventAreaImpl> = new Map();
     #locations: Map<string, EventLocationImpl> = new Map();
+    #volunteers: Map<string, EventVolunteerImpl> = new Map();
 
     constructor(request: IEventRequest, observer?: Invalidatable) {
         this.requestManager = new ApiRequestManager('IEvent', this);
@@ -58,6 +62,8 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
         this.#meta = response.meta;
 
         this.#areas = new Map();
+        this.#locations = new Map();
+        this.#volunteers = new Map();
 
         // (2) Initialize all the area information.
         for (const area of response.areas) {
@@ -84,7 +90,13 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
             finalizationQueue.push(instance);
         }
 
-        // (4) Run all the finalizers to make sure that the data is in order.
+        // (4) Initialize all the volunteer information.
+        for (const volunteer of response.volunteers) {
+            this.#volunteers.set(
+                volunteer.identifier, new EventVolunteerImpl(this.request.event, volunteer));
+        }
+
+        // (5) Run all the finalizers to make sure that the data is in order.
         for (const instance of finalizationQueue)
             instance.finalize();
 
@@ -144,16 +156,21 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     // Volunteer API
     // ---------------------------------------------------------------------------------------------
 
-    getVolunteer(identifier: string): EventVolunteer | undefined {
+    volunteer(query: { identifier?: string; name?: string; }): EventVolunteer | undefined {
+        if (query.identifier) {
+            return this.#volunteers.get(query.identifier);
+        } else if (query.name) {
+            for (const [ _, volunteer ] of this.#volunteers) {
+                if (volunteer.name === query.name)
+                    return volunteer;
+            }
+        }
+
         return undefined;
     }
 
-    getVolunteerByName(name: string): EventVolunteer | undefined {
-        return undefined;
-    }
-
-    getVolunteers(): IterableIterator<EventVolunteer> {
-        return (new Map).values();
+    volunteers(): IterableIterator<EventVolunteer> {
+        return this.#volunteers.values();
     }
 }
 
@@ -233,4 +250,56 @@ class EventLocationImpl implements EventLocation, Finalizer {
     get area() { return this.#area; }
     get name() { return this.#response.name; }
     get sessions() { return this.#sessions; }
+}
+
+/**
+ * Implementation of the EventVolunteer interface, which abstracts over the IEventResponseVolunteer
+ * response information with a slightly more accessible API.
+ */
+class EventVolunteerImpl implements EventVolunteer {
+    #eventIdentifier: string;
+    #response: IEventResponseVolunteer;
+
+    // The avatar as it has been uploaded during this session, if any.
+    #uploadedAvatarUrl?: string;
+
+    constructor(eventIdentifier: string, response: IEventResponseVolunteer) {
+        this.#eventIdentifier = eventIdentifier;
+        this.#response = response;
+    }
+
+    async uploadAvatar(request: Omit<IAvatarRequest, 'event' | 'userToken'>): Promise<boolean> {
+        try {
+            const apiRequest = new ApiRequest('IAvatar');
+            const apiResponse = await apiRequest.issue({
+                ...request,
+
+                // Information that can be sourced from |this| volunteer.
+                event: this.#eventIdentifier,
+                userToken: this.#response.identifier,
+            });
+
+            if (apiResponse.error) {
+                console.error('Unable to upload the avatar:', apiResponse.error);
+            } else {
+                this.#uploadedAvatarUrl = URL.createObjectURL(request.avatar);
+            }
+
+            return apiResponse.error === undefined;
+
+        } catch (exception) {
+            console.error('Unable to interact with the authentication API:', exception);
+        }
+
+        return false;
+    }
+
+    get name() { return `${this.#response.name[0]} ${this.#response.name[1]}`.trim(); }
+    get firstName() { return this.#response.name[0]; }
+    get lastName() { return this.#response.name[1]; }
+    get environments() { return this.#response.environments; }
+    get identifier() { return this.#response.identifier; }
+    get accessCode() { return this.#response.accessCode; }
+    get avatar() { return this.#uploadedAvatarUrl ?? this.#response.avatar; }
+    get phoneNumber() { return this.#response.phoneNumber; }
 }

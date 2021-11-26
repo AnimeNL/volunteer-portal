@@ -58,7 +58,21 @@ describe('EventImpl', () => {
                     name: 'Event Name',
                     timezone: 'Europe/Amsterdam',
                 },
-                volunteers: [],
+                volunteers: [
+                    {
+                        identifier: 'john',
+                        name: [ 'John', 'Doe' ],
+                        environments: { /* todo */ },
+                        accessCode: '1234',
+                        phoneNumber: '+3100000000'
+                    },
+                    {
+                        identifier: 'jane',
+                        name: [ 'Jane', 'Doe' ],
+                        environments: { /* todo */ },
+                        avatar: '/jane-doe.png',
+                    },
+                ],
             }),
             status: 200,
         }));
@@ -140,6 +154,75 @@ describe('EventImpl', () => {
         expect(tower.name).toEqual('Square Tower');
 
         // TODO: Verify that the right sessions are included in the location.
+    });
+
+    it('should reflect the volunteer information of a valid event from the network', async () => {
+        const event = new EventImpl({ authToken: 'my-token', event: '2022-regular' });
+        expect(await event.initialize()).toBeTruthy();
+
+        expect(event.volunteer({ identifier: 'john' })).not.toBeUndefined();
+        expect(event.volunteer({ name: 'Jane Doe' })).not.toBeUndefined();
+
+        expect([ ...event.volunteers() ].map(volunteer => volunteer.name)).toEqual([
+            'John Doe',
+            'Jane Doe',
+        ]);
+
+        const john = event.volunteer({ identifier: 'john' })!;
+        expect(john.identifier).toEqual('john');
+        expect(john.firstName).toEqual('John');
+        expect(john.lastName).toEqual('Doe');
+        expect(john.accessCode).toEqual('1234');
+        expect(john.avatar).toBeUndefined();
+        expect(john.phoneNumber).toEqual('+3100000000')
+
+        const jane = event.volunteer({ identifier: 'jane' })!;
+        expect(jane.accessCode).toBeUndefined();
+        expect(jane.avatar).toEqual('/jane-doe.png');
+        expect(jane.phoneNumber).toBeUndefined();
+
+        // TODO: Verify that their shifts have been associated.
+    });
+
+    it('should be able to upload avatars for volunteers within the event', async () => {
+        const event = new EventImpl({ authToken: 'my-token', event: '2022-regular' });
+        expect(await event.initialize()).toBeTruthy();
+
+        const john = event.volunteer({ identifier: 'john' })!;
+        expect(john).not.toBeUndefined();
+
+        // (1) Attempt to upload an avatar, but have the server respond with non-ok response.
+        mockFetch.mockOnceIf('/api/avatar?authToken=token&event=2022-regular', async request => ({
+            status: 503,
+        }));
+
+        expect(await john.uploadAvatar({ authToken: 'token', avatar: new Blob() })).toBeFalsy();
+        expect(john.avatar).toBeUndefined();
+
+        // (2) Attempt to upload an avatar, but have the server respond with an error.
+        mockFetch.mockOnceIf('/api/avatar?authToken=token&event=2022-regular', async request => ({
+            body: JSON.stringify({
+                error: 'Something went wrong while uploading the avatar?!',
+            }),
+            status: 200,
+        }));
+
+        expect(await john.uploadAvatar({ authToken: 'token', avatar: new Blob() })).toBeFalsy();
+        expect(john.avatar).toBeUndefined();
+
+        // (3) Attempt to upload an avatar, and validate that everything worked out well.
+        mockFetch.mockOnceIf('/api/avatar?authToken=token&event=2022-regular', async request => ({
+            body: JSON.stringify({ /* empty response signals no issues */ }),
+            status: 200,
+        }));
+
+        // Jest/NodeJS haven't implemented the createObjectURL function to get a representation of
+        // arbitrary objects, in our case Blobs, so mock the existence of this function instead.
+        if (!global.URL.createObjectURL)
+            global.URL.createObjectURL = () => 'avatar-url';
+
+        expect(await john.uploadAvatar({ authToken: 'token', avatar: new Blob() })).toBeTruthy();
+        expect(john.avatar).not.toBeUndefined();
     });
 
     it('should fail when the API endpoint is unavailable', async () => {

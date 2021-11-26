@@ -11,7 +11,7 @@ import { Cache } from './base/Cache';
 import { ConfigurationImpl } from './base/ConfigurationImpl';
 import { ContentImpl } from './base/ContentImpl';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
-import { EventFactory } from './base/EventFactory';
+import { EventImpl } from './base/EventImpl';
 import { Invalidatable } from './base/Invalidatable';
 import { UserImpl } from './base/UserImpl';
 
@@ -35,7 +35,6 @@ export class App extends Component<{}, AppState> implements Invalidatable {
     private configuration: ConfigurationImpl;
     private content: ContentImpl;
     private environment: EnvironmentImpl;
-    private eventFactory: EventFactory;
     private user: UserImpl;
 
     public appContext: IAppContext;
@@ -51,7 +50,6 @@ export class App extends Component<{}, AppState> implements Invalidatable {
         this.configuration = new ConfigurationImpl();
         this.content = new ContentImpl(/* observer= */ this);
         this.environment = new EnvironmentImpl(/* observer= */ this);
-        this.eventFactory = new EventFactory(this.cache, this.configuration);
         this.user = new UserImpl(/* observer= */ this);
 
         // Compose the app context. Preact uses instance equality to determine whether the context
@@ -124,8 +122,12 @@ export class App extends Component<{}, AppState> implements Invalidatable {
 
         this.setState({ loaded: false });
 
-        const event = await this.eventFactory.load(this.user.authToken, identifier);
-        if (!event) {
+        const event = new EventImpl({
+            authToken: this.user.authToken,
+            event: identifier
+        }, /* observer= */ this);
+
+        if (!await event.initialize()) {
             document.location.href = '/';
             return;
         }

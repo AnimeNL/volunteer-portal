@@ -13,17 +13,24 @@ import { User } from './User';
  */
 export interface Event {
     /**
+     * Whether the Event object has been initialized, and is ready for use.
+     */
+    readonly initialized: boolean;
+
+    /**
      * The identifier through which this event can be identified.
      */
     readonly identifier: string;
 
     /**
-     * Name of the event, which can be publicly displayed in a user interface.
+     * Name of the event, which can be publicly displayed in a user interface. Will throw when the
+     * Event object has not been initialized yet.
      */
     readonly name: string;
 
     /**
-     * Timezone in which the event will be taking place, when provided by the server.
+     * Timezone in which the event will be taking place, when provided by the server. Will throw
+     * when the Event object has not been initialized yet.
      */
     readonly timezone?: string;
 

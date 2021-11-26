@@ -170,7 +170,7 @@ export class UserImpl implements ApiRequestObserver<'IUser'>, User {
     // ---------------------------------------------------------------------------------------------
 
     get authenticated(): boolean {
-        return this.requestToken !== undefined;
+        return this.response !== undefined;
     }
 
     get accessCode(): Readonly<string> {

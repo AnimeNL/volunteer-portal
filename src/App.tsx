@@ -52,7 +52,7 @@ export class App extends Component<{}, AppState> implements Invalidatable {
         this.content = new ContentImpl(/* observer= */ this);
         this.environment = new EnvironmentImpl(/* observer= */ this);
         this.eventFactory = new EventFactory(this.cache, this.configuration);
-        this.user = new UserImpl(this.configuration);
+        this.user = new UserImpl(/* observer= */ this);
 
         // Compose the app context. Preact uses instance equality to determine whether the context
         // changed, so we'll want to ensure the same instance will be reused when possible.
@@ -100,19 +100,15 @@ export class App extends Component<{}, AppState> implements Invalidatable {
         if (!this.state.loaded)
             return;
 
+        if (this.state.authenticated !== this.user.authenticated)
+            this.setState({ authenticated: this.user.authenticated });
+
         this.forceUpdate();
     }
 
     // ---------------------------------------------------------------------------------------------
-    // State observers.
+    // Navigation observer.
     // ---------------------------------------------------------------------------------------------
-
-    onAuthenticationStateChanged() {
-        this.appContext.event = undefined;
-        this.setState({
-            authenticated: this.user.authenticated,
-        });
-    }
 
     async onNavigate(routerChange: RouterOnChangeArgs) {
         const matches = routerChange.url.match(/^\/schedule\/([^\/]+)\//);

@@ -5,6 +5,7 @@
 import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 import { clear as kvClear } from 'idb-keyval';
 import mockFetch from 'jest-fetch-mock';
+import moment from 'moment';
 
 import { EventImpl } from './EventImpl';
 
@@ -117,6 +118,8 @@ describe('EventImpl', () => {
         expect(event.volunteer({ identifier: 'foo' })).toBeUndefined();
         expect(event.volunteer({ name: 'foo' })).toBeUndefined();
         expect([ ...event.volunteers() ]).toHaveLength(0);
+
+        expect(() => event.findActiveSessions()).toThrowError();
     });
 
     it('should reflect the meta-information of a valid event from the network', async () => {
@@ -206,6 +209,17 @@ describe('EventImpl', () => {
         expect(triangularDance.location).toStrictEqual(tower);
         expect(triangularDance.startTime.toString()).toEqual('Sun Apr 04 2021 23:00:00 GMT+0100');
         expect(triangularDance.endTime.toString()).toEqual('Mon Apr 05 2021 23:59:59 GMT+0100');
+
+        // Beyond inclusion of the information, also verify that we're able to find active sessions
+        // at a particular time using the `findActiveSessions` method.
+        expect(event.findActiveSessions(moment(1617490000 * 1000))).toHaveLength(0);
+        expect(event.findActiveSessions(moment(1617663600 * 1000))).toHaveLength(0);
+
+        const sessions = event.findActiveSessions(moment(1617577000 * 1000));
+
+        expect(sessions).toHaveLength(2);
+        expect(sessions[0]).toStrictEqual(circularDance);
+        expect(sessions[1]).toStrictEqual(triangularDance);
     });
 
     it('should reflect the volunteer information of a valid event from the network', async () => {

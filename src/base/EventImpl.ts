@@ -6,6 +6,7 @@ import moment from 'moment-timezone';
 
 import { ApiRequest } from './ApiRequest';
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
+import { IntervalTree, IntervalTreeNode } from './IntervalTree';
 
 import type { Event, EventArea, EventInfo, EventLocation, EventSession,
               EventVolunteer } from './Event';
@@ -34,6 +35,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
     // Information made available after the Event was successfully retrieved.
     #meta?: IEventResponseMeta;
+    #sessions?: IntervalTree<EventSessionImpl>;
 
     #areas: Map<string, EventAreaImpl> = new Map();
     #locations: Map<string, EventLocationImpl> = new Map();
@@ -61,6 +63,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     onFailedResponse(error: Error) { /* handled in the App */ }
     onSuccessResponse(response: IEventResponse) {
         let finalizationQueue: Finalizer[] = [];
+        let sessions: EventSessionImpl[] = [];
 
         // (1) Reset all the locally cached information to an empty state.
         this.#meta = response.meta;
@@ -111,16 +114,19 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
                     continue;
                 }
 
-                // TODO: Create an interval tree out of all the sessions, to enable performant and
-                // quick look-up of active sessions at any given point in time.
+                const session = instance.createSession(location, sessionInfo);
 
-                location.addSession(instance.createSession(location, sessionInfo));
+                location.addSession(session);
+                sessions.push(session);
             }
 
             finalizationQueue.push(instance);
         }
 
-        // (6) Run all the finalizers to make sure that the data is in order.
+        // (6) Initialize the interval tree for the active sessions during this event.
+        this.#sessions = new IntervalTree(sessions);
+
+        // (7) Run all the finalizers to make sure that the data is in order.
         for (const instance of finalizationQueue)
             instance.finalize();
 
@@ -152,8 +158,17 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     // Event API
     // ---------------------------------------------------------------------------------------------
 
-    getActiveSessions(time: moment.Moment): EventSession[] {
-        return [];
+    /**
+     * Finds the active sessions at the given |time|, which defaults to the current time. The search
+     * is done using an interval tree, to allow for O(log n + k) search times.
+     */
+    findActiveSessions(time?: moment.Moment): EventSession[] {
+        if (!this.#sessions)
+            throw new Error(kExceptionMessage);
+
+        const queryTime = time ?? moment();
+
+        return this.#sessions.query({ point: queryTime.unix() });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -259,7 +274,7 @@ class EventInfoImpl implements EventInfo, Finalizer {
         this.#sessions = [];
     }
 
-    createSession(location: EventLocation, response: IEventResponseSession): EventSession {
+    createSession(location: EventLocation, response: IEventResponseSession): EventSessionImpl {
         const session = new EventSessionImpl(this, location, response);
 
         this.#sessions.push(session);
@@ -312,7 +327,7 @@ class EventLocationImpl implements EventLocation, Finalizer {
  * Implementation of the EventSession interface, which abstracts over the IEventResponseSession
  * response information. Times will be represented by MomentJS.
  */
-class EventSessionImpl implements EventSession {
+class EventSessionImpl implements EventSession, IntervalTreeNode {
     #event: EventInfo;
     #location: EventLocation;
 
@@ -321,6 +336,10 @@ class EventSessionImpl implements EventSession {
 
     #beginTime: moment.Moment;
     #endTime: moment.Moment;
+
+    // IntervalTreeNode implementation:
+    public start: number;
+    public end: number;
 
     constructor(event: EventInfo, location: EventLocation, response: IEventResponseSession) {
         this.#event = event;
@@ -331,6 +350,9 @@ class EventSessionImpl implements EventSession {
 
         this.#beginTime = moment(response.time[0] * 1000);
         this.#endTime = moment(response.time[1] * 1000);
+
+        this.start = response.time[0];
+        this.end = response.time[1];
     }
 
     get event() { return this.#event; }

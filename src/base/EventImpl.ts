@@ -6,6 +6,7 @@ import moment from 'moment-timezone';
 
 import { ApiRequest } from './ApiRequest';
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
+import { DateTime } from './DateTime';
 import { IntervalTree, IntervalTreeNode } from './IntervalTree';
 
 import type { Event, EventArea, EventInfo, EventLocation, EventSession,
@@ -64,6 +65,8 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     onSuccessResponse(response: IEventResponse) {
         let finalizationQueue: Finalizer[] = [];
         let sessions: EventSessionImpl[] = [];
+
+        DateTime.setTimezone(response.meta.timezone);
 
         // (1) Reset all the locally cached information to an empty state.
         this.#meta = response.meta;

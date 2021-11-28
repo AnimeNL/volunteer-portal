@@ -2,8 +2,6 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import moment from 'moment-timezone';
-
 import { ApiRequest } from './ApiRequest';
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 import { DateTime } from './DateTime';
@@ -165,11 +163,11 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
      * Finds the active sessions at the given |time|, which defaults to the current time. The search
      * is done using an interval tree, to allow for O(log n + k) search times.
      */
-    findActiveSessions(time?: moment.Moment): EventSession[] {
+    findActiveSessions(time?: DateTime): EventSession[] {
         if (!this.#sessions)
             throw new Error(kExceptionMessage);
 
-        const queryTime = time ?? moment();
+        const queryTime = time ?? DateTime.local();
 
         return this.#sessions.query({ point: queryTime.unix() });
     }
@@ -328,7 +326,7 @@ class EventLocationImpl implements EventLocation, Finalizer {
 
 /**
  * Implementation of the EventSession interface, which abstracts over the IEventResponseSession
- * response information. Times will be represented by MomentJS.
+ * response information. Times will be represented by a DateTime instance.
  */
 class EventSessionImpl implements EventSession, IntervalTreeNode {
     #event: EventInfo;
@@ -337,8 +335,8 @@ class EventSessionImpl implements EventSession, IntervalTreeNode {
     #name: string;
     #description?: string;
 
-    #beginTime: moment.Moment;
-    #endTime: moment.Moment;
+    #beginTime: DateTime;
+    #endTime: DateTime;
 
     // IntervalTreeNode implementation:
     public start: number;
@@ -351,8 +349,8 @@ class EventSessionImpl implements EventSession, IntervalTreeNode {
         this.#name = response.name;
         this.#description = response.description;
 
-        this.#beginTime = moment(response.time[0] * 1000);
-        this.#endTime = moment(response.time[1] * 1000);
+        this.#beginTime = DateTime.fromUnix(response.time[0]);
+        this.#endTime = DateTime.fromUnix(response.time[1]);
 
         this.start = response.time[0];
         this.end = response.time[1];

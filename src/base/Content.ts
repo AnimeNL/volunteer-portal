@@ -2,9 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import moment from 'moment-timezone';
-
-import { IContentResponsePage } from '../api/IContent';
+import type { DateTime } from './DateTime';
+import type { IContentResponsePage } from '../api/IContent';
 
 /**
  * Defines the interface through which application content can be accessed. Such content is keyed
@@ -31,8 +30,8 @@ export interface Content {
 
 export type ContentPage = Omit<Readonly<IContentResponsePage>, 'modified'> & {
     /**
-     * Last modification time of content on the page, as a Moment time instance. The time has not
+     * Last modification time of content on the page, as a DateTime instance. The time has not
      * been adjusted to any particular timezone.
      */
-    modified: Readonly<moment.Moment>;
+    modified: Readonly<DateTime>;
 }

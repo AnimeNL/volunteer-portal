@@ -5,9 +5,9 @@
 import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 import { clear as kvClear } from 'idb-keyval';
 import mockFetch from 'jest-fetch-mock';
-import moment from 'moment-timezone';
 
 import { ContentImpl } from './ContentImpl';
+import { DateTime } from './DateTime';
 
 describe('ContentImpl', () => {
     let restoreConsole: RestoreConsole | undefined = undefined;
@@ -22,7 +22,7 @@ describe('ContentImpl', () => {
     });
 
     it('should reflect the values of a valid content from the network', async () => {
-        const currentTime = moment.utc().unix();
+        const currentTime = DateTime.local().unix();
 
         mockFetch.mockOnceIf('/api/content', async request => ({
             body: JSON.stringify({
@@ -48,12 +48,12 @@ describe('ContentImpl', () => {
         expect(content.has('/foo')).toBeTruthy();
         expect(content.get('/foo')?.pathname).toEqual('/foo');
         expect(content.get('/foo')?.content).toEqual('Foo!');
-        expect(content.get('/foo')?.modified).toEqual(moment.utc(currentTime));
+        expect(content.get('/foo')?.modified).toEqual(DateTime.fromUnix(currentTime));
 
         expect(content.has('/bar')).toBeTruthy();
         expect(content.get('/bar')?.pathname).toEqual('/bar');
         expect(content.get('/bar')?.content).toEqual('Bar?');
-        expect(content.get('/bar')?.modified).toEqual(moment.utc(currentTime + 30));
+        expect(content.get('/bar')?.modified).toEqual(DateTime.fromUnix(currentTime + 30));
 
         expect(content.has('/baz')).toBeFalsy();
     });
@@ -73,7 +73,7 @@ describe('ContentImpl', () => {
     });
 
     it('should be able to return prefixed paths in length order', async () => {
-        const currentTime = moment.utc().unix();
+        const currentTime = DateTime.local().unix();
 
         mockFetch.mockOnceIf('/api/content', async request => ({
             body: JSON.stringify({
@@ -104,12 +104,12 @@ describe('ContentImpl', () => {
             {
                 pathname: '/foo/bar.html',
                 content: 'Bar!',
-                modified: moment.utc(currentTime + 30),
+                modified: DateTime.fromUnix(currentTime + 30),
             },
             {
                 pathname: '/foo/',
                 content: 'Foo Index',
-                modified: moment.utc(currentTime),
+                modified: DateTime.fromUnix(currentTime),
             }
         ]);
     });

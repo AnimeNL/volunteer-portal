@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import type moment from 'moment-timezone';
+import type { DateTime } from './DateTime';
 import type { IAvatarRequest } from '../api/IAvatar';
 
 /**
@@ -40,7 +40,7 @@ export interface Event {
      * Returns an array of sessions that are active at the given |time|. The implementation has a
      * time complexity of O(log n + k) on the number of sessions within the Event.
      */
-    findActiveSessions(time?: moment.Moment): EventSession[];
+    findActiveSessions(time?: DateTime): EventSession[];
 
     // ---------------------------------------------------------------------------------------------
     // Location API
@@ -179,12 +179,12 @@ export interface EventSession {
     /**
      * Time at which this session is due to begin.
      */
-    readonly startTime: moment.Moment;
+    readonly startTime: DateTime;
 
     /**
      * Time at which this session is due to finish. Guaranteed to be after the `startTime`.
      */
-    readonly endTime: moment.Moment;
+    readonly endTime: DateTime;
 }
 
 /**

@@ -135,4 +135,9 @@ export class DateTime {
      * Returns the UNIX timestamp represented by |this|, in UTC.
      */
     unix(): number { return this.moment.unix(); }
+
+    /**
+     * Returns the internal, numeric representation of |this|. Should be comparable.
+     */
+    valueOf(): number { return this.moment.valueOf(); }
 }

@@ -5,8 +5,8 @@
 import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 import { clear as kvClear } from 'idb-keyval';
 import mockFetch from 'jest-fetch-mock';
-import moment from 'moment';
 
+import { DateTime } from './DateTime';
 import { EventImpl } from './EventImpl';
 
 describe('EventImpl', () => {
@@ -79,7 +79,7 @@ describe('EventImpl', () => {
                 ],
                 meta: {
                     name: 'Event Name',
-                    timezone: 'Europe/Amsterdam',
+                    timezone: 'Europe/London',
                 },
                 volunteers: [
                     {
@@ -127,7 +127,7 @@ describe('EventImpl', () => {
         expect(await event.initialize()).toBeTruthy();
 
         expect(event.name).toEqual('Event Name');
-        expect(event.timezone).toEqual('Europe/Amsterdam');
+        expect(event.timezone).toEqual('Europe/London');
     });
 
     it('should reflect the area information of a valid event from the network', async () => {
@@ -200,22 +200,22 @@ describe('EventImpl', () => {
         expect(circularDance.name).toEqual('Circular Dance');
         expect(circularDance.description).toBeUndefined();
         expect(circularDance.location).toStrictEqual(tower);
-        expect(circularDance.startTime.toString()).toEqual('Sun Apr 04 2021 00:00:00 GMT+0100');
-        expect(circularDance.endTime.toString()).toEqual('Sun Apr 04 2021 23:59:59 GMT+0100');
+        expect(circularDance.startTime.format()).toEqual('2021-04-04 00:00:00');
+        expect(circularDance.endTime.format()).toEqual('2021-04-04 23:59:59');
 
         const triangularDance = tower.sessions[1];
         expect(triangularDance.name).toEqual('Triangular Dance');
         expect(triangularDance.description).toEqual('Walk around a triangle?!');
         expect(triangularDance.location).toStrictEqual(tower);
-        expect(triangularDance.startTime.toString()).toEqual('Sun Apr 04 2021 23:00:00 GMT+0100');
-        expect(triangularDance.endTime.toString()).toEqual('Mon Apr 05 2021 23:59:59 GMT+0100');
+        expect(triangularDance.startTime.format()).toEqual('2021-04-04 23:00:00');
+        expect(triangularDance.endTime.format()).toEqual('2021-04-05 23:59:59');
 
         // Beyond inclusion of the information, also verify that we're able to find active sessions
         // at a particular time using the `findActiveSessions` method.
-        expect(event.findActiveSessions(moment(1617490000 * 1000))).toHaveLength(0);
-        expect(event.findActiveSessions(moment(1617663600 * 1000))).toHaveLength(0);
+        expect(event.findActiveSessions(DateTime.fromUnix(1617490000))).toHaveLength(0);
+        expect(event.findActiveSessions(DateTime.fromUnix(1617663600))).toHaveLength(0);
 
-        const sessions = event.findActiveSessions(moment(1617577000 * 1000));
+        const sessions = event.findActiveSessions(DateTime.fromUnix(1617577000));
 
         expect(sessions).toHaveLength(2);
         expect(sessions[0]).toStrictEqual(circularDance);

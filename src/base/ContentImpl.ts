@@ -2,9 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import moment from 'moment-timezone';
-
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
+import { DateTime } from './DateTime';
 
 import type { Content, ContentPage } from './Content';
 import type { IContentResponse } from '../api/IContent';
@@ -51,8 +50,8 @@ export class ContentImpl implements ApiRequestObserver<'IContent'>, Content {
             this.content.set(page.pathname, {
                 ...page,
 
-                // Store the |modified| time as a Moment instance in UTC, valid for UNIX timestamps.
-                modified: moment.utc(page.modified)
+                // Store the |modified| time as a DateTime instance, valid for UNIX timestamps.
+                modified: DateTime.fromUnix(page.modified)
             });
         }
 

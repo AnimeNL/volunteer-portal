@@ -2,61 +2,41 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import dayjs from 'dayjs';
+import moment from 'moment-timezone';
 
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
+/**
+ * Date formatting rules supported by the application. One of these keys must be passed to format().
+ */
+const kFormatRules = {
+    date: 'YYYY-MM-DD',
+    full: 'YYYY-MM-DD HH:mm:ss',
+};
 
-dayjs.extend(timezone);
-dayjs.extend(utc);
+/**
+ * Non-exported symbol to avoid external users from instantiating DateTime instances themselves.
+ */
+const kPrivateSymbol = Symbol(/* do not instantiate DateTime yourself */);
+
+/**
+ * Global timezone default, as one of the timezone names recognised by the Intl API. Defaults to
+ * UTC to allow the volunteer portal to behave the same regardless of host locale.
+ */
+let defaultTimezone: string = 'UTC';
 
 /**
  * Global override time, as an offset noted in the number of milliseconds. Locally vended times will
  * be adjusted based on this value. Can be set using `DateTime.setOverrideTime`.
  */
-let overrideTimeOffsetMs: number | undefined;
+let overrideTimeOffsetMs: number = 0;
 
 /**
  * The DateTime class exposes a series of utilities for dealing with dates and times throughout the
- * volunteer portal application. Direct usage of Moment, DayJS or other libraries in other parts of
- * the portal should be avoided where possible.
+ * volunteer portal application. It provides a minimal wrapping over another date/time library, to
+ * allow us to easily swap out implementations when there's a need.
  */
 export class DateTime {
     // ---------------------------------------------------------------------------------------------
-    // Methods for retrieving a DayJS instance based on the current time
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Returns a DayJS instance representing the current date and time. Timezone dependent.
-     */
-    static local(): dayjs.Dayjs {
-        return overrideTimeOffsetMs ? dayjs().tz().add(overrideTimeOffsetMs, 'ms')
-                                    : dayjs().tz();
-    }
-
-    /**
-     * Returns a DayJS instance representing the current date and time, in UTC.
-     */
-    static utc(): dayjs.Dayjs {
-        return overrideTimeOffsetMs ? dayjs.utc().add(overrideTimeOffsetMs, 'ms')
-                                    : dayjs.utc();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-    // Methods for retrieving a DayJS instance based on an external time representation
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Returns a DayJS instance representing the time indicated in |timestamp|, which should be a
-     * UNIX timestamp in seconds since the epoch. The time will be local, unless |utc| is set.
-     */
-    static fromUnix(timestamp: number, utc?: boolean): dayjs.Dayjs {
-        return utc ? dayjs.unix(timestamp).utc()
-                   : dayjs.unix(timestamp).tz();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-    // Methods for globally changing DayJS behaviour throughout the application.
+    // Methods for globally changing DateTime behaviour throughout the application.
     // ---------------------------------------------------------------------------------------------
 
     /**
@@ -64,8 +44,8 @@ export class DateTime {
      * the concept of a local timestamp, aligning it with the given |timezone|. Existing instances
      * will not be adjusted when this method is called.
      */
-    static setTimezone(timezone?: string): void {
-        dayjs.tz.setDefault(timezone);
+    static setDefaultTimezone(timezone?: string): void {
+        defaultTimezone = timezone ?? 'UTC';
     }
 
     /**
@@ -73,8 +53,86 @@ export class DateTime {
      * issued by this class will be amended based on the difference between |time| and the actual
      * local time, which means that time will continue to progress.
      */
-    static setOverrideTime(time?: dayjs.Dayjs): void {
-        overrideTimeOffsetMs = time ? time.diff(/* difference in milliseconds to current time */)
-                                    : undefined;
+    static setOverrideTime(time?: DateTime): void {
+        overrideTimeOffsetMs = time ? time.moment.diff(moment(), 'ms')
+                                    : /* no override= */ 0;
     }
+
+    // ---------------------------------------------------------------------------------------------
+    // Methods for retrieving a DateTime instance based on the current time
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns a DateTime instance representing the current date and time. Local to the configured
+     * timezone for this application, which defaults to UTC.
+     */
+    static local(): DateTime {
+        return overrideTimeOffsetMs
+            ? new DateTime(kPrivateSymbol, moment().add(overrideTimeOffsetMs, 'ms'))
+            : new DateTime(kPrivateSymbol, moment.tz(defaultTimezone));
+    }
+
+    /**
+     * Returns a DateTime instance representing the current date and time, in UTC.
+     */
+    static utc(): DateTime {
+        return overrideTimeOffsetMs
+            ? new DateTime(kPrivateSymbol, moment.utc().add(overrideTimeOffsetMs, 'ms'))
+            : new DateTime(kPrivateSymbol, moment.utc());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Methods for retrieving a DateTime instance based on an external time representation
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns a DateTime instance representing the time indicated in |init|, which should be one of
+     * the date/time formats supported by the underlying library.
+     */
+    static fromString(init: string): DateTime {
+        return new DateTime(kPrivateSymbol, moment.tz(init, defaultTimezone));
+    }
+
+    /**
+     * Returns a DateTime instance representing the time indicated in |timestamp|, which should be a
+     * UNIX timestamp in seconds since the epoch. The DateTime will be localized to the application.
+     */
+    static fromUnix(timestamp: number): DateTime {
+        return new DateTime(kPrivateSymbol, moment.tz(timestamp * 1000, defaultTimezone));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Utilities provided by DateTime instances. Instances are strictly immutable.
+    // ---------------------------------------------------------------------------------------------
+
+    private readonly moment: moment.Moment;
+
+    private constructor(privateSymbol: Symbol, moment: moment.Moment) {
+        if (privateSymbol !== kPrivateSymbol)
+            throw new Error('Do not instantiate DateTime yourself, use the static methods instead');
+
+        this.moment = moment;
+    }
+
+    /**
+     * Formats the time represented by |this| to a string in accordance with the |rule|.
+     */
+    format(rule?: keyof typeof kFormatRules): string {
+        return this.moment.format(kFormatRules[rule ?? 'full']);
+    }
+
+    /**
+     * Returns whether |this| is in UTC.
+     */
+    isUTC(): boolean { return this.moment.isUTC(); }
+
+    /**
+     * Returns the offset, in minutes, |this| is away from UTC.
+     */
+    utcOffset(): number { return this.moment.utcOffset(); }
+
+    /**
+     * Returns the UNIX timestamp represented by |this|, in UTC.
+     */
+    unix(): number { return this.moment.unix(); }
 }

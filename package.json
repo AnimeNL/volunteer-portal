@@ -22,7 +22,6 @@
     "@mui/icons-material": "^5.1.1",
     "@mui/lab": "^5.0.0-alpha.55",
     "@mui/material": "^5.1.1",
-    "dayjs": "^1.10.7",
     "idb-keyval": "^6.0.3",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.34",

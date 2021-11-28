@@ -66,7 +66,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
         let finalizationQueue: Finalizer[] = [];
         let sessions: EventSessionImpl[] = [];
 
-        DateTime.setTimezone(response.meta.timezone);
+        DateTime.setDefaultTimezone(response.meta.timezone);
 
         // (1) Reset all the locally cached information to an empty state.
         this.#meta = response.meta;

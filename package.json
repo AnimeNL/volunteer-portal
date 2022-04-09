@@ -23,7 +23,7 @@
     "@mui/lab": "^5.0.0-alpha.55",
     "@mui/material": "^5.1.1",
     "idb-keyval": "^6.0.3",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "moment-timezone": "^0.5.34",
     "preact": "^10.5.15",
     "preact-markdown": "^2.0.0",

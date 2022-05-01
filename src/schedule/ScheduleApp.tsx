@@ -36,13 +36,16 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
     container: {
         margin: 'auto',
         maxWidth: {
-            lg: kDesktopMaximumWidthPx,
+            md: kDesktopMaximumWidthPx,
         },
+        paddingRight: {
+            md: 2,
+        }
     },
     content: {
         flexGrow: 1,
         width: {
-            lg: `calc(100% - ${2 * kDesktopMenuWidthPx}px)`,
+            md: `calc(100% - ${2 * kDesktopMenuWidthPx}px)`,
         },
     },
     menuAndSpacing: {
@@ -52,7 +55,7 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
         minHeight: '100vh',
         paddingBottom: {
             xs: '48px',  // height of the mobile navigation bar
-            lg: '8px',  // single spacing
+            md: '8px',  // single spacing
         },
 
         backgroundColor: theme => {
@@ -199,7 +202,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
 
                     <Stack direction="row" sx={kStyles.container}>
 
-                        <Hidden lgDown>
+                        <Hidden mdDown>
                             <Box sx={kStyles.menuAndSpacing}>
                                 <DesktopNavigation active={navigationActiveOption}
                                                    badgeActiveEvents={12}
@@ -227,15 +230,9 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                             </Router>
                         </Box>
 
-                        <Hidden lgDown>
-                            <Box sx={kStyles.menuAndSpacing}>
-                                { /* deliberately empty */ }
-                            </Box>
-                        </Hidden>
-
                     </Stack>
 
-                    <Hidden lgUp>
+                    <Hidden mdUp>
                         <MobileNavigation active={navigationActiveOption}
                                           badgeActiveEvents={12}
                                           badgeActiveShifts={true}

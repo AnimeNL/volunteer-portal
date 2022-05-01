@@ -31,12 +31,12 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
     toolbar: {
         margin: 'auto',
 
-        paddingX: {
-            lg: `${kDesktopMenuWidthPx}px`,
+        paddingLeft: {
+            md: `${kDesktopMenuWidthPx}px`,
         },
 
         maxWidth: {
-            lg: `${kDesktopMaximumWidthPx}px`,
+            md: `${kDesktopMaximumWidthPx}px`,
         },
     },
 }

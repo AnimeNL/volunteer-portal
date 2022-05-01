@@ -49,7 +49,7 @@ export interface ApplicationBarProps {
 
 export function ApplicationBar(props: ApplicationBarProps) {
     return (
-        <AppBar position="static" sx={kStyles.container}>
+        <AppBar position="sticky" sx={kStyles.container}>
             <Toolbar sx={kStyles.toolbar}>
                 <Typography variant="h6" component="div" sx={kStyles.title}>
                     {props.title}

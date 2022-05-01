@@ -50,6 +50,11 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
     },
     root: {
         minHeight: '100vh',
+        paddingBottom: {
+            xs: '48px',  // height of the mobile navigation bar
+            lg: '8px',  // single spacing
+        },
+
         backgroundColor: theme => {
             return theme.palette.mode === 'light' ? '#F5F5F5'   // Gray 50
                                                   : '#212121';  // Gray 900

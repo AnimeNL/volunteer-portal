@@ -29,7 +29,7 @@
     "preact-markdown": "^2.1.0",
     "preact-render-to-string": "^5.1.19",
     "preact-router": "^4.0.1",
-    "react-avatar-editor": "^12.0.0",
+    "react-avatar-editor": "ruipserra/react-avatar-editor#react-18",
     "ts-loader": "^9.2.6"
   },
   "devDependencies": {

@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "AnimeCon Volunteer Portal",
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "cross-env NODE_OPTIONS='--openssl-legacy-provider' webpack --mode production",
     "build-api": "ts-json-schema-generator --path src/api/*.ts -j basic --additional-properties -o src/api/schema.json",
-    "serve": "cross-env REACT_APP_API_HOST=https://stewards.team webpack serve",
+    "serve": "cross-env NODE_OPTIONS='--openssl-legacy-provider' REACT_APP_API_HOST=https://stewards.team webpack serve",
     "test": "jest"
   },
   "author": "Peter Beverloo <peter@animecon.nl>",
@@ -17,8 +17,8 @@
   "homepage": "https://github.com/AnimeNL/volunteer-portal#readme",
   "sideEffects": false,
   "dependencies": {
-    "@emotion/react": "^11.9.0",
-    "@emotion/styled": "^11.8.1",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.6.2",
     "@mui/lab": "^5.0.0-alpha.79",
     "@mui/material": "^5.6.3",
@@ -29,7 +29,7 @@
     "preact-markdown": "^2.1.0",
     "preact-render-to-string": "^5.2.0",
     "preact-router": "^4.0.1",
-    "react-avatar-editor": "ruipserra/react-avatar-editor#react-18",
+    "react-avatar-editor": "^12.0.0",
     "ts-loader": "^9.3.0"
   },
   "devDependencies": {
@@ -38,6 +38,8 @@
     "@babel/preset-typescript": "^7.16.7",
     "@types/jest": "^27.4.1",
     "@types/react-avatar-editor": "^12.0.0",
+    "@types/react": "^17.0.39",
+    "@types/react-dom": "^17.0.11",
     "babel-loader": "^8.2.5",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^10.2.4",
@@ -49,6 +51,8 @@
     "jest-mock-console": "^1.2.3",
     "moment-locales-webpack-plugin": "^1.2.0",
     "moment-timezone-data-webpack-plugin": "^1.5.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "ts-jest": "^27.1.4",
     "ts-json-schema-generator": "^1.0.0",
     "typescript": "^4.6.4",

@@ -6,6 +6,7 @@ import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
 import { useState } from 'preact/compat';
 
+import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -14,12 +15,39 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import Paper from '@mui/material/Paper';
 import PersonIcon from '@mui/icons-material/Person';
+import Snackbar from '@mui/material/Snackbar';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 
 import { AppTitle } from '../../AppTitle';
 import { Event, EventVolunteer } from '../../base/Event';
+
+// Storage index (in localStorage) for the pinned team. This is a feature for power users who have
+// the ability to display multiple teams in the portal at once.
+const kPinnedTeamStorageKey = 'vp-pinned-team-index';
+
+// Function to get the pinned team's index. Wrapped in a try/catch for Safari behaviour.
+function getPinnedTeam(): number | null {
+    try {
+        const value = localStorage.getItem(kPinnedTeamStorageKey);
+        if (value !== null)
+            return parseInt(value, 10);
+    } catch (error) {}
+
+    return null;  // not found
+}
+
+// Function to set the pinned team's index. Wrapped in a try/catch for Safari behaviour, but also
+// for other browsers who throw an exception when the storage is full.
+function setPinnedTeam(index: null | number): void {
+    try {
+        if (index === null)
+            localStorage.removeItem(kPinnedTeamStorageKey);
+        else
+            localStorage.setItem(kPinnedTeamStorageKey, index.toString());
+    } catch (error) {}
+}
 
 // Returns whether the given |role| represents a senior volunteer.
 function isSenior(role?: string): boolean {
@@ -132,8 +160,6 @@ type VolunteerListViewProps = { event: Event, identifier: string };
 export function VolunteerListView(props: VolunteerListViewProps) {
     const { event, identifier } = props;
 
-    const [ selectedTabIndex, setSelectedTabIndex ] = useState(/* default tab= */ 0);
-
     const environments: Record<string, EventVolunteer[]> = {};
     for (const volunteer of event.volunteers()) {
         for (const environment of Object.keys(volunteer.environments)) {
@@ -170,6 +196,40 @@ export function VolunteerListView(props: VolunteerListViewProps) {
             );
 
         default:
+            // The tabbed view, used by most seniors and staff members, has additional functionality
+            // to optimise their journeys, given that they're likely to be power users.
+            //
+            // *** Pinned Environments
+            //
+            //    By double clicking (or tapping) the environment's tab, it will become "pinned"
+            //    and become the default environment for the VolunteerListView.
+            //
+            // Any changes to these settings will be communicated to the user through a snackbar.
+
+            const [ pinnedOpen, setPinnedOpen ] = useState(/* default= */ false);
+            const [ unpinnedOpen, setUnpinnedOpen ] = useState(/* default= */ false);
+
+            // Mutable by the togglePin() function for label display.
+            let pinnedTeam = getPinnedTeam();
+
+            function togglePin(index: number) {
+                if (getPinnedTeam() === index) {
+                    setUnpinnedOpen(true);
+                    setPinnedTeam(pinnedTeam = null);
+                } else {
+                    setPinnedOpen(true);
+                    setPinnedTeam(pinnedTeam = index);
+                }
+            }
+
+            // Validate the |pinnedTeam| storage option to make sure it exists and is within bounds.
+            const validatedPinnedTeam =
+                pinnedTeam === null || pinnedTeam < 0 || pinnedTeam >= environmentNames.length
+                    ? /* default value= */ 0
+                    : pinnedTeam;
+
+            const [ selectedTabIndex, setSelectedTabIndex ] = useState(validatedPinnedTeam);
+
             return (
                 <Fragment>
                     <AppTitle title="Volunteers" />
@@ -178,7 +238,13 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                           variant="fullWidth"
                           scrollButtons="auto">
 
-                        { environmentNames.map(name => <Tab label={name} />) }
+                        { environmentNames.map((name, index) => {
+                            const prefix = pinnedTeam === index ? '📌 ' : '';
+
+                            return <Tab onDoubleClick={_ => togglePin(index)}
+                                        label={prefix + name} />;
+
+                        }) }
 
                     </Tabs>
 
@@ -188,6 +254,18 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                                        identifier={identifier}
                                        value={selectedTabIndex}
                                        index={index} />) }
+
+                    <Snackbar autoHideDuration={2000} onClose={_ => setPinnedOpen(false)} open={pinnedOpen}>
+                        <Alert severity="success" variant="filled">
+                            Team has been pinned
+                        </Alert>
+                    </Snackbar>
+
+                    <Snackbar autoHideDuration={2000} onClose={_ => setUnpinnedOpen(false)} open={unpinnedOpen}>
+                        <Alert severity="info" variant="filled">
+                            Team has been unpinned
+                        </Alert>
+                    </Snackbar>
 
                 </Fragment>
             );

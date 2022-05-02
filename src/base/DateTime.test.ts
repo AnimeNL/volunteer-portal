@@ -88,4 +88,16 @@ describe('DateTime', () => {
         expect(localTime.format('date')).toEqual(DateTime.local().format('date'));
         expect(localTimeUtc.format('date')).toEqual(DateTime.utc().format('date'));
     });
+
+    it('has the ability to do basic operations on DateTime instances', () => {
+        const morning = DateTime.fromString('2022-06-10T08:00:00+01:00');
+        const afternoon = DateTime.fromString('2022-06-10T13:00:00+01:00');
+        const evening = DateTime.fromString('2022-06-10T20:00:00+01:00');
+        const night = DateTime.fromString('2022-06-11T00:00:00+01:00');
+
+        // isBefore
+        expect(morning.isBefore(afternoon)).toBeTruthy();
+        expect(evening.isBefore(afternoon)).toBeFalsy();
+        expect(morning.isBefore(morning)).toBeFalsy();
+    });
 });

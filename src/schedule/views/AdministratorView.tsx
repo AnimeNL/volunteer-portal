@@ -54,6 +54,8 @@ export function AdministratorView(props: AdministratorViewProps) {
     // ---------------------------------------------------------------------------------------------
 
     const [ dateOverrideDialogOpen, setDateOverrideDialogOpen ] = useState(false);
+
+    const [ dateOverrideValue, setDateOverrideValue ] = useState<DateTime>(DateTime.local());
     const [ dateOverrideLabel, setDateOverrideLabel ] = useState(
         DateTime.hasOverrideDiff() ? DateTime.local().format('full')
                                    : /* no override= */ '');
@@ -63,6 +65,7 @@ export function AdministratorView(props: AdministratorViewProps) {
 
         DateTime.setOverrideDiff(/* reset */);
         setDateOverrideLabel(/* reset */ '');
+        setDateOverrideValue(DateTime.local());
     }
 
     async function handleDateOverrideEditCommit(override: moment.Moment) {
@@ -75,6 +78,7 @@ export function AdministratorView(props: AdministratorViewProps) {
 
         DateTime.setOverrideDiff(diffMs);
         setDateOverrideLabel(DateTime.local().format('full'));
+        setDateOverrideValue(DateTime.local());
     }
 
     // Use a component-lifetime bounded timer to keep the date override updated.
@@ -82,7 +86,7 @@ export function AdministratorView(props: AdministratorViewProps) {
 
     useEffect(() => {
         interval.current = setInterval(() => {
-            if (DateTime.hasOverrideDiff())
+            if (DateTime.hasOverrideDiff() && !dateOverrideDialogOpen)
                 setDateOverrideLabel(DateTime.local().format('full'));
 
         }, 1000);
@@ -133,7 +137,7 @@ export function AdministratorView(props: AdministratorViewProps) {
                                         onAccept={value => handleDateOverrideEditCommit(value!)}
                                         onChange={value => /* discard */ 0}
                                         onClose={() => setDateOverrideDialogOpen(false)}
-                                        value={DateTime.local().moment()}
+                                        value={dateOverrideValue.moment()}
                                         renderInput={ ({ inputRef, ...other }) =>
                                             <IconButton onClick={() => setDateOverrideDialogOpen(true)}
                                                         aria-label="edit" ref={inputRef!}>

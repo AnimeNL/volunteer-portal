@@ -4,10 +4,12 @@
 
 import { Component, h } from 'preact';
 import { Router, RouterOnChangeArgs, Route } from 'preact-router';
+import { get as kvGet } from 'idb-keyval';
 
 import { AppContext, IAppContext } from './AppContext';
 import { AppError } from './AppError';
 import { ContentImpl } from './base/ContentImpl';
+import { DateTime, kDateOverrideStorageKey } from './base/DateTime';
 import { EnvironmentImpl } from './base/EnvironmentImpl';
 import { EventImpl } from './base/EventImpl';
 import { Invalidatable } from './base/Invalidatable';
@@ -62,11 +64,15 @@ export class App extends Component<{}, AppState> implements Invalidatable {
     // Initializes the main application state. This is an asynchronous process that may include
     // several network fetches. Generally this is not encouraged.
     async componentWillMount() {
-        const [ contentInitialized, environmentInitialized, _ ] = await Promise.all([
+        const [ contentInitialized, environmentInitialized, _, timeOverrideMs ] = await Promise.all([
             this.content.initialize(),
             this.environment.initialize(),
             this.user.initialize(),
+            kvGet(kDateOverrideStorageKey),
         ]);
+
+        if (timeOverrideMs)
+            DateTime.setOverrideDiff(timeOverrideMs);
 
         if (!environmentInitialized) {
             this.setState({ error: `Unable to initialize the portal's environment.` });

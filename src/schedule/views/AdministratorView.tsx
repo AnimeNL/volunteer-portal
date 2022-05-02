@@ -2,18 +2,30 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { Fragment, h } from 'preact';
+import { h } from 'preact';
+import { useEffect, useRef, useState } from 'preact/compat';
 
+import { del as kvDelete, set as kvSet } from 'idb-keyval';
+import moment from 'moment-timezone';
+
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import Paper from '@mui/material/Paper';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 
 import { AppTitle } from '../../AppTitle';
+import { DateTime, kDateOverrideStorageKey } from '../../base/DateTime';
 import { ScheduleApp } from '../ScheduleApp';
 import { SubTitle } from '../components/SubTitle';
 
@@ -37,13 +49,49 @@ export function AdministratorView(props: AdministratorViewProps) {
         app.setDarkMode(checked);
     }
 
-    // TODO: Behaviour
-    // TODO: Date & time overrides
+    // ---------------------------------------------------------------------------------------------
+    // Behaviour change handlers
+    // ---------------------------------------------------------------------------------------------
+
+    const [ dateOverrideDialogOpen, setDateOverrideDialogOpen ] = useState(false);
+    const [ dateOverrideLabel, setDateOverrideLabel ] = useState(
+        DateTime.hasOverrideDiff() ? DateTime.local().format('full')
+                                   : /* no override= */ '');
+
+    async function handleDateOverrideDelete() {
+        await kvDelete(kDateOverrideStorageKey);
+
+        DateTime.setOverrideDiff(/* reset */);
+        setDateOverrideLabel(/* reset */ '');
+    }
+
+    async function handleDateOverrideEditCommit(override: moment.Moment) {
+        const overrideMoment = override.startOf('minute');
+        const diffMs = overrideMoment.diff(moment(), 'ms');
+
+        await kvSet(kDateOverrideStorageKey, diffMs);
+
+        DateTime.setOverrideDiff(diffMs);
+        setDateOverrideLabel(DateTime.local().format('full'));
+    }
+
+    // Use a component-lifetime bounded timer to keep the date override updated.
+    const interval = useRef<NodeJS.Timeout | null>();
+
+    useEffect(() => {
+        interval.current = setInterval(() => {
+            if (DateTime.hasOverrideDiff())
+                setDateOverrideLabel(DateTime.local().format('full'));
+
+        }, 1000);
+
+        return () => clearInterval(interval.current!);
+    }, []);
 
     // ---------------------------------------------------------------------------------------------
 
     return (
-        <Fragment>
+        <LocalizationProvider dateAdapter={AdapterMoment} dateLibInstance={moment}>
             <AppTitle title="Administrator Tools" />
             <Paper elevation={2} sx={{ p: 2, marginTop: { lg: 2 } }}>
                 <Typography variant="body1">
@@ -67,17 +115,32 @@ export function AdministratorView(props: AdministratorViewProps) {
                 </List>
             </Paper>
             <SubTitle>Behaviour</SubTitle>
-            <Paper elevation={2} sx={{ p: 2 }}>
-                <Typography variant="body1">
-                    <em>Behaviour options go here.</em>
-                </Typography>
+            <Paper elevation={2} sx={{ px: 2 }}>
+                <List>
+                    <ListItem>
+                        <ListItemIcon>
+                            <AccessTimeIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Date &amp; time override"
+                                      secondary={dateOverrideLabel} />
+                        { !!dateOverrideLabel &&
+                            <IconButton aria-label="delete" onClick={_ => handleDateOverrideDelete()}>
+                                <DeleteIcon />
+                            </IconButton> }
+                        <DateTimePicker open={dateOverrideDialogOpen}
+                                        onAccept={value => handleDateOverrideEditCommit(value!)}
+                                        onChange={value => /* discard */ 0}
+                                        onClose={() => setDateOverrideDialogOpen(false)}
+                                        value={DateTime.local().moment()}
+                                        renderInput={ ({ inputRef, ...other }) =>
+                                            <IconButton onClick={() => setDateOverrideDialogOpen(true)}
+                                                        aria-label="edit" ref={inputRef!}>
+                                                <EditIcon />
+                                            </IconButton> as any }>
+                        </DateTimePicker>
+                    </ListItem>
+                </List>
             </Paper>
-            <SubTitle>Date &amp; time overrides</SubTitle>
-            <Paper elevation={2} sx={{ p: 2 }}>
-                <Typography variant="body1">
-                    <em>Date and time options go here.</em>
-                </Typography>
-            </Paper>
-        </Fragment>
+        </LocalizationProvider>
     );
 }

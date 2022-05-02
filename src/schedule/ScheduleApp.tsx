@@ -44,6 +44,7 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
     },
     content: {
         flexGrow: 1,
+        maxWidth: '100%',
         width: {
             md: `calc(100% - ${2 * kDesktopMenuWidthPx}px)`,
         },
@@ -219,8 +220,8 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                     <Route path="/schedule/:identifier/admin/" component={AdministratorView} app={this} /> }
 
                                 <Route path="/schedule/:identifier/events/:area/:location/" component={EventListView} />
-                                <Route path="/schedule/:identifier/events/:area/" component={LocationListView} />
-                                <Route path="/schedule/:identifier/events/" component={ActiveEventsView} />
+                                <Route path="/schedule/:identifier/events/:area/" component={LocationListView} event={event} />
+                                <Route path="/schedule/:identifier/events/" component={ActiveEventsView} event={event} />
                                 <Route path="/schedule/:identifier/search/:query*" component={SearchResultsView} />
                                 <Route path="/schedule/:identifier/shifts/" component={VolunteerView} event={event} />
                                 <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/" component={VolunteerView} event={event} />

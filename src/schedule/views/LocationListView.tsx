@@ -15,12 +15,12 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
-import ListItem from '@mui/material/ListItem';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import { SxProps, Theme } from '@mui/system';
 import { lighten } from '@mui/material/styles';
 
@@ -58,14 +58,14 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
 // Properties available for the <EventListItem> component.
 interface EventListItemProps {
     /**
-     * Whether the event list item is currently in progress.
+     * The date & time for which the entry is being displayed.
      */
-    active?: boolean;
+    dateTime: DateTime;
 
     /**
-     * Whether the event list item has happened in the past.
+     * The event for which the line item is being rendered. Needed to make it linkable.
      */
-    past?: boolean;
+    event: Event;
 
     /**
      * The session for which the event list entry is being drawn.
@@ -77,17 +77,32 @@ interface EventListItemProps {
 // |props|. The session can have a lifetime state (active, in the past), and it will be considered
 // whether the event is hidden, thus not visible to regular visitors.
 function EventListItem(props: EventListItemProps) {
-    const { active, past, session } = props;
+    const { dateTime, event, session } = props;
+
+    const past = session.endTime.isBefore(dateTime);
+    const active = !past && session.startTime.isBefore(dateTime);
+
     const { hidden } = session.event;
 
+    function navigateToEvent() {
+        route(`/schedule/${event.identifier}/event/${session.event.identifier}/`);
+    }
+
     return (
-        <ListItem sx={sx(
+        <ListItemButton onClick={navigateToEvent} sx={sx(
             { condition: !!active, sx: kStyles.eventActive },
             { condition: !!past, sx: kStyles.eventPast })}>
 
             <ListItemText primary={session.name} />
 
-        </ListItem>
+            <ListItemSecondaryAction>
+                <Typography variant="body2">
+                    { active && dateTime.formatUntil(session.endTime) }
+                    { !active && !past && dateTime.formatUntil(session.startTime, /* prefix= */ '') }
+                </Typography>
+            </ListItemSecondaryAction>
+
+        </ListItemButton>
     );
 }
 
@@ -164,10 +179,10 @@ function LocationListEntry(props: LocationListEntryProps) {
                 { (activeSessions.length || upcomingSessions.length) &&
                     <List dense disablePadding>
                         { activeSessions.map(session =>
-                            <EventListItem active session={session} /> )}
+                            <EventListItem dateTime={dateTime} event={event} session={session} /> )}
 
                         { slicedUpcomingSessions.map(session =>
-                            <EventListItem session={session} /> )}
+                            <EventListItem dateTime={dateTime} event={event} session={session} /> )}
                     </List> }
 
             </CardContent>

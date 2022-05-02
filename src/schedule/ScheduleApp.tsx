@@ -22,6 +22,7 @@ import { NavigationActiveOptions } from './components/Navigation';
 import { ActiveEventsView } from './views/ActiveEventsView';
 import { AdministratorView } from './views/AdministratorView';
 import { EventListView } from './views/EventListView';
+import { EventView } from './views/EventView';
 import { LocationListView } from './views/LocationListView';
 import { OverviewView } from './views/OverviewView';
 import { SearchResultsView } from './views/SearchResultsView';
@@ -99,6 +100,7 @@ interface ScheduleAppState {
 //     /schedule/:event/events/                   ActiveEventsView
 //     /schedule/:event/events/:area/             LocationListView
 //     /schedule/:event/events/:area/:location/   EventListView
+//     /schedule/:event/event/:identifier/        EventView
 //     /schedule/:event/search/:query             SearchResultsView
 //     /schedule/:event/shifts/                   VolunteerView
 //     /schedule/:event/volunteers/               VolunteerListView
@@ -222,6 +224,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                 <Route path="/schedule/:identifier/events/:area/:location/" component={EventListView} />
                                 <Route path="/schedule/:identifier/events/:area/" component={LocationListView} event={event} />
                                 <Route path="/schedule/:identifier/events/" component={ActiveEventsView} event={event} />
+                                <Route path="/schedule/:identifier/event/:eventIdentifier/" component={EventView} event={event} />
                                 <Route path="/schedule/:identifier/search/:query*" component={SearchResultsView} />
                                 <Route path="/schedule/:identifier/shifts/" component={VolunteerView} event={event} />
                                 <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/" component={VolunteerView} event={event} />

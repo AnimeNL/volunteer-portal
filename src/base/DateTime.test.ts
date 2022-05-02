@@ -100,4 +100,24 @@ describe('DateTime', () => {
         expect(evening.isBefore(afternoon)).toBeFalsy();
         expect(morning.isBefore(morning)).toBeFalsy();
     });
+
+    it('has the ability to create textual representations of distances', () => {
+        DateTime.setDefaultTimezone('Europe/Amsterdam');
+
+        // formatUntil
+        {
+            const afternoon = DateTime.fromString('2022-06-10T13:00:00+02:00');
+            const evening = DateTime.fromString('2022-06-10T20:15:00+02:00');
+            const tomorrow = DateTime.fromString('2022-06-11T18:00:00+02:00');
+            const christmas = DateTime.fromString('2022-12-25T12:00:00+02:00');
+
+            expect(afternoon.formatUntil(evening)).toEqual('until 20:15');
+            expect(afternoon.formatUntil(tomorrow)).toEqual('until Sat, 18:00');
+            expect(afternoon.formatUntil(christmas)).toEqual('until Dec 25th');
+
+            expect(afternoon.formatUntil(afternoon)).toEqual('now');
+
+            expect(christmas.formatUntil(afternoon)).toEqual('in the past');
+        }
+    });
 });

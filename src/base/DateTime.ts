@@ -142,6 +142,30 @@ export class DateTime {
     }
 
     /**
+     * Formats the time it will take for |this| to reach |that|, as a string. Will deal gracefully
+     * with longer periods of time, e.g. far into the future.
+     */
+    formatUntil(that: DateTime, prefix: string = 'until '): string {
+        const distanceHours = that.#moment.diff(this.#moment, 'hours');
+        if (distanceHours < 0)
+            return 'in the past';
+
+        if (!distanceHours && that.#moment.diff(this.#moment, 'minutes') < 1)
+            return 'now';
+
+        if (distanceHours <= 24) {
+            const nextMorning = this.#moment.clone().endOf('day').add(6, 'hours');
+            if (that.#moment.isBefore(nextMorning))
+                return prefix + that.#moment.format('HH:mm');
+        }
+
+        if (distanceHours <= 144)
+            return prefix + that.#moment.format('ddd, HH:mm')
+
+        return prefix + that.#moment.format('MMM Do');
+    }
+
+    /**
      * Returns whether |this| is before |that|.
      */
     isBefore(that: DateTime): boolean {

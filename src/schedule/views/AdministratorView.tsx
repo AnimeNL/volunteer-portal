@@ -66,8 +66,10 @@ export function AdministratorView(props: AdministratorViewProps) {
     }
 
     async function handleDateOverrideEditCommit(override: moment.Moment) {
+        const currentMoment = moment.tz(DateTime.getDefaultTimezone());
         const overrideMoment = override.startOf('minute');
-        const diffMs = overrideMoment.diff(moment(), 'ms');
+
+        const diffMs = overrideMoment.diff(currentMoment, 'ms');
 
         await kvSet(kDateOverrideStorageKey, diffMs);
 

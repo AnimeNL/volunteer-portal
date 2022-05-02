@@ -47,6 +47,13 @@ export class DateTime {
     // ---------------------------------------------------------------------------------------------
 
     /**
+     * Returns the default timezone for which times in the application should be vended.
+     */
+    static getDefaultTimezone(): string {
+        return defaultTimezone;
+    }
+
+    /**
      * Sets the default timezone for which times in the application should be vended. This overrides
      * the concept of a local timestamp, aligning it with the given |timezone|. Existing instances
      * will not be adjusted when this method is called.

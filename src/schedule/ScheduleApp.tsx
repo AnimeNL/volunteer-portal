@@ -221,7 +221,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                 { user.isAdministrator() &&
                                     <Route path="/schedule/:identifier/admin/" component={AdministratorView} app={this} /> }
 
-                                <Route path="/schedule/:identifier/events/:area/:location/" component={EventListView} />
+                                <Route path="/schedule/:identifier/events/:area/:location/" component={EventListView} event={event} />
                                 <Route path="/schedule/:identifier/events/:area/" component={LocationListView} event={event} />
                                 <Route path="/schedule/:identifier/events/" component={ActiveEventsView} event={event} />
                                 <Route path="/schedule/:identifier/event/:eventIdentifier/" component={EventView} event={event} />

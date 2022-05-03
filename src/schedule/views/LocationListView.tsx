@@ -16,7 +16,6 @@ import List from '@mui/material/List';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import Stack from '@mui/material/Stack';
 import { SxProps, Theme } from '@mui/system';
-import { lighten } from '@mui/material/styles';
 
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';

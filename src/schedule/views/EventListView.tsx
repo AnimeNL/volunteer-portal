@@ -109,7 +109,8 @@ export function EventListView(props: EventListViewProps) {
                                 { sessions.map(session =>
                                     <EventListItem dateTime={dateTime}
                                                    event={event}
-                                                   session={session} /> )}
+                                                   session={session}
+                                                   timeDisplay="absolute" /> )}
                             </List>
                         </Paper>
                     </Fragment>

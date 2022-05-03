@@ -109,11 +109,11 @@ function LocationListEntry(props: LocationListEntryProps) {
 
                 { (activeSessions.length || upcomingSessions.length) &&
                     <List dense disablePadding>
-                        { activeSessions.map(session =>
-                            <EventListItem dateTime={dateTime} event={event} session={session} /> )}
-
-                        { slicedUpcomingSessions.map(session =>
-                            <EventListItem dateTime={dateTime} event={event} session={session} /> )}
+                        { [ ...activeSessions, ...slicedUpcomingSessions].map(session =>
+                            <EventListItem dateTime={dateTime}
+                                           event={event}
+                                           session={session}
+                                           timeDisplay="relative" /> )}
                     </List> }
 
             </CardContent>

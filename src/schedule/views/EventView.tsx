@@ -4,6 +4,7 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
+import { useState } from 'preact/hooks';
 
 import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
@@ -15,7 +16,10 @@ import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { SxProps, Theme } from '@mui/system';
 
 import { AppTitle } from '../../AppTitle';
+import { DateTime } from '../../base/DateTime';
 import { Event } from '../../base/Event';
+import { EventListItem } from '../components/EventListItem';
+import { SubTitle } from '../components/SubTitle';
 
 // CSS customizations applied to the <EventListView>.
 const kStyles: { [key: string]: SxProps<Theme> } = {
@@ -48,37 +52,50 @@ export interface EventViewProps {
 // between those frequently. The event's location is one of the most important pieces of information
 // to surface on this page.
 export function EventView(props: EventViewProps) {
-    const { eventIdentifier } = props;
+    const { event, eventIdentifier } = props;
 
     // Validate that the |eventIdentifier| is valid on the passed Event so that we can find the
     // appropriate information. If not, route the user back to the overview page.
-    const event = props.event.event(eventIdentifier);
-    if (!event) {
-        route(`/schedule/${props.event.identifier}/`);
+    const info = event.event(eventIdentifier);
+    if (!info) {
+        route(`/schedule/${event.identifier}/`);
         return <></>;
     }
 
+    const [ dateTime, setDateTime ] = useState(DateTime.local());
+    // TODO: Subscribe to an effect for propagating event schedule updates.
+
+    // TODO: Chronologically sort the event's sessions?
     // TODO: Allow events to be favourited for display on the overview page.
     // TODO: Allow events to come with notes and instructions for volunteers.
-    // TODO: Display sessions associated with this event.
     // TODO: Display volunteering shifts associated with this event.
     // TODO: Should we enable linking to a map with the location information?
 
     return (
         <Fragment>
-            <AppTitle title={event.sessions[0].name} />
+            <AppTitle title={info.sessions[0].name} />
             <Paper elevation={2} sx={{ maxWidth: '100vw', marginTop: { lg: 2 } }}>
                 <List>
                     <ListItem>
                         <ListItemAvatar>
-                            <Avatar alt={event.sessions[0].name}>
+                            <Avatar alt={info.sessions[0].name}>
                                 <ReadMoreIcon />
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
-                                      primary={event.sessions[0].name}
-                                      secondary={event.sessions[0].location.name} />
+                                      primary={info.sessions[0].name}
+                                      secondary={info.sessions[0].location.name} />
                     </ListItem>
+                </List>
+            </Paper>
+            <SubTitle>Sessions</SubTitle>
+            <Paper>
+                <List disablePadding>
+                    { info.sessions.map(session =>
+                        <EventListItem dateTime={dateTime}
+                                       event={event}
+                                       session={session}
+                                       timeDisplay="absolute" /> )}
                 </List>
             </Paper>
         </Fragment>

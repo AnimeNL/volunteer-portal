@@ -6,8 +6,6 @@ import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
 import { useState } from 'preact/hooks';
 
-import sx from 'mui-sx';
-
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Card from '@mui/material/Card';
@@ -15,18 +13,15 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import ListItemText from '@mui/material/ListItemText';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { SxProps, Theme } from '@mui/system';
 import { lighten } from '@mui/material/styles';
 
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
-import { Event, EventLocation, EventSession } from '../../base/Event';
+import { Event, EventLocation } from '../../base/Event';
+import { EventListItem } from '../components/EventListItem';
 import { Link } from '../../Link';
 
 // Maximum number of upcoming sessions that will be displayed on the location page.
@@ -41,70 +36,7 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
             minWidth: 0,
         },
     },
-
-    eventActive: {
-        backgroundColor: theme => lighten(theme.palette.success.light, .9),
-    },
-
-    eventHidden: {
-        color: 'gray',
-    },
-
-    eventPast: {
-        backgroundColor: ''
-    },
 };
-
-// Properties available for the <EventListItem> component.
-interface EventListItemProps {
-    /**
-     * The date & time for which the entry is being displayed.
-     */
-    dateTime: DateTime;
-
-    /**
-     * The event for which the line item is being rendered. Needed to make it linkable.
-     */
-    event: Event;
-
-    /**
-     * The session for which the event list entry is being drawn.
-     */
-    session: EventSession;
-}
-
-// The <EventListItem> component displays a list item for a particular event session, given in the
-// |props|. The session can have a lifetime state (active, in the past), and it will be considered
-// whether the event is hidden, thus not visible to regular visitors.
-function EventListItem(props: EventListItemProps) {
-    const { dateTime, event, session } = props;
-
-    const past = session.endTime.isBefore(dateTime);
-    const active = !past && session.startTime.isBefore(dateTime);
-
-    const { hidden } = session.event;
-
-    function navigateToEvent() {
-        route(`/schedule/${event.identifier}/event/${session.event.identifier}/`);
-    }
-
-    return (
-        <ListItemButton onClick={navigateToEvent} sx={sx(
-            { condition: !!active, sx: kStyles.eventActive },
-            { condition: !!past, sx: kStyles.eventPast })}>
-
-            <ListItemText primary={session.name} />
-
-            <ListItemSecondaryAction>
-                <Typography variant="body2">
-                    { active && dateTime.formatUntil(session.endTime) }
-                    { !active && !past && dateTime.formatUntil(session.startTime, /* prefix= */ '') }
-                </Typography>
-            </ListItemSecondaryAction>
-
-        </ListItemButton>
-    );
-}
 
 // Properties available for the <LocationListEntry> component.
 interface LocationListEntryProps {

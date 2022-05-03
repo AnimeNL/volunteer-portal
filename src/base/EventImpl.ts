@@ -37,6 +37,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     #sessions?: IntervalTree<EventSessionImpl>;
 
     #areas: Map<string, EventAreaImpl> = new Map();
+    #events: Map<string, EventInfoImpl> = new Map();
     #locations: Map<string, EventLocationImpl> = new Map();
     #volunteers: Map<string, EventVolunteerImpl> = new Map();
 
@@ -121,6 +122,8 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
                 sessions.push(session);
             }
 
+            this.#events.set(instance.identifier, instance);
+
             finalizationQueue.push(instance);
         }
 
@@ -170,6 +173,14 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
         const queryTime = time ?? DateTime.local();
 
         return this.#sessions.query({ point: queryTime.unix() });
+    }
+
+    event(identifier: string): EventInfo | undefined {
+        return this.#events.get(identifier);
+    }
+
+    events(): IterableIterator<EventInfo> {
+        return this.#events.values();
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -42,6 +42,16 @@ export interface Event {
      */
     findActiveSessions(time?: DateTime): EventSession[];
 
+    /**
+     * Returns the event identified by the given |identifier|, or undefined when it does not exist.
+     */
+    event(identifier: string): EventInfo | undefined;
+
+    /**
+     * Returns an iterator with all the events that exist within the event.
+     */
+    events(): IterableIterator<EventInfo>;
+
     // ---------------------------------------------------------------------------------------------
     // Location API
     // ---------------------------------------------------------------------------------------------

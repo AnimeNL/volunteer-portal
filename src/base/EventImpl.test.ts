@@ -112,6 +112,9 @@ describe('EventImpl', () => {
         expect(event.area('identifier')).toBeUndefined();
         expect([ ...event.areas() ]).toHaveLength(0);
 
+        expect(event.event('identifier')).toBeUndefined();
+        expect([ ...event.events() ]).toHaveLength(0);
+
         expect(event.location('identifier')).toBeUndefined();
         expect([ ...event.locations() ]).toHaveLength(0);
 
@@ -220,6 +223,13 @@ describe('EventImpl', () => {
         expect(sessions).toHaveLength(2);
         expect(sessions[0]).toStrictEqual(circularDance);
         expect(sessions[1]).toStrictEqual(triangularDance);
+
+        expect([ ...event.events() ]).toHaveLength(2);
+        expect(event.event('invalid-identifier')).toBeUndefined();
+        expect(event.event('34567')).not.toBeUndefined();
+
+        expect(event.event('34567')?.sessions).toHaveLength(1);
+        expect(event.event('34567')?.sessions[0].name).toEqual('Triangular Dance');
     });
 
     it('should reflect the volunteer information of a valid event from the network', async () => {

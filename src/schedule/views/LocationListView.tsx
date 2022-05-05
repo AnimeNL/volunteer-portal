@@ -4,7 +4,7 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -19,7 +19,7 @@ import { SxProps, Theme } from '@mui/system';
 
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
-import { Event, EventLocation } from '../../base/Event';
+import { Event, EventLocation, EventSession } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
 import { Link } from '../../Link';
 
@@ -40,6 +40,11 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
 // Properties available for the <LocationListEntry> component.
 interface LocationListEntryProps {
     /**
+     * Unique identifier of the area, through which the URL of the event list can be composed.
+     */
+    areaIdentifier: string;
+
+    /**
      * The date & time for which the entry is being displayed.
      */
     dateTime: DateTime;
@@ -50,50 +55,37 @@ interface LocationListEntryProps {
     event: Event;
 
     /**
-     * The location for which the entry is being displayed.
+     * Name of the location that's to be shown.
      */
-    location: EventLocation;
+    name: string;
+
+    /**
+     * Unique identifier of the location, through which the URL of the event list can be composed.
+     */
+    identifier: string;
+
+    /**
+     * The sessions that should be shown for this entry. No ordering is assumed or cared about by
+     * this component, they will be displayed as given.
+     */
+    sessions: EventSession[];
 }
 
 // The <LocationListEntry> component is responsible for displaying the sessions that are active and
 // coming up in a particular location, if any. It'll display itself as a card.
 function LocationListEntry(props: LocationListEntryProps) {
-    const { dateTime, event, location } = props;
-    const { area } = location;
-
-    // TODO: Make it possible to favourite locations & stick them to the Overview page.
-    // TODO: Active sessions should be sorted in a way that it's easy to consume the information.
+    const { areaIdentifier, dateTime, event, name, identifier, sessions } = props;
 
     // The URL in which the full location's programme can be seen. This also happens to be the base
     // URL for any event sessions that take place in this location.
-    const url = `/schedule/${event.identifier}/events/${area.identifier}/${location.identifier}/`;
-
-    // Identify the events which are active in this location right now (they're always displayed),
-    // and the 3 upcoming events, which will be displayed when there's space.
-    const activeSessions = [];
-    const upcomingSessions = [];
-
-    for (const session of location.sessions) {
-        if (session.endTime.isBefore(dateTime))
-            continue;  // the |session| is in the past
-
-        if (session.startTime.isBefore(dateTime))
-            activeSessions.push(session);
-        else if (upcomingSessions.length < kMaximumUpcomingSessions)
-            upcomingSessions.push(session);
-    }
-
-    // Limit the number of upcoming sessions that will be shown when there are |activeSessions| in
-    // this particular location, as future events likely are less informative in that case.
-    const slicedUpcomingSessions =
-        upcomingSessions.slice(0, Math.max(kMaximumUpcomingSessions - activeSessions.length, 0));
+    const url = `/schedule/${event.identifier}/events/${areaIdentifier}/${identifier}/`;
 
     return (
         <Card>
             <Link href={url} sx={{ color: 'initial', textDecoration: 'initial' }}>
                 <CardHeader avatar={<ReadMoreIcon />}
                             sx={kStyles.locationHeader}
-                            title={location.name}
+                            title={name}
                             titleTypographyProps={{
                                 fontWeight: 'normal',
                                 noWrap: true,
@@ -102,14 +94,14 @@ function LocationListEntry(props: LocationListEntryProps) {
             </Link>
             <Divider />
             <CardContent sx={{ px: 0, '&:last-child': { p: 0 } }}>
-                { !activeSessions.length && !upcomingSessions.length &&
+                { !sessions.length &&
                     <Alert severity="warning">
                         No further events have been scheduled.
                     </Alert> }
 
-                { (activeSessions.length > 0 || upcomingSessions.length > 0) &&
+                { sessions.length > 0 &&
                     <List dense disablePadding>
-                        { [ ...activeSessions, ...slicedUpcomingSessions].map(session =>
+                        { sessions.map(session =>
                             <EventListItem dateTime={dateTime}
                                            event={event}
                                            session={session}
@@ -146,24 +138,86 @@ export function LocationListView(props: LocationListViewProps) {
         return <></>;
     }
 
-    // TODO: Sort idle locations to the bottom of the list?
-
     const [ dateTime, setDateTime ] = useState(DateTime.local());
     // TODO: Subscribe to an effect for propagating event schedule updates.
+
+    // TODO: Make it possible to favourite locations & stick them to the Overview page.
+
+    type LocationInfo = { location: EventLocation, sessions: EventSession[] };
+
+    // Compile a list of all the locations that are part of this area. Memoization is used because
+    // we iterate over the values and do a bunch of mutations and ordering changes, which will only
+    // change when the |dateTime| is updated, likely triggered by program updates.
+    const locations: LocationInfo[] = useMemo(() => {
+        const unsortedLocations: LocationInfo[] = [];
+
+        for (const location of area.locations) {
+            const active = [];
+            const upcoming = [];
+
+            for (const session of location.sessions) {
+                if (session.endTime.isBefore(dateTime))
+                    continue;  // the |session| is in the past
+
+                if (session.startTime.isBefore(dateTime))
+                    active.push(session);
+                else if (upcoming.length < kMaximumUpcomingSessions)
+                    upcoming.push(session);
+            }
+
+            // Sort the |active| sessions based on the time at which they'll finish. The alternative
+            // would be to sort them just by name, but it's not clear that's more useful.
+            active.sort((lhs, rhs) => {
+                if (lhs.endTime.isBefore(rhs.endTime))
+                    return -1;
+                if (rhs.endTime.isBefore(lhs.endTime))
+                    return 1;
+
+                return lhs.name.localeCompare(rhs.name);
+            });
+
+            // Limit the number of upcoming sessions to show when there are |active| in this
+            // particular location, as future events likely are less informative in that case.
+            const slicedUpcomingSessions =
+                upcoming.slice(0, Math.max(kMaximumUpcomingSessions - active.length, 0));
+
+             unsortedLocations.push({
+                location,
+                sessions: [ ...active, ...slicedUpcomingSessions ]
+            });
+        }
+
+        // Now sort the |unsortedLocations| and return the value. Default sort order is by name,
+        // but an exception applies for locations without sessions, which are moved down the list.
+        return unsortedLocations.sort((lhs, rhs) => {
+            if (lhs.sessions.length && !rhs.sessions.length)
+                return -1;
+            if (!lhs.sessions.length && rhs.sessions.length)
+                return 1;
+
+            return lhs.location.name.localeCompare(rhs.location.name);
+        });
+
+    }, [ props.area, dateTime ]);
 
     return (
         <Fragment>
             <AppTitle title={area.name} />
             <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
-                { !area.locations.length &&
+                { !locations.length &&
                     <Alert elevation={1} severity="warning">
                         <AlertTitle>Nothing to see here…</AlertTitle>
                         The locations that are part of <strong>{area.name}</strong> haven't been
                         announced yet—please check again later!
                     </Alert> }
 
-                { area.locations.length && area.locations.map(location =>
-                    <LocationListEntry dateTime={dateTime} event={event} location={location} /> )}
+                { locations.length > 0 && locations.map(({ location, sessions }) =>
+                    <LocationListEntry areaIdentifier={location.area.identifier}
+                                       dateTime={dateTime}
+                                       event={event}
+                                       name={location.name}
+                                       identifier={location.identifier}
+                                       sessions={sessions} /> )}
             </Stack>
         </Fragment>
     );

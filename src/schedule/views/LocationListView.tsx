@@ -107,7 +107,7 @@ function LocationListEntry(props: LocationListEntryProps) {
                         No further events have been scheduled.
                     </Alert> }
 
-                { (activeSessions.length || upcomingSessions.length) &&
+                { (activeSessions.length > 0 || upcomingSessions.length > 0) &&
                     <List dense disablePadding>
                         { [ ...activeSessions, ...slicedUpcomingSessions].map(session =>
                             <EventListItem dateTime={dateTime}

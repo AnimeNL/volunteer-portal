@@ -165,12 +165,14 @@ export function LocationListView(props: LocationListViewProps) {
                     upcoming.push(session);
             }
 
-            // Sort the |active| sessions based on the time at which they'll finish. The alternative
-            // would be to sort them just by name, but it's not clear that's more useful.
+            // Sort the |active| sessions based on the time at which they've started. This is a
+            // chronological order which works for most locations, but isn't ideal for locations
+            // with a lot of active events, where an alphabetized order might work better. However,
+            // that would create an unstable event order, which affects predictability.
             active.sort((lhs, rhs) => {
-                if (lhs.endTime.isBefore(rhs.endTime))
+                if (lhs.startTime.isBefore(rhs.startTime))
                     return -1;
-                if (rhs.endTime.isBefore(lhs.endTime))
+                if (rhs.startTime.isBefore(lhs.startTime))
                     return 1;
 
                 return lhs.name.localeCompare(rhs.name);

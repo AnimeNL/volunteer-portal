@@ -65,21 +65,78 @@ export function EventListView(props: EventListViewProps) {
         return <></>;
     }
 
-    // Compile a list of sessions that take place in this |location|, grouped by day.
-    const sessionDays: Record<string, EventSession[]> = {};
+    const [ dateTime, setDateTime ] = useState(DateTime.local());
+    // TODO: Subscribe to an effect for propagating event schedule updates.
+
+    type SessionInfo = { endPast: boolean; startPast: boolean; session: EventSession };
+    type DailySessionInfo = { remainingEvents: boolean; sessions: SessionInfo[] };
+
+    // Compile a list of the sessions that take place in this |location|. This is done in several
+    // steps, to create a display order most useful for those looking at it during the convention.
+    //
+    // First, we group all the location.|session|s based on the day that they take place. Record
+    // whether this day in its entirety happened in the past.
+    //
+    // Then, as a second step, we iterate through all the days and sort the sessions within them.
+    // Active sessions are listed first, then pending sessions, then past sessions. Active sessions
+    // then are sorted by name, for quick look-up, particularly useful for the event rooms.
+    //
+    // Finally, we move days for which all events have finished to the bottom of the overview. While
+    // they're useful for historical context, they're likely not what the user is looking for.
+    const sessionsByDay: Record<string, DailySessionInfo> = {};
 
     for (const session of location.sessions) {
         const sessionDay = session.startTime.format('date');
-        if (sessionDays.hasOwnProperty(sessionDay))
-            sessionDays[sessionDay].push(session);
-        else
-            sessionDays[sessionDay] = [ session ];
+
+        if (!sessionsByDay.hasOwnProperty(sessionDay)) {
+            sessionsByDay[sessionDay] = {
+                remainingEvents: false,
+                sessions: [],
+            };
+        }
+
+        sessionsByDay[sessionDay].remainingEvents ||= dateTime.isBefore(session.endTime);
+        sessionsByDay[sessionDay].sessions.push({
+            endPast: session.endTime.isBefore(dateTime),
+            startPast: session.startTime.isBefore(dateTime),
+
+            session,
+        });
     }
 
-    // TODO: Move days in the past to the end of |sessionDays|.
+    for (const sessionDay in sessionsByDay) {
+        sessionsByDay[sessionDay].sessions.sort((lhs, rhs) => {
+            // (1) Move past events to the bottom of the list.
+            if (lhs.endPast && !rhs.endPast)
+                return 1;
+            if (!lhs.endPast && rhs.endPast)
+                return -1;
 
-    const [ dateTime, setDateTime ] = useState(DateTime.local());
-    // TODO: Subscribe to an effect for propagating event schedule updates.
+            // (2) Move (or keep) active events to the top of the list.
+            if (lhs.startPast && !rhs.startPast)
+                return -1;
+            if (!lhs.startPast && rhs.startPast)
+                return 1;
+
+            // (3) Sort the active events based on the time at which they started.
+            if (lhs.session.startTime.isBefore(rhs.session.startTime))
+                return -1;
+            if (rhs.session.startTime.isBefore(lhs.session.startTime))
+                return 1;
+
+            // (4) Sort events sharing a timeslot alphabetically.
+            return lhs.session.name.localeCompare(rhs.session.name);
+        });
+    }
+
+    const dayOrder = Object.keys(sessionsByDay).sort((lhs, rhs) => {
+        if (sessionsByDay[lhs].remainingEvents && !sessionsByDay[rhs].remainingEvents)
+            return -1;
+        if (!sessionsByDay[lhs].remainingEvents && sessionsByDay[rhs].remainingEvents)
+            return 1;
+
+        return lhs.localeCompare(rhs);
+    });
 
     return (
         <Fragment>
@@ -98,15 +155,16 @@ export function EventListView(props: EventListViewProps) {
                     </ListItem>
                 </List>
             </Paper>
-            { Object.entries(sessionDays).map(([ date, sessions ]) => {
-                const header = sessions[0].startTime.format('day');
+            { dayOrder.map(dayLabel => {
+                const { remainingEvents, sessions } = sessionsByDay[dayLabel];
+                const header = sessions[0].session.startTime.format('day');
 
                 return (
                     <Fragment>
-                        <SubTitle>{header}</SubTitle>
+                        <SubTitle>{header} { !remainingEvents && '✔' }</SubTitle>
                         <Paper>
                             <List disablePadding>
-                                { sessions.map(session =>
+                                { sessions.map(({ session }) =>
                                     <EventListItem dateTime={dateTime}
                                                    event={event}
                                                    session={session}

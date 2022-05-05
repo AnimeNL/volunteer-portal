@@ -175,6 +175,13 @@ export class DateTime {
     }
 
     /**
+     * Returns whether |this| represents the same time as |that|.
+     */
+    isSame(that: DateTime): boolean {
+        return this.#moment.isSame(that.#moment);
+    }
+
+    /**
      * Returns whether |this| is in UTC.
      */
     isUTC(): boolean { return this.#moment.isUTC(); }

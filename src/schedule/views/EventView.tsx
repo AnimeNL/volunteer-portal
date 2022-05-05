@@ -17,7 +17,7 @@ import { SxProps, Theme } from '@mui/system';
 
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
-import { Event } from '../../base/Event';
+import { Event, EventSession } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
 import { SubTitle } from '../components/SubTitle';
 
@@ -65,11 +65,24 @@ export function EventView(props: EventViewProps) {
     const [ dateTime, setDateTime ] = useState(DateTime.local());
     // TODO: Subscribe to an effect for propagating event schedule updates.
 
-    // TODO: Chronologically sort the event's sessions?
     // TODO: Allow events to be favourited for display on the overview page.
     // TODO: Allow events to come with notes and instructions for volunteers.
     // TODO: Display volunteering shifts associated with this event.
     // TODO: Should we enable linking to a map with the location information?
+
+    // Sort the list of sessions chronologically, with the exception that sessions which happened in
+    // the past will be moved to the bottom of the list, as they're no longer relevant.
+    const sessions = [ ...info.sessions ].sort((lhs, rhs) => {
+        if (lhs.endTime.isBefore(dateTime) && !rhs.endTime.isBefore(dateTime))
+            return 1;
+        if (!lhs.endTime.isBefore(dateTime) && rhs.endTime.isBefore(dateTime))
+            return -1;
+
+        if (lhs.startTime.isSame(rhs.startTime))
+            return 0;
+
+        return lhs.startTime.isBefore(rhs.startTime) ? -1 : 1;
+    });
 
     return (
         <Fragment>
@@ -91,7 +104,7 @@ export function EventView(props: EventViewProps) {
             <SubTitle>Sessions</SubTitle>
             <Paper>
                 <List disablePadding>
-                    { info.sessions.map(session =>
+                    { sessions.map(session =>
                         <EventListItem dateTime={dateTime}
                                        event={event}
                                        session={session}

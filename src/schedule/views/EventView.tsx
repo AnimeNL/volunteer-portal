@@ -17,8 +17,9 @@ import { SxProps, Theme } from '@mui/system';
 
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
-import { Event, EventSession } from '../../base/Event';
+import { Event } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
+import { Markdown } from '../components/Markdown';
 import { SubTitle } from '../components/SubTitle';
 
 // CSS customizations applied to the <EventListView>.
@@ -69,6 +70,7 @@ export function EventView(props: EventViewProps) {
     // TODO: Allow events to come with notes and instructions for volunteers.
     // TODO: Display volunteering shifts associated with this event.
     // TODO: Should we enable linking to a map with the location information?
+    // TODO: Enable the notes to be edited by seniors.
 
     // Sort the list of sessions chronologically, with the exception that sessions which happened in
     // the past will be moved to the bottom of the list, as they're no longer relevant.
@@ -101,6 +103,15 @@ export function EventView(props: EventViewProps) {
                     </ListItem>
                 </List>
             </Paper>
+
+            { info.notes &&
+                <Fragment>
+                    <SubTitle>Notes</SubTitle>
+                    <Paper elevation={2} sx={{ p: 2 }}>
+                        <Markdown content={info.notes} />
+                    </Paper>
+                </Fragment> }
+
             <SubTitle>Sessions</SubTitle>
             <Paper>
                 <List disablePadding>

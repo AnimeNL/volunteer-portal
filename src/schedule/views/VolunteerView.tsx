@@ -12,6 +12,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
+import Divider from '@mui/material/Divider';
+import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -31,6 +33,7 @@ import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
 import { AvatarEditor } from '../components/AvatarEditor';
 import { Event, EventVolunteer } from '../../base/Event';
+import { Markdown } from '../components/Markdown';
 import { SubTitle } from '../components/SubTitle';
 
 // Styles for the <VolunteerView> component. Used to highlight the sort of interactions that are
@@ -181,6 +184,15 @@ export function VolunteerView(props: VolunteerViewProps) {
                     <em>Shifts go here.</em>
                 </Typography>
             </Paper>
+
+            { volunteer.notes &&
+                <Fragment>
+                    <SubTitle>Notes</SubTitle>
+                    <Paper elevation={2} sx={{ p: 2 }}>
+                        <Markdown content={volunteer.notes} />
+                    </Paper>
+                </Fragment> }
+
             { volunteer.accessCode &&
                 <Dialog onClose={e => setAccessCodeVisible(false)}
                         open={accessCodeVisible}>

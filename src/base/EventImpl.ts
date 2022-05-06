@@ -278,11 +278,13 @@ class EventAreaImpl implements EventArea, Finalizer {
 class EventInfoImpl implements EventInfo, Finalizer {
     #identifier: string;
     #hidden: boolean;
+    #notes: string | undefined;
     #sessions: EventSession[];
 
     constructor(response: IEventResponseEvent) {
         this.#identifier = response.identifier;
         this.#hidden = response.hidden;
+        this.#notes = response.notes;
         this.#sessions = [];
     }
 
@@ -300,6 +302,7 @@ class EventInfoImpl implements EventInfo, Finalizer {
 
     get identifier() { return this.#identifier; }
     get hidden() { return this.#hidden; }
+    get notes() { return this.#notes; }
     get sessions() { return this.#sessions; }
 }
 
@@ -426,5 +429,6 @@ class EventVolunteerImpl implements EventVolunteer {
     get identifier() { return this.#response.identifier; }
     get accessCode() { return this.#response.accessCode; }
     get avatar() { return this.#uploadedAvatarUrl ?? this.#response.avatar; }
+    get notes() { return this.#response.notes; }
     get phoneNumber() { return this.#response.phoneNumber; }
 }

@@ -8,6 +8,7 @@ import type { IAvatar } from '../api/IAvatar';
 import type { IContent } from '../api/IContent';
 import type { IEnvironment } from '../api/IEnvironment';
 import type { IEvent } from '../api/IEvent';
+import type { INotes } from '../api/INotes';
 import type { IUser } from '../api/IUser';
 
 import type api from '../api/schema.json';
@@ -41,6 +42,7 @@ interface ApiTypeMapping {
     IContent: IContent;
     IEnvironment: IEnvironment;
     IEvent: IEvent;
+    INotes: INotes;
     IUser: IUser;
 }
 

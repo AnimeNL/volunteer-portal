@@ -103,6 +103,12 @@ export interface IEventResponseEvent {
     hidden: boolean;
 
     /**
+     * Notes that include an additional description or information specific to this event. The
+     * |notes| can be written using Markdown. Certain volunteers have the ability to amend notes.
+     */
+    notes?: string;
+
+    /**
      * One or more sessions during which this event will be taking place. Individual sessions can be
      * hosted in different locations, and, in some cases, may even have different names.
      *
@@ -213,6 +219,12 @@ export interface IEventResponseVolunteer {
      * recognizable, particularly helpful when there are hundreds of volunteers at the event.
      */
     avatar?: string;
+
+    /**
+     * Notes that include an additional description or information specific to this volunteer. The
+     * |notes| can be written using Markdown. Certain volunteers have the ability to amend notes.
+     */
+    notes?: string;
 
     /**
      * This volunteer's phone number. The server is expected to only share someone's phone number

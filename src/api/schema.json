@@ -410,6 +410,9 @@
         "identifier": {
           "type": "string"
         },
+        "notes": {
+          "type": "string"
+        },
         "sessions": {
           "items": {
             "$ref": "#/definitions/IEventResponseSession"
@@ -510,6 +513,9 @@
           "minItems": 2,
           "type": "array"
         },
+        "notes": {
+          "type": "string"
+        },
         "phoneNumber": {
           "type": "string"
         }
@@ -518,6 +524,58 @@
         "identifier",
         "name",
         "environments"
+      ],
+      "type": "object"
+    },
+    "INotes": {
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/INotesRequest"
+        },
+        "response": {
+          "$ref": "#/definitions/INotesResponse"
+        }
+      },
+      "required": [
+        "request",
+        "response"
+      ],
+      "type": "object"
+    },
+    "INotesRequest": {
+      "properties": {
+        "authToken": {
+          "type": "string"
+        },
+        "entityIdentifier": {
+          "type": "string"
+        },
+        "entityType": {
+          "$ref": "#/definitions/INotesRequestEntityType"
+        },
+        "update": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authToken",
+        "entityIdentifier",
+        "entityType"
+      ],
+      "type": "object"
+    },
+    "INotesRequestEntityType": {
+      "const": "event",
+      "type": "string"
+    },
+    "INotesResponse": {
+      "properties": {
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "notes"
       ],
       "type": "object"
     },

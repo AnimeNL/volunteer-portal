@@ -132,6 +132,11 @@ export interface EventInfo {
     readonly hidden: boolean;
 
     /**
+     * Notes specific to this event that should be displayed in the user interface.
+     */
+    readonly notes?: string;
+
+    /**
      * An array with the instances of this event that will be taking place. Sorted.
      */
     readonly sessions: EventSession[];
@@ -242,6 +247,11 @@ export interface EventVolunteer {
      * URL to the avatar image to use for the volunteer, if any.
      */
     readonly avatar?: string;
+
+    /**
+     * Notes specific to this volunteer that should be displayed in the user interface.
+     */
+    readonly notes?: string;
 
     /**
      * The phone number using which this volunteer can be contacted, if shared by the server.

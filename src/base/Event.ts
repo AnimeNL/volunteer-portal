@@ -250,9 +250,10 @@ export interface EventVolunteer {
     readonly avatar?: string;
 
     /**
-     * Notes specific to this volunteer that should be displayed in the user interface.
+     * Notes specific to this volunteer that should be displayed in the user interface. Notes can be
+     * updated by certain volunteers, thus this property is not read-only.
      */
-    readonly notes?: string;
+    notes?: string;
 
     /**
      * The phone number using which this volunteer can be contacted, if shared by the server.

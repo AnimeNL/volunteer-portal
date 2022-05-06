@@ -569,7 +569,10 @@
       "type": "object"
     },
     "INotesRequestEntityType": {
-      "const": "event",
+      "enum": [
+        "event",
+        "volunteer"
+      ],
       "type": "string"
     },
     "INotesResponse": {

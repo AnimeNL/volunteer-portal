@@ -56,4 +56,4 @@ export interface INotesResponse {
 /**
  * The type of entity for which notes should be requested or stored.
  */
-export type INotesRequestEntityType = 'event';
+export type INotesRequestEntityType = 'event' | 'volunteer';

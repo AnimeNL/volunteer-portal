@@ -7,12 +7,12 @@ import { route } from 'preact-router';
 import { useContext, useState } from 'preact/hooks';
 
 import Avatar from '@mui/material/Avatar';
-import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
+import NotesIcon from '@mui/icons-material/Notes';
 import Paper from '@mui/material/Paper';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { SxProps, Theme, lighten } from '@mui/system';
@@ -146,9 +146,9 @@ export function EventView(props: EventViewProps) {
 
                             { canUpdateNotes &&
                                     <IconButton onClick={() => setNoteEditorOpen(true)}
-                                                color="primary" size="large"
+                                                color="primary" size="medium"
                                                 sx={kStyles.actionButton}>
-                                        <EditIcon />
+                                        <NotesIcon />
                                     </IconButton> }
 
                     </ListItem>

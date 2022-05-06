@@ -12,13 +12,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import Divider from '@mui/material/Divider';
-import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
+import NotesIcon from '@mui/icons-material/Notes';
 import Paper from '@mui/material/Paper';
 import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -34,7 +33,9 @@ import { AppTitle } from '../../AppTitle';
 import { AvatarEditor } from '../components/AvatarEditor';
 import { Event, EventVolunteer } from '../../base/Event';
 import { Markdown } from '../components/Markdown';
+import { NotesEditor } from '../components/NotesEditor';
 import { SubTitle } from '../components/SubTitle';
+import { uploadNotes } from '../../base/Notes';
 
 // Styles for the <VolunteerView> component. Used to highlight the sort of interactions that are
 // possible on this page, which depends on the user's access level.
@@ -142,6 +143,30 @@ export function VolunteerView(props: VolunteerViewProps) {
         return success;
     }
 
+    // Whether the notes for this volunteer can be edited. This functionality is restricted to
+    // administrators and seniors, regardless of team.
+    const canEditNotes = user.isAdministrator() || isSeniorVolunteer(userVolunteer);
+
+    // Uploads the given |notes| after the user made a change in the notes editor. This initiates a
+    // network call, and may take an arbitrary amount of time to complete.
+    const [ noteEditorOpen, setNoteEditorOpen ] = useState<boolean>(false);
+
+    async function commitNoteEditor(notes: string) {
+        if (!volunteer)
+            return false;  // this will never happen, but TypeScript insists
+
+        try {
+            volunteer.notes =
+                await uploadNotes(user, event.identifier, 'volunteer', volunteer.identifier, notes);
+
+        } catch (error) {
+            console.error('Unable to upload the notes', error);
+            return false;
+        }
+
+        return true;
+    }
+
     // TODO: Show the sessions this volunteer will be participating in.
 
     return (
@@ -160,17 +185,25 @@ export function VolunteerView(props: VolunteerViewProps) {
                                       secondary={role} />
                         { (volunteer.accessCode || volunteer.phoneNumber) &&
                             <Stack direction="row" spacing={2}>
+                                { canEditNotes &&
+                                    <IconButton color="primary"
+                                                onClick={e => setNoteEditorOpen(true)}
+                                                size="medium"
+                                                sx={kStyles.actionButton}>
+                                        <NotesIcon />
+                                    </IconButton> }
+
                                 { volunteer.accessCode &&
                                     <IconButton color="primary"
                                                 onClick={e => setAccessCodeVisible(true)}
-                                                size="large"
+                                                size="medium"
                                                 sx={kStyles.actionButton}>
                                         <VpnKeyIcon />
                                     </IconButton> }
                                 { volunteer.phoneNumber &&
                                     <IconButton color="primary"
                                                 href={`tel:${volunteer.phoneNumber}`}
-                                                size="large"
+                                                size="medium"
                                                 sx={kStyles.actionButton}>
                                         <PhoneIcon />
                                     </IconButton> }
@@ -233,6 +266,12 @@ export function VolunteerView(props: VolunteerViewProps) {
                     </DialogContent>
 
                 </Dialog> }
+
+            { canEditNotes &&
+                <NotesEditor open={noteEditorOpen}
+                             notes={volunteer.notes}
+                             requestClose={() => setNoteEditorOpen(false)}
+                             requestSave={commitNoteEditor} /> }
 
         </Fragment>
     );

@@ -387,6 +387,7 @@ class EventSessionImpl implements EventSession, IntervalTreeNode {
  */
 class EventVolunteerImpl implements EventVolunteer {
     #eventIdentifier: string;
+    #notes: string | undefined;
     #response: IEventResponseVolunteer;
 
     // The avatar as it has been uploaded during this session, if any.
@@ -394,6 +395,7 @@ class EventVolunteerImpl implements EventVolunteer {
 
     constructor(eventIdentifier: string, response: IEventResponseVolunteer) {
         this.#eventIdentifier = eventIdentifier;
+        this.#notes = response.notes;
         this.#response = response;
     }
 
@@ -430,6 +432,7 @@ class EventVolunteerImpl implements EventVolunteer {
     get identifier() { return this.#response.identifier; }
     get accessCode() { return this.#response.accessCode; }
     get avatar() { return this.#uploadedAvatarUrl ?? this.#response.avatar; }
-    get notes() { return this.#response.notes; }
+    set notes(value: string | undefined) { this.#notes = value; }
+    get notes() { return this.#notes; }
     get phoneNumber() { return this.#response.phoneNumber; }
 }

@@ -23,10 +23,11 @@ import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
 import SmsIcon from '@mui/icons-material/Sms';
 import Stack from '@mui/material/Stack';
-import { SystemStyleObject, Theme, lighten } from '@mui/system';
+import { SystemStyleObject, Theme, lighten, useTheme } from '@mui/system';
 import Typography from '@mui/material/Typography';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
@@ -35,6 +36,7 @@ import { Event, EventVolunteer } from '../../base/Event';
 import { Markdown } from '../components/Markdown';
 import { NotesEditor } from '../components/NotesEditor';
 import { SubTitle } from '../components/SubTitle';
+import { firstName } from '../../base/NameUtilities';
 import { uploadNotes } from '../../base/Notes';
 
 // Styles for the <VolunteerView> component. Used to highlight the sort of interactions that are
@@ -167,6 +169,12 @@ export function VolunteerView(props: VolunteerViewProps) {
         return true;
     }
 
+    // Only display the volunteer's first name on mobile devices in the interest of space, as senior
+    // volunteers will have a whole slew of buttons on the right-hand side of their identification.
+    const theme = useTheme();
+    const title = useMediaQuery(theme.breakpoints.up('sm')) ? volunteer.name
+                                                            : firstName(volunteer.name);
+
     // TODO: Show the sessions this volunteer will be participating in.
 
     return (
@@ -181,7 +189,7 @@ export function VolunteerView(props: VolunteerViewProps) {
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
-                                      primary={volunteer.name}
+                                      primary={title}
                                       secondary={role} />
                         { (volunteer.accessCode || volunteer.phoneNumber) &&
                             <Stack direction="row" spacing={2}>

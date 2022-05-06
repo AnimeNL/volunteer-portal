@@ -553,12 +553,16 @@
         "entityType": {
           "$ref": "#/definitions/INotesRequestEntityType"
         },
+        "event": {
+          "type": "string"
+        },
         "update": {
           "type": "string"
         }
       },
       "required": [
         "authToken",
+        "event",
         "entityIdentifier",
         "entityType"
       ],

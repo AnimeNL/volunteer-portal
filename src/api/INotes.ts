@@ -22,6 +22,11 @@ export interface INotesRequest {
     authToken: string;
 
     /**
+     * The event for which notes are being considered. Will be included as a GET parameter.
+     */
+    event: string;
+
+    /**
      * Identifier of the entity for which notes should be considered.
      */
     entityIdentifier: string;

@@ -132,9 +132,10 @@ export interface EventInfo {
     readonly hidden: boolean;
 
     /**
-     * Notes specific to this event that should be displayed in the user interface.
+     * Notes specific to this event that should be displayed in the user interface. This property is
+     * writable as senior volunteers are able to push updates in real time.
      */
-    readonly notes?: string;
+    notes?: string;
 
     /**
      * An array with the instances of this event that will be taking place. Sorted.

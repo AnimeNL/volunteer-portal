@@ -12,12 +12,14 @@ import type { User } from './User';
 // be updated. No mechanisms are in place for dealing with uploads whilst the device is offline;
 // instead, such requests are expected to fail.
 export async function uploadNotes(user: User,
+                                  event: string,
                                   type: INotesRequestEntityType,
                                   identifier: string,
                                   notes: string): Promise<string> {
   const request = new ApiRequest('INotes');
   const response = await request.issue({
     authToken: user.authToken,
+    event,
     entityIdentifier: identifier,
     entityType: type,
     update: notes,

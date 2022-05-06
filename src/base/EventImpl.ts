@@ -302,6 +302,7 @@ class EventInfoImpl implements EventInfo, Finalizer {
 
     get identifier() { return this.#identifier; }
     get hidden() { return this.#hidden; }
+    set notes(value: string | undefined) { this.#notes = value; }
     get notes() { return this.#notes; }
     get sessions() { return this.#sessions; }
 }

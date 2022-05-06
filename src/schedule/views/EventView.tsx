@@ -4,26 +4,39 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useState } from 'preact/hooks';
+import { useContext, useState } from 'preact/hooks';
 
 import Avatar from '@mui/material/Avatar';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import Paper from '@mui/material/Paper';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
-import { SxProps, Theme } from '@mui/system';
+import { SxProps, Theme, lighten } from '@mui/system';
 
+import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
 import { Event } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
 import { Markdown } from '../components/Markdown';
+import { NotesEditor } from '../components/NotesEditor';
 import { SubTitle } from '../components/SubTitle';
+import { uploadNotes } from '../../base/Notes';
 
 // CSS customizations applied to the <EventListView>.
 const kStyles: { [key: string]: SxProps<Theme> } = {
+    actionButton: {
+        backgroundColor: theme => lighten(theme.palette.primary.main, .96),
+        '&:hover': {
+            '@media (hover: none)': {
+                backgroundColor: theme => lighten(theme.palette.primary.main, .96),
+            },
+        }
+    },
     nameTypography: {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -54,6 +67,7 @@ export interface EventViewProps {
 // to surface on this page.
 export function EventView(props: EventViewProps) {
     const { event, eventIdentifier } = props;
+    const { user } = useContext(AppContext);
 
     // Validate that the |eventIdentifier| is valid on the passed Event so that we can find the
     // appropriate information. If not, route the user back to the overview page.
@@ -70,7 +84,36 @@ export function EventView(props: EventViewProps) {
     // TODO: Allow events to come with notes and instructions for volunteers.
     // TODO: Display volunteering shifts associated with this event.
     // TODO: Should we enable linking to a map with the location information?
-    // TODO: Enable the notes to be edited by seniors.
+    // TODO: Figure out what to do with the following:
+    let canUpdateNotes = true;
+
+    // ---------------------------------------------------------------------------------------------
+    // Note editing functionality for seniors.
+    // ---------------------------------------------------------------------------------------------
+
+    const [ noteEditorOpen, setNoteEditorOpen ] = useState<boolean>(false);
+
+    // Uploads the given |notes| after the user made a change in the notes editor. This initiates a
+    // network call, and may take an arbitrary amount of time to complete.
+    async function commitNoteEditor(notes: string) {
+        if (!info)
+            return false;  // this will never happen, but TypeScript insists
+
+        try {
+            info.notes =
+                await uploadNotes(user, event.identifier, 'event', info.identifier, notes);
+
+        } catch (error) {
+            console.error('Unable to upload the notes', error);
+            return false;
+        }
+
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Determining the session display order.
+    // ---------------------------------------------------------------------------------------------
 
     // Sort the list of sessions chronologically, with the exception that sessions which happened in
     // the past will be moved to the bottom of the list, as they're no longer relevant.
@@ -100,6 +143,14 @@ export function EventView(props: EventViewProps) {
                         <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
                                       primary={info.sessions[0].name}
                                       secondary={info.sessions[0].location.name} />
+
+                            { canUpdateNotes &&
+                                    <IconButton onClick={() => setNoteEditorOpen(true)}
+                                                color="primary" size="large"
+                                                sx={kStyles.actionButton}>
+                                        <EditIcon />
+                                    </IconButton> }
+
                     </ListItem>
                 </List>
             </Paper>
@@ -122,6 +173,13 @@ export function EventView(props: EventViewProps) {
                                        timeDisplay="absolute" /> )}
                 </List>
             </Paper>
+
+            { canUpdateNotes &&
+                <NotesEditor open={noteEditorOpen}
+                             notes={info.notes}
+                             requestClose={() => setNoteEditorOpen(false)}
+                             requestSave={commitNoteEditor} /> }
+
         </Fragment>
     );
 }

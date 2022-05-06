@@ -12,12 +12,12 @@ import { Link } from '../../Link';
 
 // CSS customizations applied to the <Markdown> component.
 const kContainerStyles: SxProps<Theme> = {
-    '& p': {
+    '& ol, p, ul': {
         marginTop: 0,
     },
-    '& p:last-child': {
+    '& :last-child': {
         marginBottom: 0,
-    }
+    },
 };
 
 // Properties accepted by the <Markdown> component.

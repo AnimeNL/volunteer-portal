@@ -34,12 +34,12 @@ describe('Notes', () => {
 
         expect(user.authenticated).toBeTruthy();
 
-        mockFetch.mockOnceIf('/api/notes?authToken=my-token', async request => ({
+        mockFetch.mockOnceIf('/api/notes?authToken=my-token&event=2022', async request => ({
             body: JSON.stringify({ notes: await request.text() }),
             status: 200,
         }));
 
-        const notes = await uploadNotes(user, 'event', 'my-event-id', 'hello, world!');
+        const notes = await uploadNotes(user, '2022', 'event', 'my-event-id', 'hello, world!');
 
         // No, this isn't what's being uploaded. This is a change detector test to identify when we
         // can actually test this, depending on NodeJS implementing and supporting FormData.
@@ -56,13 +56,13 @@ describe('Notes', () => {
 
         expect(user.authenticated).toBeTruthy();
 
-        mockFetch.mockOnceIf('/api/notes?authToken=my-token', async request => ({
+        mockFetch.mockOnceIf('/api/notes?authToken=my-token&event=2022', async request => ({
             status: 404,
         }));
 
         let thrown = false;
         try {
-            const notes = await uploadNotes(user, 'event', 'my-event-id', 'hello, world!');
+            const notes = await uploadNotes(user, '2022', 'event', 'my-event-id', 'hello, world!');
         } catch (error) {
             thrown = true;
         }

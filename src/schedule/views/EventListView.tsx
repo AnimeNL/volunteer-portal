@@ -84,6 +84,7 @@ export function EventListView(props: EventListViewProps) {
     // Finally, we move days for which all events have finished to the bottom of the overview. While
     // they're useful for historical context, they're likely not what the user is looking for.
     const sessionsByDay: Record<string, DailySessionInfo> = {};
+    const eventSet = new Set();
 
     for (const session of location.sessions) {
         const sessionDay = session.startTime.format('date');
@@ -95,6 +96,8 @@ export function EventListView(props: EventListViewProps) {
             };
         }
 
+        eventSet.add(session.event.identifier);
+
         sessionsByDay[sessionDay].remainingEvents ||= dateTime.isBefore(session.endTime);
         sessionsByDay[sessionDay].sessions.push({
             endPast: session.endTime.isBefore(dateTime),
@@ -102,6 +105,14 @@ export function EventListView(props: EventListViewProps) {
 
             session,
         });
+    }
+
+    // There is an optimization we support here: if this location is only used for a single event
+    // (with any number of sessions), we forward the user to the event page instead. This removes a
+    // bit of redundancy for locations such as changing rooms, which are rather stationary as is.
+    if (eventSet.size === 1) {
+        route(`/schedule/${event.identifier}/event/${location.sessions[0].event.identifier}/`, true);
+        return <></>;
     }
 
     for (const sessionDay in sessionsByDay) {

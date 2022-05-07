@@ -48,9 +48,14 @@ export interface INotesRequest {
  */
 export interface INotesResponse {
     /**
-     * The notes as they have been stored on the server.
+     * The error message as to why the note couldn't be stored iff the request failed.
      */
-    notes: string;
+    error?: string;
+
+    /**
+     * The notes as they have been stored on the server iff the request was successful.
+     */
+    notes?: string;
 }
 
 /**

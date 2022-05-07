@@ -39,11 +39,12 @@ describe('Notes', () => {
             status: 200,
         }));
 
-        const notes = await uploadNotes(user, '2022', 'event', 'my-event-id', 'hello, world!');
+        const result = await uploadNotes(user, '2022', 'event', 'my-event-id', 'hello, world!');
 
         // No, this isn't what's being uploaded. This is a change detector test to identify when we
         // can actually test this, depending on NodeJS implementing and supporting FormData.
-        expect(notes).toEqual('[object FormData]');
+        expect(result.error).toBeUndefined();
+        expect(result.notes).toEqual('[object FormData]');
     });
 
     it('should be able to throw an exception on server failure', async () => {
@@ -62,7 +63,7 @@ describe('Notes', () => {
 
         let thrown = false;
         try {
-            const notes = await uploadNotes(user, '2022', 'event', 'my-event-id', 'hello, world!');
+            const result = await uploadNotes(user, '2022', 'event', 'my-event-id', 'hello, world!');
         } catch (error) {
             thrown = true;
         }

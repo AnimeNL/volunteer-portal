@@ -5,20 +5,16 @@
 import { h } from 'preact';
 import { useState } from 'preact/compat';
 
+import Alert from '@mui/material/Alert';
+import Collapse from '@mui/material/Collapse';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import { styled } from '@mui/material/styles';
 
 // Properties accepted by the <NotesEditor> component.
 export interface NotesEditorProps {
@@ -32,8 +28,9 @@ export interface NotesEditorProps {
     // Callback that should be called when the editor is being closed.
     requestClose: () => void;
 
-    // Callback that should be called when the editor is requesting a save.
-    requestSave: (notes: string) => Promise<boolean>;
+    // Callback that should be called when the editor is requesting a save. An error message is
+    // required to be given when the request was unsuccessful.
+    requestSave: (notes: string) => Promise<true | { error: string }>;
 }
 
 // The notes editor allows privileged users to amend the notes for events, volunteers and other
@@ -52,19 +49,19 @@ export function NotesEditor(props: NotesEditorProps) {
     // Called when the Save button has been clicked. This is an asynchronous process as the new
     // contents have to be sent to the server, and stored in a database there. Errors can occur, as
     // this functionality relies on having an active and working internet connection.
-    const [ saveError, setSaveError ] = useState(false);
+    const [ saveError, setSaveError ] = useState<string>();
     const [ saving, setSaving ] = useState(false);
 
     async function processSave() {
-        setSaveError(false);
+        setSaveError(undefined);
         setSaving(true);
 
-        const success = await requestSave(currentNotes || '');
-
-        setSaveError(!success);
+        const result = await requestSave(currentNotes || '');
         setSaving(false);
 
-        if (success)
+        if (result !== true)
+            setSaveError(result.error);
+        else
             requestClose();
     }
 
@@ -75,7 +72,7 @@ export function NotesEditor(props: NotesEditorProps) {
             return;
 
         requestClose();
-        setSaveError(false);
+        setSaveError(undefined);
     }
 
     return (
@@ -93,10 +90,17 @@ export function NotesEditor(props: NotesEditorProps) {
                            placeholder="Notes…"
                            onChange={handleChange}
                            value={currentNotes} />
+
+                <Collapse in={!!saveError}>
+                    <Alert severity="error" sx={{ mt: 2 }}>
+                        {saveError}
+                    </Alert>
+                </Collapse>
+
             </DialogContent>
             <DialogActions sx={{ paddingBottom: 2, paddingRight: 3 }}>
                 <LoadingButton variant="contained"
-                               color={ saveError ? "error" : "primary" }
+                               color={ !!saveError ? "error" : "primary" }
                                loading={saving}
                                loadingPosition="start"
                                startIcon={ <CloudUploadIcon /> }

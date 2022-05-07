@@ -155,18 +155,21 @@ export function VolunteerView(props: VolunteerViewProps) {
 
     async function commitNoteEditor(notes: string) {
         if (!volunteer)
-            return false;  // this will never happen, but TypeScript insists
+            return { error: 'Component has been detached' };
 
         try {
-            volunteer.notes =
+            const result =
                 await uploadNotes(user, event.identifier, 'volunteer', volunteer.identifier, notes);
 
-        } catch (error) {
-            console.error('Unable to upload the notes', error);
-            return false;
-        }
+            if (!!result.error)
+                return { error: result.error };
 
-        return true;
+            volunteer.notes = result.notes;
+            return true;
+
+        } catch (error) {
+            return { error: 'Unable to upload the notes: ' + error };
+        }
     }
 
     // Only display the volunteer's first name on mobile devices in the interest of space, as senior

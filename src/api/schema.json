@@ -577,13 +577,13 @@
     },
     "INotesResponse": {
       "properties": {
+        "error": {
+          "type": "string"
+        },
         "notes": {
           "type": "string"
         }
       },
-      "required": [
-        "notes"
-      ],
       "type": "object"
     },
     "IUser": {

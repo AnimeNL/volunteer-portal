@@ -91,24 +91,27 @@ export function EventView(props: EventViewProps) {
     // Note editing functionality for seniors.
     // ---------------------------------------------------------------------------------------------
 
-    const [ noteEditorOpen, setNoteEditorOpen ] = useState<boolean>(false);
+    const [ noteEditorOpen, setNoteEditorOpen ] = useState<boolean>(true);
 
     // Uploads the given |notes| after the user made a change in the notes editor. This initiates a
     // network call, and may take an arbitrary amount of time to complete.
     async function commitNoteEditor(notes: string) {
         if (!info)
-            return false;  // this will never happen, but TypeScript insists
+            return { error: 'Component has been detached' };
 
         try {
-            info.notes =
+            const result =
                 await uploadNotes(user, event.identifier, 'event', info.identifier, notes);
 
-        } catch (error) {
-            console.error('Unable to upload the notes', error);
-            return false;
-        }
+            if (result.error)
+                return { error: result.error };
 
-        return true;
+            info.notes = result.notes;
+            return true;
+
+        } catch (error) {
+            return { error: 'Unable to upload the notes: ' + error };
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

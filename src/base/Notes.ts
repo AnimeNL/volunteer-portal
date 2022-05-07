@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import type { INotesRequestEntityType } from '../api/INotes';
+import type { INotesRequestEntityType, INotesResponse } from '../api/INotes';
 
 import { ApiRequest } from './ApiRequest';
 import type { User } from './User';
@@ -15,7 +15,7 @@ export async function uploadNotes(user: User,
                                   event: string,
                                   type: INotesRequestEntityType,
                                   identifier: string,
-                                  notes: string): Promise<string> {
+                                  notes: string): Promise<INotesResponse> {
   const request = new ApiRequest('INotes');
   const response = await request.issue({
     authToken: user.authToken,
@@ -25,5 +25,5 @@ export async function uploadNotes(user: User,
     update: notes,
   });
 
-  return response.notes;
+  return response;
 }

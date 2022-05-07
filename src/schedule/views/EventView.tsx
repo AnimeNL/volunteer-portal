@@ -91,7 +91,7 @@ export function EventView(props: EventViewProps) {
     // Note editing functionality for seniors.
     // ---------------------------------------------------------------------------------------------
 
-    const [ noteEditorOpen, setNoteEditorOpen ] = useState<boolean>(true);
+    const [ noteEditorOpen, setNoteEditorOpen ] = useState<boolean>(false);
 
     // Uploads the given |notes| after the user made a change in the notes editor. This initiates a
     // network call, and may take an arbitrary amount of time to complete.

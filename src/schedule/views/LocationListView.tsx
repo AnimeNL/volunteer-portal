@@ -83,10 +83,11 @@ function LocationListEntry(props: LocationListEntryProps) {
     return (
         <Card>
             <Link href={url} sx={{ color: 'initial', textDecoration: 'initial' }}>
-                <CardHeader avatar={<ReadMoreIcon />}
+                <CardHeader avatar={<ReadMoreIcon color="primary" />}
                             sx={kStyles.locationHeader}
                             title={name}
                             titleTypographyProps={{
+                                color: 'primary',
                                 fontWeight: 'normal',
                                 noWrap: true,
                                 variant: 'h6'

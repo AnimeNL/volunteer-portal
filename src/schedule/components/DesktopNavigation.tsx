@@ -144,7 +144,8 @@ export function DesktopNavigation(props: NavigationProps) {
                             <ListItemIcon>
                                 {option.icon}
                             </ListItemIcon>
-                            <ListItemText primary={option.label} />
+                            <ListItemText primary={option.label}
+                                          primaryTypographyProps={{ color: "text.secondary" }} />
                             {option.badge}
                         </ListItemButton>
                         { option.id === 'events' &&
@@ -155,7 +156,8 @@ export function DesktopNavigation(props: NavigationProps) {
                                         <ListItemIcon>
                                             <ArrowRightIcon />
                                         </ListItemIcon>
-                                        <ListItemText primary={area.name} />
+                                        <ListItemText primary={area.name}
+                                                      primaryTypographyProps={{ color: "text.secondary" }} />
                                     </ListItemButton>) }
                             </List> }
                     </Fragment>) }

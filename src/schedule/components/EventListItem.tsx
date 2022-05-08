@@ -16,7 +16,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import grey from '@mui/material/colors/grey';
-import { lighten } from '@mui/material/styles';
+import { darken, lighten } from '@mui/material/styles';
 
 import { DateTime } from '../../base/DateTime';
 import { Event, EventSession } from '../../base/Event';
@@ -27,11 +27,22 @@ type EventLifecycleState = 'finished' | 'active' | 'default';
 // CSS customizations applied to the <EventListItem> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
     eventActive: {
-        backgroundColor: theme => lighten(theme.palette.success.light, .9),
+        backgroundColor: theme => {
+            return theme.palette.mode === 'dark' ? darken(/* green[900]= */ '#1B5E20', .1)
+                                                 : lighten(theme.palette.success.light, .9);
+        },
     },
 
     eventPast: {
-        backgroundColor: grey[300],
+        backgroundColor: theme => {
+            return theme.palette.mode === 'dark' ? lighten(grey[900], .01)
+                                                 : grey[300];
+        },
+
+        color: theme => {
+            return theme.palette.mode === 'dark' ? grey[600]
+                                                 : theme.palette.common.black;
+        },
     },
 
     nameTypography: {

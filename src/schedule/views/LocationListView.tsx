@@ -10,32 +10,19 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import Stack from '@mui/material/Stack';
-import { SxProps, Theme } from '@mui/system';
 
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
 import { Event, EventLocation, EventSession } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
-import { Link } from '../../Link';
+import { LocationHeader } from '../components/LocationHeader';
 
 // Maximum number of upcoming sessions that will be displayed on the location page.
 const kMaximumUpcomingSessions = 3;
-
-// CSS customizations applied to the <LocationListView> and <LocationListEntry> components.
-const kStyles: { [key: string]: SxProps<Theme> } = {
-    locationHeader: {
-        py: 1,
-
-        '& .MuiCardHeader-content': {
-            minWidth: 0,
-        },
-    },
-};
 
 // Properties available for the <LocationListEntry> component.
 interface LocationListEntryProps {
@@ -82,17 +69,9 @@ function LocationListEntry(props: LocationListEntryProps) {
 
     return (
         <Card>
-            <Link href={url} sx={{ color: 'initial', textDecoration: 'initial' }}>
-                <CardHeader avatar={<ReadMoreIcon color="primary" />}
-                            sx={kStyles.locationHeader}
+            <LocationHeader icon={<ReadMoreIcon color="primary" />}
                             title={name}
-                            titleTypographyProps={{
-                                color: 'primary',
-                                fontWeight: 'normal',
-                                noWrap: true,
-                                variant: 'h6'
-                            }} />
-            </Link>
+                            url={url} />
             <Divider />
             <CardContent sx={{ px: 0, '&:last-child': { p: 0 } }}>
                 { !sessions.length &&

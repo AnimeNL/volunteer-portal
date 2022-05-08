@@ -10,6 +10,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
+import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import Stack from '@mui/material/Stack';
 
 import { AppTitle } from '../../AppTitle';
@@ -36,7 +37,7 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
 
     // Find all the active sessions. We work our way backwards to areas for this view as we're able
     // to use the interval tree here, which is not the case for the location-specific views.
-    const sortedAreas = useMemo(() => {
+    const [ sortedAreas, activeSessionLength ] = useMemo(() => {
         const activeSessions = useMemo(() => event.findActiveSessions(dateTime), [ dateTime ]);
         const activeAreas = new Map<EventArea, EventSession[]>();
 
@@ -57,26 +58,25 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
             };
         });
 
-        // (3) Sort the list of sessions for each area.
+        // (3) Sort the list of sessions for each area. We sort them based on the event name on this
+        // page, in ascending order, to allow the user to quickly seek through the list.
         for (let areaIndex = 0; areaIndex < populatedAreas.length; ++areaIndex) {
             populatedAreas[areaIndex].sessions.sort((lhs, rhs) => {
-                // TODO: How to sort?
-                return 0;
+                return lhs.name.localeCompare(rhs.name);
             });
         }
 
-        return populatedAreas;
+        return [ populatedAreas, activeSessions.length ];
 
     }, [ dateTime ]);
 
     return (
         <Fragment>
             <AppTitle title="Active events" />
-            { !sortedAreas.length &&
+            { !activeSessionLength &&
                 <Alert elevation={1} severity="warning" sx={{ mt: { xs: 0, lg: 2 } }}>
                     <AlertTitle>Nothing to see here…</AlertTitle>
                     None of the <strong>{event.name}</strong> events are currently in progress.
-                    Has the festival started yet, or worse, has finished?
                 </Alert> }
 
             <Stack spacing={2} mt={2}>
@@ -85,7 +85,9 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
                     return (
                         <Fragment>
                         <Card>
-                            <LocationHeader title={area.name} url={url} />
+                            <LocationHeader icon={ <MapsHomeWorkIcon color="primary" /> }
+                                            title={area.name}
+                                            url={url} />
                             { sessions.length > 0 &&
                                 <Fragment>
                                     <Divider />
@@ -99,9 +101,7 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
                                 </Fragment> }
                             </Card>
                         </Fragment>
-
                     );
-
                 }) }
             </Stack>
         </Fragment>

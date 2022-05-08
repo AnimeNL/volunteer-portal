@@ -2,18 +2,18 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
 
 import sx from 'mui-sx';
 
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import { SxProps, Theme } from '@mui/system';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import grey from '@mui/material/colors/grey';
 import { lighten } from '@mui/material/styles';
 
@@ -48,6 +48,11 @@ interface EventListItemProps {
     event: Event;
 
     /**
+     * Whether to skip highlighting visibility of this event, in case other UI is used.
+     */
+    noVisibilityHighlight?: boolean;
+
+    /**
      * The session for which the event list entry is being drawn.
      */
     session: EventSession;
@@ -75,27 +80,33 @@ interface EventListItemProps {
 // By default, a <EventListItem> is a regular <ListItem> that displays the event's name. This can
 // then be iterated on by passing one or multiple additional props:
 //
-//   dateTime       Enables customized rendering for events that happened in the past, are currently
-//                  active, or are still pending. The first will be displayed in a smaller, grey
-//                  manner, whereas active events will be highlighted in green.
+//   dateTime               Enables customized rendering for events that happened in the past, are
+//                          active, or are still pending. The first will be displayed in a smaller
+//                          manner, whereas active events will be highlighted in green.
 //
-//   event          Enables the user to click on this component to link through to the session's
-//                  information page. This is an awful manner to indicate linkability, but hey ho.
+//   event                  Enables the user to click on this component to link through to the
+//                          session's page. This is an awful manner to indicate linkability..
 //
-//   timeDisplay    Controls display of the time on the right-hand side of the event's row. When
-//                  included, it can either be shown as absolute times (i.e. duration) or relative
-//                  to the |dateTime| passed to this component.
+//   noVisibilityHighlight  Whether to skip highlighting reduced visibility of this event, to enable
+//                          more targetted UI in another part of the interface.
+//
+//   timeDisplay            Controls display of the time on the right-hand side of the event's row.
+//                          When included, it can either be shown as absolute times (i.e. duration)
+//                          or relative to the |dateTime| passed to this component.
 //
 // TODO: Use <ListItem> rather than <ListItemButton> when |event| is not set.
 // TODO: Consider a nicer mechanism for routing rather than having to pass |event|.
 // TODO: Colour usage in this component should be Dark Mode-aware.
-// TODO: The "hidden" icon looks appaling, make it look a little bit nicer.
 export function EventListItem(props: EventListItemProps) {
     const { dateTime, event, session, timeDisplay } = props;
 
     function navigateToEvent() {
         route(`/schedule/${event.identifier}/event/${session.event.identifier}/`);
     }
+
+    // Whether to highlight that this is an event that's not visible to visitors. Volunteers need
+    // additional information to do their job, such as when to participate in area build-ups.
+    const highlightHiddenEvent = session.event.hidden && !props.noVisibilityHighlight;
 
     // Decide the lifetime of the |event| if |dateTime| has been given, otherwise fall back to the
     // default (also pending) state which is shown as a regular list item.
@@ -113,12 +124,16 @@ export function EventListItem(props: EventListItemProps) {
                                 { condition: state === 'active', sx: kStyles.eventActive },
                                 { condition: state === 'finished', sx: kStyles.eventPast }) }>
 
-            { session.event.hidden &&
-                <ListItemAvatar>
-                    <VisibilityOffIcon />
-                </ListItemAvatar> }
-
-            <ListItemText primary={session.name} />
+            { !highlightHiddenEvent && <ListItemText primary={session.name} /> }
+            { highlightHiddenEvent &&
+                <ListItemText primary={
+                    <Fragment>
+                        <em>{session.name}</em>
+                        <Tooltip title="Hidden from visitors">
+                            <VisibilityIcon fontSize="inherit" color="info"
+                                            sx={{ marginLeft: 1, verticalAlign: 'middle' }} />
+                        </Tooltip>
+                    </Fragment> } /> }
 
             <ListItemSecondaryAction>
                 { timeDisplay === 'absolute' &&

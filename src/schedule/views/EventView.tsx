@@ -6,7 +6,9 @@ import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
 import { useContext, useState } from 'preact/hooks';
 
+import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -168,9 +170,17 @@ export function EventView(props: EventViewProps) {
 
             <SubTitle>Sessions</SubTitle>
             <Paper>
+                { sessions[0].event.hidden &&
+                    <Fragment>
+                        <Alert severity="info">
+                            These sessions are not shared with visitors.
+                        </Alert>
+                        <Divider />
+                    </Fragment> }
                 <List disablePadding>
                     { sessions.map(session =>
-                        <EventListItem dateTime={dateTime}
+                        <EventListItem noVisibilityHighlight
+                                       dateTime={dateTime}
                                        event={event}
                                        session={session}
                                        timeDisplay="absolute" /> )}

@@ -173,7 +173,9 @@ export function EventView(props: EventViewProps) {
                 { sessions[0].event.hidden &&
                     <Fragment>
                         <Alert severity="info">
-                            These sessions are not shared with visitors.
+                            { sessions.length === 1 && 'This session is ' }
+                            { sessions.length > 1 && 'These sssions are ' }
+                            not visible to visitors.
                         </Alert>
                         <Divider />
                     </Fragment> }

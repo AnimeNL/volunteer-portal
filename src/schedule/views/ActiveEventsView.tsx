@@ -8,11 +8,14 @@ import { useMemo, useState } from 'preact/hooks';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Card from '@mui/material/Card';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
 import Stack from '@mui/material/Stack';
 
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
 import { Event, EventArea, EventSession } from '../../base/Event';
+import { EventListItem } from '../components/EventListItem';
 import { LocationHeader } from '../components/LocationHeader';
 
 // Properties passed to the <ActiveEventsViews> component.
@@ -45,19 +48,24 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
                 activeAreas.get(session.location.area)?.push(session);
         }
 
-        // (2) Sort the areas by their name, in ascending order.
-        const sortedAreas = [ ...activeAreas.values() ].sort((lhs, rhs) =>
-            lhs[0].location.area.name.localeCompare(rhs[0].location.area.name));
+        // (2) Sort the areas by their name, in ascending order. Areas without active sessions are
+        // included in the output array, to enable a consistent output.
+        const populatedAreas = [ ...event.areas() ].map(area => {
+            return {
+                area,
+                sessions: activeAreas.get(area) || []
+            };
+        });
 
         // (3) Sort the list of sessions for each area.
-        for (let areaIndex = 0; areaIndex < sortedAreas.length; ++areaIndex) {
-            sortedAreas[areaIndex].sort((lhs, rhs) => {
+        for (let areaIndex = 0; areaIndex < populatedAreas.length; ++areaIndex) {
+            populatedAreas[areaIndex].sessions.sort((lhs, rhs) => {
                 // TODO: How to sort?
                 return 0;
             });
         }
 
-        return sortedAreas;
+        return populatedAreas;
 
     }, [ dateTime ]);
 
@@ -65,21 +73,37 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
         <Fragment>
             <AppTitle title="Active events" />
             { !sortedAreas.length &&
-                <Fragment>
-                    <Alert elevation={1} severity="warning" sx={{ mt: { xs: 0, lg: 2 } }}>
-                        <AlertTitle>Nothing to see here…</AlertTitle>
-                        None of the <strong>{event.name}</strong> events are currently in progress.
-                        Has the festival started yet, or worse, has finished?
-                    </Alert>
-                    <Stack spacing={2} mt={2}>
-                        { [ ...event.areas() ].map(area => {
-                            const url = `/schedule/${event.identifier}/events/${area.identifier}/`;
-                            return <Card>
-                                       <LocationHeader title={area.name} url={url} />
-                                   </Card>;
-                        }) }
-                    </Stack>
-                </Fragment> }
+                <Alert elevation={1} severity="warning" sx={{ mt: { xs: 0, lg: 2 } }}>
+                    <AlertTitle>Nothing to see here…</AlertTitle>
+                    None of the <strong>{event.name}</strong> events are currently in progress.
+                    Has the festival started yet, or worse, has finished?
+                </Alert> }
+
+            <Stack spacing={2} mt={2}>
+                { sortedAreas.map(({ area, sessions }) => {
+                    const url = `/schedule/${event.identifier}/events/${area.identifier}/`;
+                    return (
+                        <Fragment>
+                        <Card>
+                            <LocationHeader title={area.name} url={url} />
+                            { sessions.length > 0 &&
+                                <Fragment>
+                                    <Divider />
+                                    <List dense disablePadding>
+                                        { sessions.map(session =>
+                                            <EventListItem dateTime={dateTime}
+                                                        event={event}
+                                                        session={session}
+                                                        timeDisplay="relative" /> )}
+                                    </List>
+                                </Fragment> }
+                            </Card>
+                        </Fragment>
+
+                    );
+
+                }) }
+            </Stack>
         </Fragment>
     );
 }

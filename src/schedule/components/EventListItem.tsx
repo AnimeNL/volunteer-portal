@@ -10,7 +10,6 @@ import sx from 'mui-sx';
 
 import { default as ListItem, type ListItemProps } from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import { SxProps, Theme } from '@mui/system';
 import Tooltip from '@mui/material/Tooltip';
@@ -33,6 +32,12 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
 
     eventPast: {
         backgroundColor: grey[300],
+    },
+
+    nameTypography: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
     },
 };
 
@@ -150,14 +155,13 @@ export function EventListItem(props: EventListItemProps) {
 
     return (
         <EventListItemRoot event={event} session={session}
-                           dense={state === 'finished'}
                            sx={sx(
                                 { condition: state === 'active', sx: kStyles.eventActive },
                                 { condition: state === 'finished', sx: kStyles.eventPast }) }>
 
-            { !highlightHiddenEvent && <ListItemText primary={session.name} /> }
             { highlightHiddenEvent &&
-                <ListItemText primary={
+                <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
+                              primary={
                     <Fragment>
                         <em>{session.name}</em>
                         <Tooltip title="Hidden from visitors">
@@ -166,19 +170,19 @@ export function EventListItem(props: EventListItemProps) {
                         </Tooltip>
                     </Fragment> } /> }
 
-            <ListItemSecondaryAction>
-                { timeDisplay === 'absolute' &&
-                    <Typography variant="body2">
-                        { session.startTime.format('time') } – { session.endTime.format('time') }
-                    </Typography> }
+            { !highlightHiddenEvent && <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
+                                                     primary={session.name} /> }
 
-                { timeDisplay === 'relative' && !!dateTime && dateTime.isBefore(session.endTime) &&
-                    <Typography variant="body2">
-                        { state === 'active' && dateTime.formatUntil(session.endTime) }
-                        { state === 'default' && dateTime.formatUntil(session.startTime, /* prefix= */ '') }
-                    </Typography> }
+            { timeDisplay === 'absolute' &&
+                <Typography sx={{ flexShrink: 0, pl: 1 }} variant="body2">
+                    { session.startTime.format('dayShort') }, { session.startTime.format('time') }–{ session.endTime.format('time') }
+                </Typography> }
 
-            </ListItemSecondaryAction>
+            { timeDisplay === 'relative' && !!dateTime && dateTime.isBefore(session.endTime) &&
+                <Typography sx={{ flexShrink: 0, pl: 1 }} variant="body2">
+                    { state === 'active' && dateTime.formatUntil(session.endTime) }
+                    { state === 'default' && dateTime.formatUntil(session.startTime, /* prefix= */ '') }
+                </Typography> }
 
         </EventListItemRoot>
     );

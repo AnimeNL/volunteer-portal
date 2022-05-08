@@ -16,6 +16,7 @@ export const kDateOverrideStorageKey = 'vp-date-override';
 const kFormatRules = {
     date: 'YYYY-MM-DD',
     day: 'dddd',
+    dayShort: 'ddd',
     full: 'YYYY-MM-DD HH:mm:ss',
     time: 'HH:mm',
 };

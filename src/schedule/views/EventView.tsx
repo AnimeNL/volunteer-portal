@@ -33,6 +33,7 @@ import { uploadNotes } from '../../base/Notes';
 const kStyles: { [key: string]: SxProps<Theme> } = {
     actionButton: {
         backgroundColor: theme => lighten(theme.palette.primary.main, .96),
+        marginLeft: 2,
         '&:hover': {
             '@media (hover: none)': {
                 backgroundColor: theme => lighten(theme.palette.primary.main, .96),
@@ -116,24 +117,6 @@ export function EventView(props: EventViewProps) {
         }
     }
 
-    // ---------------------------------------------------------------------------------------------
-    // Determining the session display order.
-    // ---------------------------------------------------------------------------------------------
-
-    // Sort the list of sessions chronologically, with the exception that sessions which happened in
-    // the past will be moved to the bottom of the list, as they're no longer relevant.
-    const sessions = [ ...info.sessions ].sort((lhs, rhs) => {
-        if (lhs.endTime.isBefore(dateTime) && !rhs.endTime.isBefore(dateTime))
-            return 1;
-        if (!lhs.endTime.isBefore(dateTime) && rhs.endTime.isBefore(dateTime))
-            return -1;
-
-        if (lhs.startTime.isSame(rhs.startTime))
-            return 0;
-
-        return lhs.startTime.isBefore(rhs.startTime) ? -1 : 1;
-    });
-
     return (
         <Fragment>
             <AppTitle title={info.sessions[0].name} />
@@ -169,18 +152,18 @@ export function EventView(props: EventViewProps) {
                 </Fragment> }
 
             <SubTitle>Sessions</SubTitle>
-            <Paper>
-                { sessions[0].event.hidden &&
+            <Paper sx={{ maxWidth: '100vw' }}>
+                { info.sessions[0].event.hidden &&
                     <Fragment>
                         <Alert severity="info">
-                            { sessions.length === 1 && 'This session is ' }
-                            { sessions.length > 1 && 'These sssions are ' }
+                            { info.sessions.length === 1 && 'This session is ' }
+                            { info.sessions.length > 1 && 'These sessions are ' }
                             not visible to visitors.
                         </Alert>
                         <Divider />
                     </Fragment> }
                 <List disablePadding>
-                    { sessions.map(session =>
+                    { info.sessions.map(session =>
                         <EventListItem noVisibilityHighlight
                                        dateTime={dateTime}
                                        session={session}

@@ -173,7 +173,7 @@ export function EventListView(props: EventListViewProps) {
                 return (
                     <Fragment>
                         <SubTitle>{header} { !remainingEvents && '✔' }</SubTitle>
-                        <Paper>
+                        <Paper sx={{ maxWidth: '100vw' }}>
                             <List disablePadding>
                                 { sessions.map(({ session }) =>
                                     <EventListItem dateTime={dateTime}

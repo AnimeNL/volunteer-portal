@@ -4,9 +4,11 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
+import { useCallback } from 'preact/compat';
 
 import sx from 'mui-sx';
 
+import { default as ListItem, type ListItemProps } from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
@@ -34,6 +36,40 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
     },
 };
 
+// Properties available for the <EventListItemRoot> component. Extends the base <ListItem> props.
+interface EventListItemRootProps extends ListItemProps {
+    /**
+     * The event for which the line item is being rendered, determines linkability.
+     */
+    event?: Event;
+
+    /**
+     * The specific session for which the line item is being rendered. This information is always
+     * available to the <EventListItem> component, and is necessary for linkability.
+     */
+    session: EventSession;
+}
+
+// The root element for the <EventListItem> component, which enables the event ListItem to toggle
+// linkability based on the availability of the necessary information.
+function EventListItemRoot(props: EventListItemRootProps) {
+    const { children, event, session, ...rest } = props;
+
+    if (!event || !session)
+        return <ListItem {...rest}>{children}</ListItem>;
+
+    const navigationCallback = useCallback(() => {
+        route(`/schedule/${event.identifier}/event/${session.event.identifier}/`);
+    }, [ event, session ]);
+
+    return (
+        <ListItemButton onClick={navigationCallback}
+                        {...rest as any}>
+            {children}
+        </ListItemButton>
+    );
+}
+
 // Properties available for the <EventListItem> component.
 interface EventListItemProps {
     /**
@@ -45,7 +81,7 @@ interface EventListItemProps {
     /**
      * The event for which the line item is being rendered. Needed to make it linkable.
      */
-    event: Event;
+    event?: Event;
 
     /**
      * Whether to skip highlighting visibility of this event, in case other UI is used.
@@ -94,15 +130,10 @@ interface EventListItemProps {
 //                          When included, it can either be shown as absolute times (i.e. duration)
 //                          or relative to the |dateTime| passed to this component.
 //
-// TODO: Use <ListItem> rather than <ListItemButton> when |event| is not set.
 // TODO: Consider a nicer mechanism for routing rather than having to pass |event|.
 // TODO: Colour usage in this component should be Dark Mode-aware.
 export function EventListItem(props: EventListItemProps) {
     const { dateTime, event, session, timeDisplay } = props;
-
-    function navigateToEvent() {
-        route(`/schedule/${event.identifier}/event/${session.event.identifier}/`);
-    }
 
     // Whether to highlight that this is an event that's not visible to visitors. Volunteers need
     // additional information to do their job, such as when to participate in area build-ups.
@@ -118,9 +149,9 @@ export function EventListItem(props: EventListItemProps) {
                  : /* default status= */ 'default';
 
     return (
-        <ListItemButton dense={state === 'finished'}
-                        onClick={navigateToEvent}
-                        sx={sx(
+        <EventListItemRoot event={event} session={session}
+                           dense={state === 'finished'}
+                           sx={sx(
                                 { condition: state === 'active', sx: kStyles.eventActive },
                                 { condition: state === 'finished', sx: kStyles.eventPast }) }>
 
@@ -149,6 +180,6 @@ export function EventListItem(props: EventListItemProps) {
 
             </ListItemSecondaryAction>
 
-        </ListItemButton>
+        </EventListItemRoot>
     );
 }

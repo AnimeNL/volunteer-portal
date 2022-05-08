@@ -183,7 +183,6 @@ export function EventView(props: EventViewProps) {
                     { sessions.map(session =>
                         <EventListItem noVisibilityHighlight
                                        dateTime={dateTime}
-                                       event={event}
                                        session={session}
                                        timeDisplay="absolute" /> )}
                 </List>

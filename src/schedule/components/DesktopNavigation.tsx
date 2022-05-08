@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
-import { useContext } from 'preact/hooks';
+import { route } from 'preact-router';
+import { useCallback, useContext, useMemo } from 'preact/hooks';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Box from '@mui/material/Box';
@@ -21,7 +22,7 @@ import { darken, lighten, styled } from '@mui/material/styles';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 import { AppContext } from '../../AppContext';
-import { NavigationActiveOptions, NavigationProps, navigateToOption } from './Navigation';
+import { NavigationProps } from './Navigation';
 import { kDesktopMenuWidthPx } from '../ResponsiveConstants';
 
 // Styling for the <DesktopNavigation> component, particularly to enable the logo-esque image at
@@ -68,99 +69,121 @@ const SolidBadge = styled(Box)(({ theme }) => ({
     pointerEvents: 'none',
 }));
 
-// Interface that defines the structure of each predefined navigation option.
-interface NavigationOption {
-    id: NavigationActiveOptions,
-    label: string,
-    icon: h.JSX.Element,
-    badge: React.ReactNode,
-};
+// The <DesktopNavigationLogo> displays the event's logo svg with a "color" attribute towards the
+// environment's theme colour. This allows different environment to have different logos.
+function DesktopNavigationLogo() {
+    const { environment } = useContext(AppContext);
+
+    const params = useMemo(() => {
+        return new URLSearchParams([
+            [ 'color', darken(environment.themeColor, .3) ],
+            [ 'title', /* the empty string= */ '' ],
+        ]);
+    }, [ /* no dependencies */ ]);
+
+    return (
+        <Box sx={{ ...kStyles.header, backgroundColor: lighten(environment.themeColor, .7) }}>
+            <object type="image/svg+xml" style="margin-top: -35px"
+                    data={'/images/logo.svg?' + params}
+                    alt="J-POP Logo" />
+        </Box>
+    );
+}
+
+// Properties accepted by the <DesktopNavigationEntry> component.
+interface DesktopNavigationEntryProps {
+    /**
+     * Whether this is the active navigation item at the moment.
+     */
+    active?: boolean;
+
+    /**
+     * The badge to display as part of this component. Will display a dot when set to `true`, or a
+     * larger badge with a number when set to any other accepted value.
+     */
+    badge?: true | number;
+
+    /**
+     * URL that should be navigated to when the component has been clicked on.
+     */
+    href: string;
+
+    /**
+     * The icon that should be displayed at the start of this component, if any.
+     */
+    icon?: h.JSX.Element;
+
+    /**
+     * The label that indicates what this menu item is meant for.
+     */
+    label: string;
+}
+
+// Displays a single option in the desktop navigation menu. Stateless beyond the props that it
+// accepts to change the component's display.
+function DesktopNavigationEntry(props: DesktopNavigationEntryProps) {
+    const { active, badge, href, icon, label } = props;
+
+    const handleClick = useCallback(() => route(href), [ href ]);
+
+    return (
+        <ListItemButton onClick={handleClick}
+                        selected={active}
+                        sx={kStyles.item}>
+
+            <ListItemIcon>
+                {icon}
+            </ListItemIcon>
+            <ListItemText primaryTypographyProps={{ color: "text.secondary" }}
+                          primary={label} />
+
+            { !!badge && badge === true && <SolidBadge /> }
+            { !!badge && typeof badge === 'number' && <NumberBadge>{badge}</NumberBadge> }
+
+        </ListItemButton>
+    );
+}
 
 // This component powers the main navigation capability of the volunteer portal, with a user
 // interface optimized for display on mobile devices. A list that can be shown on the left- or
 // right-hand side of the main content, to make better use of the available screen estate, without
 // polluting it with a full side-drawer.
 export function DesktopNavigation(props: NavigationProps) {
-    const { environment } = useContext(AppContext);
-    const { event } = props;
-
-    const options: NavigationOption[] = [
-        {
-            id: 'overview',
-            label: 'Overview',
-            icon: <HomeIcon />,
-            badge: null,
-        },
-        {
-            id: 'shifts',
-            label: 'Your shifts',
-            icon: <AccessTimeIcon />,
-            badge: props.badgeActiveShifts && <SolidBadge />,
-        },
-        {
-            id: 'events',
-            label: 'Events',
-            icon: <EventNoteIcon />,
-            badge: props.badgeActiveEvents &&
-                       <NumberBadge>{props.badgeActiveEvents}</NumberBadge>,
-        },
-        {
-            id: 'volunteers',
-            label: 'Volunteers',
-            icon: <GroupIcon />,
-            badge: props.badgeActiveVolunteers &&
-                       <NumberBadge>{props.badgeActiveVolunteers}</NumberBadge>,
-        },
-    ];
-
-    if (props.showAdministration) {
-        options.push({
-            id: 'admin',
-            label: 'Administration',
-            icon: <SettingsIcon />,
-            badge: null,
-        });
-    }
-
-    const navigateFn = navigateToOption.bind(null, event.identifier);
-    const params = new URLSearchParams([
-        [ 'color', darken(environment.themeColor, .3) ],
-        [ 'title', /* the empty string= */ '' ],
-    ]);
+    const eventBaseUrl = `/schedule/${props.event.identifier}`;
 
     return (
         <Fragment>
-            <Box sx={{ ...kStyles.header, backgroundColor: lighten(environment.themeColor, .7) }}>
-                <object type="image/svg+xml" style="margin-top: -35px"
-                        data={'/images/logo.svg?' + params}
-                        alt="J-POP Logo" />
-            </Box>
+            <DesktopNavigationLogo />
             <List sx={kStyles.container}>
-                { options.map(option =>
-                    <Fragment>
-                        <ListItemButton onClick={ _ => navigateFn(option.id) }
-                                        selected={props.active === option.id}
-                                        sx={kStyles.item}>
-                            <ListItemIcon>
-                                {option.icon}
-                            </ListItemIcon>
-                            <ListItemText primary={option.label}
-                                          primaryTypographyProps={{ color: "text.secondary" }} />
-                            {option.badge}
-                        </ListItemButton>
-                        { option.id === 'events' &&
-                            <List dense sx={kStyles.areas}>
-                                { [ ...event.areas() ].map(area =>
-                                    <ListItemButton onClick={ _ => navigateFn(option.id, area.identifier) }
-                                                    sx={kStyles.item}>
-                                        <ListItemIcon>
-                                            <ArrowRightIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={area.name}
-                                                      primaryTypographyProps={{ color: "text.secondary" }} />
-                                    </ListItemButton>) }
-                            </List> }
-                    </Fragment>) }
+                <DesktopNavigationEntry active={ props.active === 'overview' }
+                                        href={ eventBaseUrl + '/' }
+                                        icon={ <HomeIcon /> }
+                                        label="Overview" />
+                <DesktopNavigationEntry active={ props.active === 'shifts' }
+                                        badge={ props.badgeActiveShifts }
+                                        href={ eventBaseUrl + '/shifts/' }
+                                        icon={ <AccessTimeIcon /> }
+                                        label="Your shifts" />
+                <DesktopNavigationEntry active={ props.active === 'events' }
+                                        badge={ props.badgeActiveEvents }
+                                        href={ eventBaseUrl + '/events/' }
+                                        icon={ <EventNoteIcon /> }
+                                        label="Events" />
+                <List dense sx={kStyles.areas}>
+                    { [ ...props.event.areas() ].map(area =>
+                        <DesktopNavigationEntry href={ eventBaseUrl + `/events/${area.identifier}/` }
+                                                icon={ <ArrowRightIcon /> }
+                                                label={ area.name } /> )}
+                </List>
+                <DesktopNavigationEntry active={ props.active === 'volunteers' }
+                                        badge={ props.badgeActiveVolunteers }
+                                        href={ eventBaseUrl + '/volunteers/' }
+                                        icon={ <GroupIcon /> }
+                                        label="Volunteers" />
+                <DesktopNavigationEntry active={ props.active === 'admin' }
+                                        href={ eventBaseUrl + '/admin/' }
+                                        icon={ <SettingsIcon /> }
+                                        label="Administration" />
             </List>
         </Fragment>
     );

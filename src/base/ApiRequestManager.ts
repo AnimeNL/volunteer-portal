@@ -2,11 +2,14 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { get as kvGet, set as kvSet } from 'idb-keyval';
+import { getMany as kvGetMany, setMany as kvSetMany } from 'idb-keyval';
 
 import type { ApiName, ApiRequestType, ApiResponseType } from './ApiName';
 import { ApiRequest } from './ApiRequest';
 import { validate } from './ApiValidator';
+
+// Suffix appended to cache keys using which the content hash has been stored.
+const kHashCacheKeySuffix = '__hash';
 
 // Observer interface that users of the ApiRequestManager have to implement, which is used to inform
 // the user about successful or failed requests issued to the API. Return values have been removed
@@ -54,17 +57,17 @@ export class ApiRequestManager<K extends ApiName> {
         try {
             let responded = false;
 
-            const response = await Promise.any([
+            const [ responseHash, response ] = await Promise.any([
                 // (1) Issue the request to the network. When successful, and caching is available,
                 // immediately store the response value to the local cache as well.
                 this.request.issue(request, abortController.signal).then(async response => {
-                    if (cacheKey)
-                        await this.storeInCache(cacheKey, response);
+                    if (cacheKey && this.request.hash !== this.previousResponseHash)
+                        await this.storeInCache(cacheKey, this.request.hash, response);
 
                     if (responded)
-                        await this.maybeNotifySuccessResponse(response);
+                        await this.maybeNotifySuccessResponse(this.request.hash, response);
 
-                    return response;
+                    return [ this.request.hash, response ];
                 }),
 
                 // (2) When available, issue a request to load the response from the local cache.
@@ -74,7 +77,11 @@ export class ApiRequestManager<K extends ApiName> {
 
             responded = true;  // avoids double-invoking `onSuccessResponse` for no reason
 
-            await this.maybeNotifySuccessResponse(response);
+            // FIXME: TypeScript is incorrectly detecting the types of the two possible return
+            // promises in the `Promise.any` call above, causing us to need a cast here.
+            await this.maybeNotifySuccessResponse(
+                responseHash as number, response as ApiResponseType<K>);
+
             return true;
 
         } catch (aggregateError) {
@@ -104,9 +111,8 @@ export class ApiRequestManager<K extends ApiName> {
 
     // Notifies observers about the given |response|, unless its contents have not changed from the
     // previous notification that was issued. In that case we silently ignore the (valid) response.
-    async maybeNotifySuccessResponse(response: ApiResponseType<K>): Promise<void> {
+    async maybeNotifySuccessResponse(responseHash: number, response: ApiResponseType<K>): Promise<void> {
         if (typeof response === 'object') {
-            const responseHash = this.request.hash;
             if (responseHash === this.previousResponseHash)
                 return;  // the response data hasn't been invalidated
 
@@ -119,20 +125,28 @@ export class ApiRequestManager<K extends ApiName> {
     // Requests the given |cacheKey| from the local cache, expecting a response appropriate to the
     // current API. The response will be validated prior to being returned. Will throw an exception
     // when either the |cacheKey| does not have any associated data, or that data does not validate.
-    async requestFromCache(cacheKey: string): Promise<ApiResponseType<K>> {
-        const responseData = await kvGet(cacheKey);
-        if (!responseData)
+    async requestFromCache(cacheKey: string): Promise<[ number, ApiResponseType<K> ]> {
+        const [ responseHash, responseData ] = await kvGetMany([
+            cacheKey + kHashCacheKeySuffix,
+            cacheKey,
+        ])
+
+        if (!responseHash || !responseData)
             throw new Error('No response data has been cached for this request.');
 
         if (!validate<ApiResponseType<K>>(responseData, `${this.request.api}Response`))
             throw new Error('Unable to validate the fetched data from the local cache.');
 
-        return responseData;
+        return [ responseHash, responseData ];
     }
 
-    // Stores the given |response| in the local cache, keyed by the given |cacheKey|.
-    async storeInCache(cacheKey: string, response: ApiResponseType<K>): Promise<void> {
-        await kvSet(cacheKey, response);
+    // Stores the given |response| in the local cache, keyed by the given |cacheKey|. The response
+    // hash will be stored as well, allowing us to avoid unnecessary invalidations.
+    async storeInCache(cacheKey: string, hash: number, response: ApiResponseType<K>): Promise<void> {
+        await kvSetMany([
+            [ cacheKey + kHashCacheKeySuffix, hash ],
+            [ cacheKey, response ],
+        ]);
     }
 
     // Determines the cache key for the given |request|. When a string is returned, the request is

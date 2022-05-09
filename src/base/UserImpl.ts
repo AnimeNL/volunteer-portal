@@ -151,6 +151,9 @@ export class UserImpl implements ApiRequestObserver<'IUser'>, User {
         this.requestToken = undefined;
         this.response = undefined;
         this.uploadedAvatarUrl = undefined;
+
+        if (this.observer)
+            this.observer.invalidate();
     }
 
     // ---------------------------------------------------------------------------------------------

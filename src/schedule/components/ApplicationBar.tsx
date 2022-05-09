@@ -2,18 +2,24 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
+import { useContext, useState } from 'preact/hooks';
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import AppBar from '@mui/material/AppBar';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import SearchIcon from '@mui/icons-material/Search';
 import { SystemStyleObject, Theme } from '@mui/system';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { alpha, styled } from '@mui/material/styles';
 
+import { AppContext } from '../../AppContext';
 import { kDesktopMenuWidthPx, kDesktopMaximumWidthPx } from '../ResponsiveConstants';
 
 // Containing element for the search field. Provides relative positioning, and a hover effect on
@@ -111,24 +117,66 @@ export interface ApplicationBarProps {
     title: string;
 }
 
+// The <ApplicationBar> component is the title bar of our application. It provides three main pieces
+// of functionality, each of which rather critical to the volunteer portal.
+//
+// First, the title. This tells the user where in the application they are.
+//
+// Then the search bar. This can be activated, and expands in-header, to quickly search through all
+// the information known to the local instance of the volunteer portal. Suggestions will be offered
+// in-line, but a result page is available as well.
+//
+// Finally, a user menu. This allows the user to sign out of their account. More functionality may
+// be added later, I just haven't thought of it yet.
 export function ApplicationBar(props: ApplicationBarProps) {
+    const { user } = useContext(AppContext);
+
+    const [ userMenuAnchor, setUserMenuAnchor ] = useState<any>(null);
+    const [ userMenuOpen, setUserMenuOpen ] = useState(false);
+
+    function openUserMenu(event: React.MouseEvent<HTMLButtonElement>) {
+        setUserMenuAnchor(event.currentTarget);
+        setUserMenuOpen(true);
+    }
+
+    function signOut() {
+        setUserMenuOpen(false);
+        return user.signOut();
+    }
+
     return (
-        <AppBar position="sticky" sx={kStyles.container}>
-            <Toolbar sx={kStyles.toolbar}>
-                <Typography variant="h6" component="div" sx={kStyles.title}>
-                    {props.title}
-                </Typography>
-                <Search>
-                    <SearchIconWrapper>
-                        <SearchIcon />
-                    </SearchIconWrapper>
-                    <StyledInputBase placeholder="Search..."
-                                     inputProps={{ 'aria-label': 'search' }} />
-                </Search>
-                <IconButton size="large" color="inherit">
-                    <AccountCircle />
-                </IconButton>
-            </Toolbar>
-        </AppBar>
+        <Fragment>
+            <AppBar position="sticky" sx={kStyles.container}>
+                <Toolbar sx={kStyles.toolbar}>
+                    <Typography variant="h6" component="div" sx={kStyles.title}>
+                        {props.title}
+                    </Typography>
+                    <Search>
+                        <SearchIconWrapper>
+                            <SearchIcon />
+                        </SearchIconWrapper>
+                        <StyledInputBase placeholder="Search..."
+                                        inputProps={{ 'aria-label': 'search' }} />
+                    </Search>
+                    <IconButton onClick={openUserMenu} size="large" color="inherit">
+                        <AccountCircle />
+                    </IconButton>
+                </Toolbar>
+            </AppBar>
+            <Menu anchorEl={userMenuAnchor}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  onClose={() => setUserMenuOpen(false)}
+                  open={userMenuOpen}>
+
+                <MenuItem onClick={signOut}>
+                    <ListItemIcon>
+                        <LogoutIcon />
+                    </ListItemIcon>
+                    Sign out
+                </MenuItem>
+
+            </Menu>
+        </Fragment>
     );
 }

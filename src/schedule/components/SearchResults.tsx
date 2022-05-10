@@ -8,11 +8,14 @@ import { route } from 'preact-router';
 
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
+import EventIcon from '@mui/icons-material/Event';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import Popover from '@mui/material/Popover';
+import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { SxProps, Theme } from '@mui/system';
 
 import { Event } from '../../base/Event';
@@ -33,7 +36,7 @@ export interface SearchResult {
     /**
      * Type of search result to display.
      */
-    type: 'volunteer';
+    type: 'area' | 'event' | 'location' | 'volunteer';
 
     /**
      * The avatar to display at the start of the search result, if any. When given, this should be
@@ -68,6 +71,9 @@ const kSearchScoreMinimum = 0.4;
 // Different types of search results are prioritized differently, based on the likelihood of a user
 // searching for that sort of content combined with the assumed volume of possible results within.
 const kSearchScoreTypeBonus: { [K in SearchResult['type']]: number } = {
+    area: 0,
+    event: 0,
+    location: 0,
     volunteer: 0,
 };
 
@@ -89,6 +95,9 @@ export function Search(event: Event, query: string, limit?: number): SearchResul
     const normalizedQuery = query.trim().toLocaleLowerCase();
     const results: SearchResult[] = [];
 
+    // TODO: Should we collapse certain locations and events? (I.e. Bag & Changing Rooms)
+    // TODO: Should we memorize historic search queries to optimize low-entropy searches?
+
     // Priority (1): Volunteers
     for (const volunteer of event.volunteers()) {
         const score = StringScoreEx(volunteer.name, query, normalizedQuery, kSearchScoreFuzziness);
@@ -105,16 +114,48 @@ export function Search(event: Event, query: string, limit?: number): SearchResul
     }
 
     // Priority (2): Areas
-    // TODO: Support areas
+    for (const area of event.areas()) {
+        const score = StringScoreEx(area.name, query, normalizedQuery, kSearchScoreMinimum);
+        if (score < kSearchScoreMinimum)
+            continue;
+
+        results.push({
+            type: 'area',
+            href: `${baseUrl}/events/${area.identifier}/`,
+            label: area.name,
+            score: score + kSearchScoreTypeBonus.area,
+        });
+    }
 
     // Priority (3): Locations
-    // TODO: Support locations
+    for (const location of event.locations()) {
+        const score = StringScoreEx(location.name, query, normalizedQuery, kSearchScoreMinimum);
+        if (score < kSearchScoreMinimum)
+            continue;
+
+        results.push({
+            type: 'location',
+            href: `${baseUrl}/events/${location.area.identifier}/${location.identifier}/`,
+            label: location.name,
+            score: score + kSearchScoreTypeBonus.location,
+        });
+    }
 
     // Priority (4): Events
-    // TODO: Support events
+    for (const info of event.events()) {
+        const [ session ] = info.sessions;
 
-    // TODO: Should we collapse certain locations and events? (I.e. Bag & Changing Rooms)
-    // TODO: Should we memorize historic search queries to optimize low-entropy searches?
+        const score = StringScoreEx(session.name, query, normalizedQuery, kSearchScoreMinimum);
+        if (score < kSearchScoreMinimum)
+            continue;
+
+        results.push({
+            type: 'event',
+            href: `${baseUrl}/event/${info.identifier}/`,
+            label: session.name,
+            score: score + kSearchScoreTypeBonus.event,
+        });
+    }
 
     // Sort the |results| in descending order based on the score they have been assigned by the
     // string comparison algorithm. Then limit the return value to the result limits, if any.
@@ -192,14 +233,22 @@ export function SearchResults(props: SearchResultsProps) {
             { searchResults.length > 0 &&
                 <List disablePadding>
                     { searchResults.map(result => {
-                        // TODO: Display result avatars, including type-based default ones.
                         // TODO: Make sure that search results have the ability to wrap.
 
                         let avatar: h.JSX.Element | undefined;
                         switch (result.type) {
+                            case 'area':
+                                avatar = <MapsHomeWorkIcon color="primary" />;
+                                break;
+                            case 'event':
+                                avatar = <EventIcon color="primary" />
+                                break;
+                            case 'location':
+                                avatar = <ReadMoreIcon color="primary" />;
+                                break;
                             case 'volunteer':
                                 avatar = <Avatar alt={result.label}
-                                                 src={result.avatar} />
+                                                 src={result.avatar} />;
                                 break;
                         }
 

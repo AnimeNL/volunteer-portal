@@ -31,7 +31,12 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         [theme.breakpoints.up('md')]: {
             width: '50vw',
         }
-    })
+    }),
+    label: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+    },
 };
 
 // Specialization of <ListItemIcon> where the containing icon will be centered, rather than start-
@@ -284,7 +289,8 @@ export function SearchResults(props: SearchResultsProps) {
                         return (
                             <ListItemButton onClick={navigateToSearchResult}>
                                 {avatar}
-                                <ListItemText primary={result.label} />
+                                <ListItemText primaryTypographyProps={{ sx: kStyles.label }}
+                                              primary={result.label} />
                             </ListItemButton>
                         );
                     }) }

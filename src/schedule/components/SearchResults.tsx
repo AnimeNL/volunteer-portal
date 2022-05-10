@@ -107,6 +107,11 @@ export interface SearchResultsProps {
     event: Event;
 
     /**
+     * Event that will be triggered when the <SearchResults> component should close.
+     */
+    onClose: () => void;
+
+    /**
      * The search query for which results should be shown. The component will not display anything
      * when no query has been passed.
      */
@@ -116,7 +121,10 @@ export interface SearchResultsProps {
 // The <SearchResults> component has the ability to display search results based on the current
 // event. It's expected to be anchored to
 export function SearchResults(props: SearchResultsProps) {
-    const { anchorEl, event, query } = props;
+    const { anchorEl, event, onClose, query } = props;
+
+    if (!anchorEl || !query)
+        return <></>;
 
     // The maximum number of search results to display in the inline search function.
     const kInlineSearchResultLimit = 3;
@@ -137,8 +145,8 @@ export function SearchResults(props: SearchResultsProps) {
                  anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
                  transformOrigin={{ horizontal: 'center', vertical: 'top' }}
                  disableAutoFocus disableEnforceFocus
-                 elevation={4}
-                 open={!!anchorEl && !!query}>
+                 elevation={4} open={true}
+                 onClose={onClose}>
 
             { !searchResults.length &&
                 <Alert severity="warning">
@@ -159,8 +167,13 @@ export function SearchResults(props: SearchResultsProps) {
                                 break;
                         }
 
+                        function navigate() {
+                            route(result.href);
+                            onClose();
+                        }
+
                         return (
-                            <ListItemButton>
+                            <ListItemButton onClick={navigate}>
                                 <ListItemAvatar>
                                     {avatar}
                                 </ListItemAvatar>

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
-import { useContext, useState } from 'preact/hooks';
+import { useContext, useEffect, useState } from 'preact/hooks';
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import AppBar from '@mui/material/AppBar';
@@ -64,7 +64,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
         transition: theme.transitions.create('width'),
         width: theme.spacing(6),
 
-        '&:focus': {
+        '&:focus, &[value]:not([value=""])': {
             backgroundColor: alpha(theme.palette.common.white, 0.2),
             cursor: 'text',
 
@@ -80,7 +80,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
     [theme.breakpoints.up('md')]: {
         '& .MuiInputBase-input': {
-            '&:focus': {
+            '&:focus, &[value]:not([value=""])': {
                 width: '50vw',
             },
         },
@@ -143,20 +143,39 @@ export function ApplicationBar(props: ApplicationBarProps) {
     const { user } = useContext(AppContext);
 
     const [ searchBarAnchor, setSearchBarAnchor ] = useState<any>(null);
+    const [ searchClearFocus, setSearchClearFocus ] = useState<boolean>(false);
     const [ searchQuery, setSearchQuery ] = useState<string>('');
 
+    // Closes the search results. A double render will be done to ensure that focus is lost from the
+    // search field, important when an activation has caused this to be closed.
     function closeSearchResults() {
         setSearchQuery(/* no search query = */ '');
+        setSearchClearFocus(true);
     }
 
+    useEffect(() => {
+        if (searchClearFocus) {
+            if (document.activeElement instanceof HTMLElement)
+                document.activeElement.blur();
+
+            setSearchClearFocus(false);
+        }
+    }, [ searchClearFocus ]);
+
+    // Updates the search state when input is taken in the <StyledInputBase> element. The anchor
+    // will be stored as well if it's not set to the |event|'s target yet.
     function handleSearchInput(event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
-        setSearchBarAnchor(event.target);
         setSearchQuery(event.target.value);
+
+        if (searchBarAnchor !== event.target)
+            setSearchBarAnchor(event.target);
     }
 
+    // Captures "escape" presses by the user and closes the search result in answer to them. This
+    // is a quality-of-life improvement for desktop users.
     function handleSearchKeyPress(event: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) {
         if (event.key === 'Escape')
-            event.currentTarget.blur();
+            closeSearchResults();
     }
 
     const [ userMenuAnchor, setUserMenuAnchor ] = useState<any>(null);
@@ -185,7 +204,6 @@ export function ApplicationBar(props: ApplicationBarProps) {
                         </SearchIconWrapper>
                         <StyledInputBase placeholder="Search..."
                                          inputProps={{ 'aria-label': 'search' }}
-                                         onBlur={closeSearchResults}
                                          onChange={handleSearchInput}
                                          onKeyUp={handleSearchKeyPress}
                                          value={searchQuery} />
@@ -195,9 +213,12 @@ export function ApplicationBar(props: ApplicationBarProps) {
                     </IconButton>
                 </Toolbar>
             </AppBar>
+
             <SearchResults anchorEl={searchBarAnchor}
                            event={props.event}
+                           onClose={closeSearchResults}
                            query={searchQuery} />
+
             <Menu anchorEl={userMenuAnchor}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   transformOrigin={{ vertical: 'top', horizontal: 'right' }}

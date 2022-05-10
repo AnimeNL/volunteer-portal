@@ -12,11 +12,14 @@ import EventIcon from '@mui/icons-material/Event';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import Popover from '@mui/material/Popover';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { SxProps, Theme } from '@mui/system';
+import { styled } from '@mui/material/styles';
 
 import { Event } from '../../base/Event';
 import { StringScoreEx } from '../../base/StringScore';
@@ -30,6 +33,19 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         }
     })
 };
+
+// Specialization of <ListItemIcon> where the containing icon will be centered, rather than start-
+// aligned. This enables it to look consistent when shown together with avatars.
+const ListItemCenteredIcon = styled(ListItemIcon)(({ theme }) => ({
+    paddingLeft: theme.spacing(.5),
+}));
+
+// Regular <Avatar> component except for the sizing, which has been made smaller for search results
+// to be presented in a consistently sized manner. Avatars are conventionally larger than icons.
+const SmallAvatar = styled(Avatar)(({ theme }) => ({
+    width: theme.spacing(4),
+    height: theme.spacing(4),
+}));
 
 // Structure describing an individual search result.
 export interface SearchResult {
@@ -63,18 +79,18 @@ export interface SearchResult {
 
 // Amount of fuzziness to apply to the search results. While this allows minor compensation for
 // typos, a high value could lead to less relevant results being presented to the user.
-const kSearchScoreFuzziness = 0.05;
+const kSearchScoreFuzziness = 0.04;
 
 // Minimum search score required for a result to be considered for presentation to the user.
-const kSearchScoreMinimum = 0.4;
+const kSearchScoreMinimum = 0.37;
 
 // Different types of search results are prioritized differently, based on the likelihood of a user
 // searching for that sort of content combined with the assumed volume of possible results within.
 const kSearchScoreTypeBonus: { [K in SearchResult['type']]: number } = {
-    area: 0,
+    area: 0.1,
     event: 0,
-    location: 0,
-    volunteer: 0,
+    location: 0.1,
+    volunteer: 0.18,
 };
 
 // Searches the |event| for the given |query|, and returns the results, if any.
@@ -89,10 +105,10 @@ const kSearchScoreTypeBonus: { [K in SearchResult['type']]: number } = {
 //
 // The returned array of search results will be sorted by priority, based on returning no more than
 // |limit| results. The |limit|ing is particularly useful for the inline search functionality.
-export function Search(event: Event, query: string, limit?: number): SearchResult[] {
+export function Search(event: Event, query: string, limit?: number): [ number, SearchResult[] ] {
     const baseUrl = `/schedule/${event.identifier}`;
 
-    const normalizedQuery = query.trim().toLocaleLowerCase();
+    const normalizedQuery = query.toLocaleLowerCase();
     const results: SearchResult[] = [];
 
     // TODO: Should we collapse certain locations and events? (I.e. Bag & Changing Rooms)
@@ -166,8 +182,8 @@ export function Search(event: Event, query: string, limit?: number): SearchResul
         return lhs.score > rhs.score ? -1 : 1;
     });
 
-    return (!limit || results.length <= limit) ? results
-                                               : results.splice(0, limit);
+    return (!limit || results.length <= limit) ? [ results.length, results ]
+                                               : [ results.length, results.splice(0, limit) ];
 }
 
 // Props accepted by the <SearchResults> component.
@@ -204,13 +220,13 @@ export function SearchResults(props: SearchResultsProps) {
         return <></>;
 
     // The maximum number of search results to display in the inline search function.
-    const kInlineSearchResultLimit = 3;
+    const kInlineSearchResultLimit = 5;
 
     // Memoize the search results based on the given |event| and |query|, because doing the actual
     // search is a non-trivial traversal operation.
-    const searchResults = useMemo(() => {
+    const [ _, searchResults ] = useMemo(() => {
         if (!query)
-            return [ /* no results */ ];
+            return [ 0, [ /* no results */ ] ];
 
         return Search(event, query, kInlineSearchResultLimit);
 
@@ -238,34 +254,41 @@ export function SearchResults(props: SearchResultsProps) {
                         let avatar: h.JSX.Element | undefined;
                         switch (result.type) {
                             case 'area':
-                                avatar = <MapsHomeWorkIcon color="primary" />;
+                                avatar = <ListItemCenteredIcon>
+                                            <MapsHomeWorkIcon color="primary" />
+                                         </ListItemCenteredIcon>;
                                 break;
                             case 'event':
-                                avatar = <EventIcon color="primary" />
+                                avatar = <ListItemCenteredIcon>
+                                            <EventIcon color="primary" />
+                                         </ListItemCenteredIcon>;
                                 break;
                             case 'location':
-                                avatar = <ReadMoreIcon color="primary" />;
+                                avatar = <ListItemCenteredIcon>
+                                            <ReadMoreIcon color="primary" />
+                                         </ListItemCenteredIcon>;
                                 break;
                             case 'volunteer':
-                                avatar = <Avatar alt={result.label}
-                                                 src={result.avatar} />;
+                                avatar = <ListItemAvatar>
+                                             <SmallAvatar alt={result.label}
+                                                          src={result.avatar} />
+                                         </ListItemAvatar>;
                                 break;
                         }
 
-                        function navigate() {
+                        function navigateToSearchResult() {
                             route(result.href);
                             onClose();
                         }
 
                         return (
-                            <ListItemButton onClick={navigate}>
-                                <ListItemAvatar>
-                                    {avatar}
-                                </ListItemAvatar>
+                            <ListItemButton onClick={navigateToSearchResult}>
+                                {avatar}
                                 <ListItemText primary={result.label} />
                             </ListItemButton>
                         );
                     }) }
+
                 </List> }
 
         </Popover>

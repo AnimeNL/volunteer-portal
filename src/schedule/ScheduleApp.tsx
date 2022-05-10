@@ -201,7 +201,8 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
             <ContentTheme environment={environment} darkMode={this.state.darkMode}>
                 <Box sx={kStyles.root}>
 
-                    <ApplicationBar title={this.state.title || defaultTitle} />
+                    <ApplicationBar event={event}
+                                    title={this.state.title || defaultTitle} />
 
                     <Stack direction="row" sx={kStyles.container}>
 

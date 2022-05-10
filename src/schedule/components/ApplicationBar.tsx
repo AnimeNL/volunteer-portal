@@ -20,7 +20,10 @@ import Typography from '@mui/material/Typography';
 import { alpha, styled } from '@mui/material/styles';
 
 import { AppContext } from '../../AppContext';
+import { Event } from '../../base/Event';
+import { SearchResults } from './SearchResults';
 import { kDesktopMenuWidthPx, kDesktopMaximumWidthPx } from '../ResponsiveConstants';
+import React from 'react';
 
 // Containing element for the search field. Provides relative positioning, and a hover effect on
 // desktop to illustrate that interaction with this element is possible.
@@ -113,7 +116,15 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
 
 // Properties accepted by the <ApplicationBar> component.
 export interface ApplicationBarProps {
-    // Title to display in the application bar.
+    /**
+     * The event for which the application bar is being displayed. Necessary to power the inline
+     * search results functionality.
+     */
+    event: Event;
+
+    /**
+     * Title to display in the application bar.
+     */
     title: string;
 }
 
@@ -130,6 +141,23 @@ export interface ApplicationBarProps {
 // be added later, I just haven't thought of it yet.
 export function ApplicationBar(props: ApplicationBarProps) {
     const { user } = useContext(AppContext);
+
+    const [ searchBarAnchor, setSearchBarAnchor ] = useState<any>(null);
+    const [ searchQuery, setSearchQuery ] = useState<string>('');
+
+    function closeSearchResults() {
+        setSearchQuery(/* no search query = */ '');
+    }
+
+    function handleSearchInput(event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
+        setSearchBarAnchor(event.target);
+        setSearchQuery(event.target.value);
+    }
+
+    function handleSearchKeyPress(event: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) {
+        if (event.key === 'Escape')
+            event.currentTarget.blur();
+    }
 
     const [ userMenuAnchor, setUserMenuAnchor ] = useState<any>(null);
     const [ userMenuOpen, setUserMenuOpen ] = useState(false);
@@ -156,13 +184,20 @@ export function ApplicationBar(props: ApplicationBarProps) {
                             <SearchIcon />
                         </SearchIconWrapper>
                         <StyledInputBase placeholder="Search..."
-                                        inputProps={{ 'aria-label': 'search' }} />
+                                         inputProps={{ 'aria-label': 'search' }}
+                                         onBlur={closeSearchResults}
+                                         onChange={handleSearchInput}
+                                         onKeyUp={handleSearchKeyPress}
+                                         value={searchQuery} />
                     </Search>
                     <IconButton onClick={openUserMenu} size="large" color="inherit">
                         <AccountCircle />
                     </IconButton>
                 </Toolbar>
             </AppBar>
+            <SearchResults anchorEl={searchBarAnchor}
+                           event={props.event}
+                           query={searchQuery} />
             <Menu anchorEl={userMenuAnchor}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   transformOrigin={{ vertical: 'top', horizontal: 'right' }}

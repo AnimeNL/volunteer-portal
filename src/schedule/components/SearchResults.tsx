@@ -16,6 +16,7 @@ import Popover from '@mui/material/Popover';
 import { SxProps, Theme } from '@mui/system';
 
 import { Event } from '../../base/Event';
+import { StringScoreEx } from '../../base/StringScore';
 
 // CSS customizations applied to the <EventListItem> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
@@ -49,11 +50,36 @@ export interface SearchResult {
      * Label that represents the search result. Required.
      */
     label: string;
+
+    /**
+     * The search result's score. We use a string scoring algorithm that issues a score between 0
+     * and 1, however, search type bonuses may lead to scores beyond 1.
+     */
+    score: number;
 }
+
+// Amount of fuzziness to apply to the search results. While this allows minor compensation for
+// typos, a high value could lead to less relevant results being presented to the user.
+const kSearchScoreFuzziness = 0.05;
+
+// Minimum search score required for a result to be considered for presentation to the user.
+const kSearchScoreMinimum = 0.4;
+
+// Different types of search results are prioritized differently, based on the likelihood of a user
+// searching for that sort of content combined with the assumed volume of possible results within.
+const kSearchScoreTypeBonus: { [K in SearchResult['type']]: number } = {
+    volunteer: 0,
+};
 
 // Searches the |event| for the given |query|, and returns the results, if any.
 //
-// TODO: How does search work?
+// In the first stage, we iterate through all of the areas, events, locations and volunteers, and
+// apply a string similarity score using Joshaven Potter's string score library. A minor amount of
+// fuzzing is allowed, in order to correct for the most obvious of typos.
+//
+// Different entity types get a different score "bonus" applied to them. This bonus is decided based
+// on the relative importance and likelihood of people searching for it. Volunteers are assumed to
+// be more interested in Joe, a fellow volunteer, than the "Joe Painting" session during the event.
 //
 // The returned array of search results will be sorted by priority, based on returning no more than
 // |limit| results. The |limit|ing is particularly useful for the inline search functionality.
@@ -65,7 +91,8 @@ export function Search(event: Event, query: string, limit?: number): SearchResul
 
     // Priority (1): Volunteers
     for (const volunteer of event.volunteers()) {
-        if (!volunteer.name.toLocaleLowerCase().includes(normalizedQuery))
+        const score = StringScoreEx(volunteer.name, query, normalizedQuery, kSearchScoreFuzziness);
+        if (score < kSearchScoreMinimum)
             continue;
 
         results.push({
@@ -73,6 +100,7 @@ export function Search(event: Event, query: string, limit?: number): SearchResul
             avatar: volunteer.avatar,
             href: `${baseUrl}/volunteers/${volunteer.identifier}/`,
             label: volunteer.name,
+            score: score + kSearchScoreTypeBonus.volunteer,
         });
     }
 
@@ -87,7 +115,15 @@ export function Search(event: Event, query: string, limit?: number): SearchResul
 
     // TODO: Should we collapse certain locations and events? (I.e. Bag & Changing Rooms)
     // TODO: Should we memorize historic search queries to optimize low-entropy searches?
-    // TODO: Should we give more weight to matches at the beginning of the string? ("Pe[ter]")
+
+    // Sort the |results| in descending order based on the score they have been assigned by the
+    // string comparison algorithm. Then limit the return value to the result limits, if any.
+    results.sort((lhs, rhs) => {
+        if (lhs.score === rhs.score)
+            return 0;
+
+        return lhs.score > rhs.score ? -1 : 1;
+    });
 
     return (!limit || results.length <= limit) ? results
                                                : results.splice(0, limit);

@@ -4,7 +4,7 @@
 
 import { Fragment, h } from 'preact';
 import { Router, Route, route } from 'preact-router';
-import { useContext } from 'preact/hooks';
+import { useContext, useEffect } from 'preact/hooks';
 
 import { AppContext } from '../AppContext';
 import { ContentHeader } from '../ContentHeader';
@@ -36,7 +36,14 @@ export function RegistrationApp(props: RegistrationAppProps) {
             if (!details.enableContent)
                 continue;
 
-            route(`/registration/${details.identifier}/`, /* replace= */ true);
+            // preact-router 4.0.1 has a bug where programmatic routes during the first render no
+            // longer work; canRoute() rejects any given URL, even when valid. We can work around
+            // this by issuing the route as a side-effect instead. Slightly slower, but it works.
+            // https://github.com/preactjs/preact-router/issues/417
+            useEffect(() => {
+                route(`/registration/${details.identifier}/`, /* replace= */ true);
+            });
+
             return <Fragment />;
         }
 

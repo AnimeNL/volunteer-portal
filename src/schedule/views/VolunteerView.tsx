@@ -4,8 +4,9 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useContext, useState } from 'preact/compat';
+import { useContext, useMemo, useState } from 'preact/compat';
 
+import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
@@ -24,7 +25,6 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import SmsIcon from '@mui/icons-material/Sms';
 import Stack from '@mui/material/Stack';
 import { SystemStyleObject, Theme, lighten, useTheme } from '@mui/system';
-import Typography from '@mui/material/Typography';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -32,9 +32,11 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
 import { AvatarEditor } from '../components/AvatarEditor';
-import { Event, EventVolunteer } from '../../base/Event';
+import { DateTime } from '../../base/DateTime';
+import { Event, EventShift, EventVolunteer } from '../../base/Event';
 import { Markdown } from '../components/Markdown';
 import { NotesEditor } from '../components/NotesEditor';
+import { ShiftListItem } from '../components/ShiftListItem';
 import { SubTitle } from '../components/SubTitle';
 import { firstName } from '../../base/NameUtilities';
 import { uploadNotes } from '../../base/Notes';
@@ -178,7 +180,71 @@ export function VolunteerView(props: VolunteerViewProps) {
     const title = useMediaQuery(theme.breakpoints.up('sm')) ? volunteer.name
                                                             : firstName(volunteer.name);
 
-    // TODO: Show the sessions this volunteer will be participating in.
+    const [ dateTime, setDateTime ] = useState(DateTime.local());
+    // TODO: Subscribe to an effect for propagating event schedule updates.
+
+    type ShiftInfo = { endPast: boolean; shift: EventShift };
+    type DailyShiftInfo = { remainingShifts: boolean; shifts: ShiftInfo[] };
+
+    // Compile a list of the shifts that this volunteer will be part of. They're grouped by the day
+    // the shift will start on, where days on which all sessions have passed will be moved to the
+    // bottom of the list. This follows the same display as event sessions within a location.
+    const [ shiftsByDay, sortedDays ] = useMemo(() => {
+        const shiftsByDay: Record<string, DailyShiftInfo> = {};
+
+        // (1) Aggregate all of the shifts by the day on which they'll take place.
+        for (const shift of volunteer.shifts) {
+            if (shift.type !== 'shift')
+                continue;  // ignore available/unavailable time for this display
+
+            const shiftDay = shift.startTime.format('date');
+
+            if (!shiftsByDay.hasOwnProperty(shiftDay)) {
+                shiftsByDay[shiftDay] = {
+                    remainingShifts: false,
+                    shifts: [],
+                };
+            }
+
+            shiftsByDay[shiftDay].remainingShifts ||= dateTime.isBefore(shift.endTime);
+            shiftsByDay[shiftDay].shifts.push({
+                endPast: shift.endTime.isBefore(dateTime),
+                shift,
+            });
+        }
+
+        // (2) Apply the desired sort order to shifts on each individual day.
+        for (const shiftDay in shiftsByDay) {
+            shiftsByDay[shiftDay].shifts.sort((lhs, rhs) => {
+                // (1) Move past shifts to the bottom of the list.
+                if (lhs.endPast && !rhs.endPast)
+                    return 1;
+                if (!lhs.endPast && rhs.endPast)
+                    return -1;
+
+                // (2) Sort the active shifts based on the time at which they started.
+                if (lhs.shift.startTime.isBefore(rhs.shift.startTime))
+                    return -1;
+                if (rhs.shift.startTime.isBefore(lhs.shift.startTime))
+                    return 1;
+
+                return 0;
+            });
+        }
+
+        // (3) Apply the desired sort order to the days during which the volunteer has shifts.
+        const sortedDays = Object.keys(shiftsByDay).sort((lhs, rhs) => {
+            if (shiftsByDay[lhs].remainingShifts && !shiftsByDay[rhs].remainingShifts)
+                return -1;
+            if (!shiftsByDay[lhs].remainingShifts && shiftsByDay[rhs].remainingShifts)
+                return 1;
+
+            return lhs.localeCompare(rhs);
+        });
+
+        return [ shiftsByDay, sortedDays ];
+
+    }, [ dateTime ]);
 
     return (
         <Fragment>
@@ -222,12 +288,25 @@ export function VolunteerView(props: VolunteerViewProps) {
                     </ListItem>
                 </List>
             </Paper>
-            <SubTitle>Shifts</SubTitle>
-            <Paper elevation={2} sx={{ p: 2 }}>
-                <Typography variant="body1">
-                    <em>Shifts go here.</em>
-                </Typography>
-            </Paper>
+
+            { sortedDays.length > 0 && sortedDays.map(dayLabel => {
+                const { remainingShifts, shifts } = shiftsByDay[dayLabel];
+                const header = shifts[0].shift.startTime.format('day');
+
+                return (
+                    <Fragment>
+                        <SubTitle>{header} { !remainingShifts && '✔' }</SubTitle>
+                        <Paper sx={{ maxWidth: '100vw' }}>
+                            <List disablePadding>
+                                { shifts.map(({ shift }) =>
+                                    <ShiftListItem dateTime={dateTime}
+                                                   display="event"
+                                                   shift={shift} /> ) }
+                            </List>
+                        </Paper>
+                    </Fragment>
+                );
+            })}
 
             { volunteer.notes &&
                 <Fragment>
@@ -236,6 +315,11 @@ export function VolunteerView(props: VolunteerViewProps) {
                         <Markdown content={volunteer.notes} />
                     </Paper>
                 </Fragment> }
+
+            { sortedDays.length === 0 &&
+                <Alert elevation={2} sx={{ p: 2, mt: 2 }} severity="warning">
+                    {volunteer.firstName} does not have any shifts during {event.name}.
+                </Alert> }
 
             { volunteer.accessCode &&
                 <Dialog onClose={e => setAccessCodeVisible(false)}

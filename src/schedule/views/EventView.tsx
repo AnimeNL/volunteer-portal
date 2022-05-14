@@ -4,7 +4,7 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useContext, useState } from 'preact/hooks';
+import { useContext, useMemo, useState } from 'preact/hooks';
 
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
@@ -26,6 +26,7 @@ import { Event } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
 import { Markdown } from '../components/Markdown';
 import { NotesEditor } from '../components/NotesEditor';
+import { ShiftListItem } from '../components/ShiftListItem';
 import { SubTitle } from '../components/SubTitle';
 import { uploadNotes } from '../../base/Notes';
 
@@ -84,11 +85,33 @@ export function EventView(props: EventViewProps) {
     // TODO: Subscribe to an effect for propagating event schedule updates.
 
     // TODO: Allow events to be favourited for display on the overview page.
-    // TODO: Allow events to come with notes and instructions for volunteers.
-    // TODO: Display volunteering shifts associated with this event.
     // TODO: Should we enable linking to a map with the location information?
     // TODO: Figure out what to do with the following:
     let canUpdateNotes = true;
+
+    // ---------------------------------------------------------------------------------------------
+    // Shifts associated with this event.
+    // ---------------------------------------------------------------------------------------------
+
+    // Compile a list of shifts associated with this event. Shifts are not necessarily aligned with
+    // the event's sessions, as preparation and turn-down may be necessary. Past shifts are moved to
+    // the bottom of the list, whereas the upcoming shifts are listed first.
+    const shifts = useMemo(() => {
+        return [ ...info.shifts ].sort((lhs, rhs) => {
+            if (lhs.endTime.isBefore(dateTime) && !rhs.endTime.isBefore(dateTime))
+                return 1;
+            if (!lhs.endTime.isBefore(dateTime) && rhs.endTime.isBefore(dateTime))
+                return -1;
+
+            if (lhs.startTime.isBefore(rhs.startTime))
+                return -1;
+            if (rhs.startTime.isBefore(lhs.startTime))
+                return 1;
+
+            return 0;
+        });
+
+    }, [ dateTime, eventIdentifier ]);
 
     // ---------------------------------------------------------------------------------------------
     // Note editing functionality for seniors.
@@ -170,6 +193,19 @@ export function EventView(props: EventViewProps) {
                                        timeDisplay="absolute" /> )}
                 </List>
             </Paper>
+
+            { shifts.length > 0 &&
+                <Fragment>
+                    <SubTitle>Volunteers</SubTitle>
+                        <Paper sx={{ maxWidth: '100vw' }}>
+                            <List disablePadding>
+                                { shifts.map(shift =>
+                                    <ShiftListItem dateTime={dateTime}
+                                                   display="volunteer"
+                                                   shift={shift} /> ) }
+                            </List>
+                        </Paper>
+                </Fragment> }
 
             { canUpdateNotes &&
                 <NotesEditor open={noteEditorOpen}

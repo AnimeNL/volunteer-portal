@@ -61,8 +61,6 @@ export interface IEventResponse {
      * the volunteers represents the user who is logged in to the portal.
      */
     volunteers: IEventResponseVolunteer[];
-
-    // TODO: `shifts`
 }
 
 /**
@@ -232,4 +230,34 @@ export interface IEventResponseVolunteer {
      * to be able to access this information - for example because *they* are a senior.
      */
     phoneNumber?: string;
+
+    /**
+     * The shifts that are assigned to the volunteer for the given event.
+     */
+    shifts?: IEventResponseShift[];
+}
+
+/**
+ * Structure defining a shift on a volunteers' schedule. Shifts are always associated with a
+ * volunteer, and, depending on their type, associated with an event as well.
+ */
+export interface IEventResponseShift {
+    /**
+     * Type of shift. Available means that the volunteer is assumed to be somewhere near the event's
+     * location. Shift means that they're actively on duty. Unavailable means to ignore them.
+     */
+    type: 'available' | 'shift' | 'unavailable';
+
+    /**
+     * Identifier to an `IEventResponseEvent` instance. Only applicable for shifts.
+     */
+    event?: string;
+
+    /**
+     * The time ([ startTime, endTime ]) during which this shift will be taking place.
+     *
+     * @todo Should we have a type representing time, also for time modifications, to enable some
+     *       form of automatic mapping by TypeScript from the API response types? (Yes^2.)
+     */
+    time: [ number, number ];
 }

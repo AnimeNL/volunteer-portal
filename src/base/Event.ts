@@ -141,6 +141,11 @@ export interface EventInfo {
      * An array with the instances of this event that will be taking place. Sorted.
      */
     readonly sessions: EventSession[];
+
+    /**
+     * The shifts that have been assigned to this event, in ascending order by start time.
+     */
+    readonly shifts: EventShift[];
 }
 
 /**
@@ -259,4 +264,39 @@ export interface EventVolunteer {
      * The phone number using which this volunteer can be contacted, if shared by the server.
      */
     readonly phoneNumber?: string;
+
+    /**
+     * The shifts that have been assigned to this volunteer, in ascending order by start time.
+     */
+    readonly shifts: EventShift[];
+}
+
+/**
+ * Interface that documents the information known about a particular shift.
+ */
+export interface EventShift {
+    /**
+     * The type of shift. Availability of volunteers within the festival's venue is included.
+     */
+    readonly type: 'available' | 'shift' | 'unavailable';
+
+    /**
+     * The event during which volunteers will be showing up. Only applicable to the "shift" type.
+     */
+    readonly event?: EventInfo;
+
+    /**
+     * The volunteer who will be working on this shift.
+     */
+    readonly volunteer: EventVolunteer;
+
+    /**
+     * Time at which this shift is due to begin.
+     */
+    readonly startTime: DateTime;
+
+     /**
+      * Time at which this shift is due to finish. Guaranteed to be after the `startTime`.
+      */
+    readonly endTime: DateTime;
 }

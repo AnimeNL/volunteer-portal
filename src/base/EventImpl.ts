@@ -7,12 +7,12 @@ import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 import { DateTime } from './DateTime';
 import { IntervalTree, IntervalTreeNode } from './IntervalTree';
 
-import type { Event, EventArea, EventInfo, EventLocation, EventSession,
+import type { Event, EventArea, EventInfo, EventLocation, EventSession, EventShift,
               EventVolunteer } from './Event';
 import type { IAvatarRequest } from '../api/IAvatar';
 import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseEvent,
               IEventResponseLocation, IEventResponseMeta, IEventResponseSession,
-              IEventResponseVolunteer } from '../api/IEvent';
+              IEventResponseShift, IEventResponseVolunteer } from '../api/IEvent';
 import type { Invalidatable } from './Invalidatable';
 
 /**
@@ -99,13 +99,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
             finalizationQueue.push(instance);
         }
 
-        // (4) Initialize all the volunteer information.
-        for (const volunteer of response.volunteers) {
-            this.#volunteers.set(
-                volunteer.identifier, new EventVolunteerImpl(this.request.event, volunteer));
-        }
-
-        // (5) Initialize all the event and session information.
+        // (4) Initialize all the event and session information.
         for (const eventInfo of response.events) {
             const instance = new EventInfoImpl(eventInfo);
 
@@ -125,6 +119,13 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
             this.#events.set(instance.identifier, instance);
 
             finalizationQueue.push(instance);
+        }
+
+        // (5) Initialize all the volunteer information.
+        for (const volunteer of response.volunteers) {
+            this.#volunteers.set(
+                volunteer.identifier, new EventVolunteerImpl(this.request.event, volunteer,
+                                                             this.#events));
         }
 
         // (6) Initialize the interval tree for the active sessions during this event.
@@ -280,12 +281,18 @@ class EventInfoImpl implements EventInfo, Finalizer {
     #hidden: boolean;
     #notes: string | undefined;
     #sessions: EventSession[];
+    #shifts: EventShift[];
 
     constructor(response: IEventResponseEvent) {
         this.#identifier = response.identifier;
         this.#hidden = response.hidden;
         this.#notes = response.notes;
         this.#sessions = [];
+        this.#shifts = [];
+    }
+
+    addShift(shift: EventShift): void {
+        this.#shifts.push(shift);
     }
 
     createSession(location: EventLocation, response: IEventResponseSession): EventSessionImpl {
@@ -296,8 +303,15 @@ class EventInfoImpl implements EventInfo, Finalizer {
     }
 
     finalize() {
-        // Sort the sessions by their start time, in ascending order.
+        // Sort the sessions and shifts by their start time, in ascending order.
         this.#sessions.sort(AscendingSessionComparator);
+        this.#shifts.sort((lhs, rhs) => {
+            const diff = lhs.startTime.valueOf() - rhs.startTime.valueOf();
+            if (!diff)
+                return lhs.volunteer.name.localeCompare(rhs.volunteer.name);
+
+            return diff;
+        });
     }
 
     get identifier() { return this.#identifier; }
@@ -305,6 +319,7 @@ class EventInfoImpl implements EventInfo, Finalizer {
     set notes(value: string | undefined) { this.#notes = value; }
     get notes() { return this.#notes; }
     get sessions() { return this.#sessions; }
+    get shifts() { return this.#shifts; }
 }
 
 /**
@@ -389,14 +404,43 @@ class EventVolunteerImpl implements EventVolunteer {
     #eventIdentifier: string;
     #notes: string | undefined;
     #response: IEventResponseVolunteer;
+    #shifts: EventShiftImpl[] = [];
 
     // The avatar as it has been uploaded during this session, if any.
     #uploadedAvatarUrl?: string;
 
-    constructor(eventIdentifier: string, response: IEventResponseVolunteer) {
+    constructor(eventIdentifier: string, response: IEventResponseVolunteer,
+                events: Map<string, EventInfoImpl>) {
         this.#eventIdentifier = eventIdentifier;
         this.#notes = response.notes;
         this.#response = response;
+
+        if (response.shifts) {
+            for (const shift of response.shifts) {
+                let instance: EventShiftImpl | null = null;
+                switch (shift.type) {
+                    case 'available':
+                    case 'unavailable':
+                        instance = new EventShiftImpl(shift, this);
+                        break;
+
+                    case 'shift':
+                        if (!shift.event || !events.has(shift.event)) {
+                            console.warn('Invalid shift for volunteer ' + response.name);
+                            break;
+                        }
+
+                        const event = events.get(shift.event)!;
+
+                        instance = new EventShiftImpl(shift, this, event);
+                        event.addShift(instance);
+                        break;
+                }
+
+                if (instance)
+                    this.#shifts.push(instance);
+            }
+        }
     }
 
     async uploadAvatar(request: Omit<IAvatarRequest, 'event' | 'userToken'>): Promise<boolean> {
@@ -435,4 +479,35 @@ class EventVolunteerImpl implements EventVolunteer {
     set notes(value: string | undefined) { this.#notes = value; }
     get notes() { return this.#notes; }
     get phoneNumber() { return this.#response.phoneNumber; }
+    get shifts() { return this.#shifts; }
+}
+
+/**
+ * Implementation of the EventShift interface, which abstracts over the IEventResponseShift response
+ * information with a slightly more accessible API.
+ */
+class EventShiftImpl implements EventShift {
+    #type: 'available' | 'shift' | 'unavailable';
+
+    #event?: EventInfo;
+    #volunteer: EventVolunteer;
+
+    #startTime: DateTime;
+    #endTime: DateTime;
+
+    constructor(response: IEventResponseShift, volunteer: EventVolunteer, event?: EventInfo) {
+        this.#type = response.type;
+
+        this.#event = event;
+        this.#volunteer = volunteer;
+
+        this.#startTime = DateTime.fromUnix(response.time[0]);
+        this.#endTime = DateTime.fromUnix(response.time[1]);
+    }
+
+    get type() { return this.#type; }
+    get event() { return this.#event; }
+    get volunteer() { return this.#volunteer; }
+    get startTime() { return this.#startTime; }
+    get endTime() { return this.#endTime; }
 }

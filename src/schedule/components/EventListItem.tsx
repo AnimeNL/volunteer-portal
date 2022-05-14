@@ -15,8 +15,8 @@ import { SxProps, Theme } from '@mui/system';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import grey from '@mui/material/colors/grey';
 import { darken, lighten } from '@mui/material/styles';
+import grey from '@mui/material/colors/grey';
 
 import { DateTime } from '../../base/DateTime';
 import { Event, EventSession } from '../../base/Event';

@@ -202,6 +202,7 @@ export function EventView(props: EventViewProps) {
                                 { shifts.map(shift =>
                                     <ShiftListItem dateTime={dateTime}
                                                    display="volunteer"
+                                                   event={event}
                                                    shift={shift} /> ) }
                             </List>
                         </Paper>

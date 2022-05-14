@@ -301,6 +301,7 @@ export function VolunteerView(props: VolunteerViewProps) {
                                 { shifts.map(({ shift }) =>
                                     <ShiftListItem dateTime={dateTime}
                                                    display="event"
+                                                   event={event}
                                                    shift={shift} /> ) }
                             </List>
                         </Paper>

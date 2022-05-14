@@ -144,12 +144,14 @@ export function ApplicationBar(props: ApplicationBarProps) {
 
     const [ searchBarAnchor, setSearchBarAnchor ] = useState<any>(null);
     const [ searchClearFocus, setSearchClearFocus ] = useState<boolean>(false);
+    const [ searchCommit, setSearchCommit ] = useState<boolean>(false);
     const [ searchQuery, setSearchQuery ] = useState<string>('');
 
     // Closes the search results. A double render will be done to ensure that focus is lost from the
     // search field, important when an activation has caused this to be closed.
     function closeSearchResults() {
         setSearchQuery(/* no search query = */ '');
+        setSearchCommit(false);
         setSearchClearFocus(true);
     }
 
@@ -174,6 +176,9 @@ export function ApplicationBar(props: ApplicationBarProps) {
     // Captures "escape" presses by the user and closes the search result in answer to them. This
     // is a quality-of-life improvement for desktop users.
     function handleSearchKeyPress(event: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) {
+        if (event.key === 'Enter')
+            setSearchCommit(true);
+
         if (event.key === 'Escape')
             closeSearchResults();
     }
@@ -215,6 +220,7 @@ export function ApplicationBar(props: ApplicationBarProps) {
             </AppBar>
 
             <SearchResults anchorEl={searchBarAnchor}
+                           commit={searchCommit}
                            event={props.event}
                            onClose={closeSearchResults}
                            query={searchQuery} />

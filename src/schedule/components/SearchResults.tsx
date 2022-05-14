@@ -200,6 +200,11 @@ export interface SearchResultsProps {
     anchorEl?: Element;
 
     /**
+     * Whether to commit to the first search result. The popover will be closed automatically after.
+     */
+    commit?: boolean;
+
+    /**
      * The event for which search results should be shown.
      */
     event: Event;
@@ -219,7 +224,7 @@ export interface SearchResultsProps {
 // The <SearchResults> component has the ability to display search results based on the current
 // event. It's expected to be anchored to
 export function SearchResults(props: SearchResultsProps) {
-    const { anchorEl, event, onClose, query } = props;
+    const { anchorEl, commit, event, onClose, query } = props;
 
     if (!anchorEl || !query)
         return <></>;
@@ -236,6 +241,16 @@ export function SearchResults(props: SearchResultsProps) {
         return Search(event, query, kInlineSearchResultLimit);
 
     }, [ event, query ]);
+
+    // If the search results should be committed, the top result will be chosen (if any) and will be
+    // activated as a route. The popover will be closed automatically.
+    if (commit) {
+        if (searchResults.length > 0)
+            route(searchResults[0].href);
+
+        onClose(/* a navigation has been instantiated */);
+        return <></>;
+    }
 
     return (
         <Popover PaperProps={{ sx: kStyles.container }}

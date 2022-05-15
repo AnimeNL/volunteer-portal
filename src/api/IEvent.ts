@@ -147,6 +147,14 @@ export interface IEventResponseMeta {
     name: string;
 
     /**
+     * The time ([ startTime, endTime ]) during which this event will be taking place.
+     *
+     * @todo Should we have a type representing time, also for time modifications, to enable some
+     *       form of automatic mapping by TypeScript from the API response types? (Yes^3.)
+     */
+    time: [ number, number ];
+
+    /**
      * Timezone during which the event will be taking place. This has to be one of the timezone
      * identifiers used in the version of the Timezone Database used by the data library that the
      * volunteer portal depends on.

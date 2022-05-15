@@ -452,12 +452,21 @@
         "name": {
           "type": "string"
         },
+        "time": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
         "timezone": {
           "type": "string"
         }
       },
       "required": [
-        "name"
+        "name",
+        "time"
       ],
       "type": "object"
     },

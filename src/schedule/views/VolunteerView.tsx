@@ -244,7 +244,7 @@ export function VolunteerView(props: VolunteerViewProps) {
 
         return [ shiftsByDay, sortedDays ];
 
-    }, [ dateTime ]);
+    }, [ dateTime, volunteer ]);
 
     return (
         <Fragment>
@@ -289,6 +289,14 @@ export function VolunteerView(props: VolunteerViewProps) {
                 </List>
             </Paper>
 
+            { volunteer.notes &&
+                <Fragment>
+                    <SubTitle>Notes</SubTitle>
+                    <Paper elevation={2} sx={{ p: 2 }}>
+                        <Markdown content={volunteer.notes} />
+                    </Paper>
+                </Fragment> }
+
             { sortedDays.length > 0 && sortedDays.map(dayLabel => {
                 const { remainingShifts, shifts } = shiftsByDay[dayLabel];
                 const header = shifts[0].shift.startTime.format('day');
@@ -308,14 +316,6 @@ export function VolunteerView(props: VolunteerViewProps) {
                     </Fragment>
                 );
             })}
-
-            { volunteer.notes &&
-                <Fragment>
-                    <SubTitle>Notes</SubTitle>
-                    <Paper elevation={2} sx={{ p: 2 }}>
-                        <Markdown content={volunteer.notes} />
-                    </Paper>
-                </Fragment> }
 
             { sortedDays.length === 0 &&
                 <Alert elevation={2} sx={{ p: 2, mt: 2 }} severity="warning">

@@ -36,6 +36,9 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     #meta?: IEventResponseMeta;
     #sessions?: IntervalTree<EventSessionImpl>;
 
+    #startTime?: DateTime;
+    #endTime?: DateTime;
+
     #areas: Map<string, EventAreaImpl> = new Map();
     #events: Map<string, EventInfoImpl> = new Map();
     #locations: Map<string, EventLocationImpl> = new Map();
@@ -69,6 +72,9 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
         // (1) Reset all the locally cached information to an empty state.
         this.#meta = response.meta;
+
+        this.#startTime = DateTime.fromUnix(response.meta.time[0]);
+        this.#endTime = DateTime.fromUnix(response.meta.time[1]);
 
         this.#areas = new Map();
         this.#locations = new Map();
@@ -157,6 +163,20 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
             throw new Error(kExceptionMessage);
 
         return this.#meta.timezone;
+    }
+
+    get startTime() {
+        if (!this.#startTime)
+            throw new Error(kExceptionMessage);
+
+        return this.#startTime;
+    }
+
+    get endTime() {
+        if (!this.#endTime)
+            throw new Error(kExceptionMessage);
+
+        return this.#endTime;
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -32,6 +32,16 @@ export interface Event {
      */
     readonly timezone?: string;
 
+    /**
+     * Time at which the event will officially begin. (Sessions may happen prior to this.)
+     */
+    readonly startTime: DateTime;
+
+    /**
+     * Time at which this event will officially end. (Sessions may continue after this.)
+     */
+    readonly endTime: DateTime;
+
     // ---------------------------------------------------------------------------------------------
     // Event API
     // ---------------------------------------------------------------------------------------------

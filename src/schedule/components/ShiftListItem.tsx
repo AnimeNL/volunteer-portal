@@ -13,6 +13,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { SxProps, Theme } from '@mui/system';
+import Typography from '@mui/material/Typography';
 import { darken, lighten } from '@mui/material/styles';
 import grey from '@mui/material/colors/grey';
 
@@ -82,7 +83,6 @@ export function ShiftListItem(props: ShiftListItemProps) {
     if (!shift.event)
         return <></>;
 
-    // TODO: Display timing information for the shift in the list item.
     // TODO: Display which other volunteers will be helping out during that shift?
 
     // Decide the lifetime of the |shift| with the given |dateTime| has been given.
@@ -119,10 +119,22 @@ export function ShiftListItem(props: ShiftListItemProps) {
                 </ListItemAvatar> }
 
             { display === 'event' &&
-                <ListItemText primary={shift.event.sessions[0].name} /> }
+                <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
+                              primary={shift.event.sessions[0].name} /> }
 
             { display === 'volunteer' &&
-                <ListItemText primary={shift.volunteer.name} /> }
+                <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
+                              primary={shift.volunteer.name} /> }
+
+            <Typography sx={{ flexShrink: 0, pl: 1 }} variant="body2">
+
+                { display === 'event' &&
+                    `${shift.startTime.format('time')}–${shift.endTime.format('time')}` }
+
+                { display === 'volunteer' &&
+                    `${shift.startTime.format('dayShort')}, ${shift.startTime.format('time')}–${shift.endTime.format('time')}` }
+
+            </Typography>
 
         </ListItemButton>
     );

@@ -286,6 +286,11 @@ export interface EventShift {
     readonly event?: EventInfo;
 
     /**
+     * The name of this shift. May be omitted, in which case the event information will be used.
+     */
+    readonly name?: string;
+
+    /**
      * The volunteer who will be working on this shift.
      */
     readonly volunteer: EventVolunteer;

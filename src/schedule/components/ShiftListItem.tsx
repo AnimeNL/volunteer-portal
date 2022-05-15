@@ -120,7 +120,7 @@ export function ShiftListItem(props: ShiftListItemProps) {
 
             { display === 'event' &&
                 <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
-                              primary={shift.event.sessions[0].name} /> }
+                              primary={shift.name} /> }
 
             { display === 'volunteer' &&
                 <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}

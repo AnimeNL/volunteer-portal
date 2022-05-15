@@ -488,6 +488,7 @@ class EventVolunteerImpl implements EventVolunteer {
  */
 class EventShiftImpl implements EventShift {
     #type: 'available' | 'shift' | 'unavailable';
+    #name: string;
 
     #event?: EventInfo;
     #volunteer: EventVolunteer;
@@ -497,6 +498,7 @@ class EventShiftImpl implements EventShift {
 
     constructor(response: IEventResponseShift, volunteer: EventVolunteer, event?: EventInfo) {
         this.#type = response.type;
+        this.#name = response.name || (event && event.sessions[0].name) || 'Volunteering Shift';
 
         this.#event = event;
         this.#volunteer = volunteer;
@@ -507,6 +509,7 @@ class EventShiftImpl implements EventShift {
 
     get type() { return this.#type; }
     get event() { return this.#event; }
+    get name() { return this.#name; }
     get volunteer() { return this.#volunteer; }
     get startTime() { return this.#startTime; }
     get endTime() { return this.#endTime; }

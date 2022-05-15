@@ -488,6 +488,37 @@
       ],
       "type": "object"
     },
+    "IEventResponseShift": {
+      "properties": {
+        "event": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "time": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "type": {
+          "enum": [
+            "available",
+            "shift",
+            "unavailable"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "time"
+      ],
+      "type": "object"
+    },
     "IEventResponseVolunteer": {
       "properties": {
         "accessCode": {
@@ -518,6 +549,12 @@
         },
         "phoneNumber": {
           "type": "string"
+        },
+        "shifts": {
+          "items": {
+            "$ref": "#/definitions/IEventResponseShift"
+          },
+          "type": "array"
         }
       },
       "required": [

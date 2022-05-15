@@ -254,6 +254,11 @@ export interface IEventResponseShift {
     event?: string;
 
     /**
+     * Name to display for the shift. The |event| will be used when omitted.
+     */
+    name?: string;
+
+    /**
      * The time ([ startTime, endTime ]) during which this shift will be taking place.
      *
      * @todo Should we have a type representing time, also for time modifications, to enable some

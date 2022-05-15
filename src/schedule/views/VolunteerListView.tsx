@@ -22,6 +22,7 @@ import Typography from '@mui/material/Typography';
 
 import { AppTitle } from '../../AppTitle';
 import { Event, EventVolunteer } from '../../base/Event';
+import { initials } from '../../base/NameUtilities';
 
 // Storage index (in localStorage) for the pinned team. This is a feature for power users who have
 // the ability to display multiple teams in the portal at once.
@@ -95,7 +96,7 @@ function Volunteer(props: VolunteerProps) {
             <ListComponent onClick={handleClick}>
                 <ListItemAvatar>
                     <Avatar alt={volunteer.name} src={volunteer.avatar}>
-                        <PersonIcon />
+                        {initials(volunteer.name)}
                     </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary={volunteer.name}

@@ -26,3 +26,21 @@ export function initial(fullName: string): string {
 
     return '';
 }
+
+/**
+ * Returns the capitalized initials to use based on the `fullName`.
+ */
+export function initials(fullName: string): string {
+    let nameInitials = '';
+    for (let index = 0; index < fullName.length; ++index) {
+        if (fullName.charCodeAt(index) < 65 || fullName.charCodeAt(index) > 90)
+            continue;
+
+        nameInitials += fullName[index];
+        if (nameInitials.length >= 2)
+            break;
+    }
+
+    return nameInitials.length ? nameInitials
+                               : fullName[0].toUpperCase();
+}

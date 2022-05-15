@@ -8,6 +8,8 @@ import { useCallback } from 'preact/compat';
 
 import sx from 'mui-sx';
 
+import Avatar from '@mui/material/Avatar';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { SxProps, Theme } from '@mui/system';
@@ -16,6 +18,7 @@ import grey from '@mui/material/colors/grey';
 
 import { DateTime } from '../../base/DateTime';
 import { Event, EventShift } from '../../base/Event';
+import { initials } from '../../base/NameUtilities';
 
 // Type indicating where in the lifecycle the shift is at time of being rendered.
 type ShiftLifecycleState = 'finished' | 'active' | 'default';
@@ -81,7 +84,6 @@ export function ShiftListItem(props: ShiftListItemProps) {
 
     // TODO: Display timing information for the shift in the list item.
     // TODO: Display which other volunteers will be helping out during that shift?
-    // TODO: Display avatars for the volunteers who will participate.
 
     // Decide the lifetime of the |shift| with the given |dateTime| has been given.
     const state: ShiftLifecycleState =
@@ -106,6 +108,15 @@ export function ShiftListItem(props: ShiftListItemProps) {
                         sx={sx(
                                 { condition: state === 'active', sx: kStyles.eventActive },
                                 { condition: state === 'finished', sx: kStyles.eventPast }) }>
+
+            { display === 'volunteer' &&
+                <ListItemAvatar>
+                    <Avatar alt={shift.volunteer.name}
+                            src={shift.volunteer.avatar}>
+                        {initials(shift.volunteer.name)}
+                    </Avatar>
+
+                </ListItemAvatar> }
 
             { display === 'event' &&
                 <ListItemText primary={shift.event.sessions[0].name} /> }

@@ -53,4 +53,5 @@ export interface IUserResponse {
 /**
  * The roles that a volunteer can have during an event.
  */
-export type IUserResponseEventRole = 'Unregistered' | 'Registered' | 'Rejected' | string;
+export type IUserResponseEventRole =
+    'Unregistered' | 'Cancelled' | 'Registered' | 'Rejected' | string;

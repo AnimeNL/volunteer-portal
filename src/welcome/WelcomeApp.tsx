@@ -3,15 +3,23 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
-import { useContext } from 'preact/hooks';
+import { route } from 'preact-router';
+import { useContext, useState } from 'preact/hooks';
 
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
+import Button from '@mui/material/Button';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import LanguageIcon from '@mui/icons-material/Language';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
@@ -22,10 +30,20 @@ import Typography from '@mui/material/Typography';
 import { AppContext } from '../AppContext';
 import { ContentHeader } from '../ContentHeader';
 import { ContentLayout } from '../ContentLayout';
+import { IEnvironmentResponseEvent } from '../api/IEnvironment';
 import { Link } from '../Link';
+import { UserLoginDialog } from '../UserLoginDialog';
+import { User } from '../base/User';
+import { firstName } from '../base/NameUtilities';
 
 // Customized styling for the <WelcomeApp> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
+    buttons: {
+        paddingTop: 0,
+        paddingRight: 3,
+        paddingBottom: 2,
+        paddingLeft: 0,
+    },
     hidden: {
         backgroundColor: 'grey.200',
     },
@@ -39,12 +57,42 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
     },
 };
 
+// Returns whether the given |user| participates in the given |eventIdentifier|. This ignores a
+// number of the predefined status codes that work towards their participation.
+function userParticipatesInEvent(user: User, eventIdentifier: string): boolean {
+    const role = user.events.get(eventIdentifier);
+    if (role && !['Cancelled', 'Registered', 'Rejected', 'Unregistered'].includes(role))
+        return true;
+
+    return false;
+}
+
 // The "welcome" application is a generic content page that allows the user to either sign in to
 // their account, granting portal access, or refer the user to one of the other pages or components.
 export function WelcomeApp() {
     const { environment, user } = useContext(AppContext);
 
     const isAdministrator = user.authenticated && user.isAdministrator();
+
+    // Accessing the schedule requires the user to be identified, which we don't necessarily know
+    // at the time of click. If they're not, the user should be given the opportunity to sign in.
+    // Even when a user has authenticated, they may not have signed up for that particular event.
+    const [ authenticationDialogOpen, setAuthenticationDialogOpen ] = useState(false);
+
+    const [ participationDialogOpen, setParticipationDialogOpen ] = useState(false);
+    const [ participationDialogEvent, setParticipationDialogEvent ] =
+        useState<IEnvironmentResponseEvent>();
+
+    function handleScheduleAccessRequest(event: IEnvironmentResponseEvent): void {
+        if (!user.authenticated) {
+            setAuthenticationDialogOpen(true);
+        } else if (!userParticipatesInEvent(user, event.identifier) && !user.isAdministrator()) {
+            setParticipationDialogOpen(true);
+            setParticipationDialogEvent(event);
+        } else {
+            route(`/schedule/${event.identifier}/`);
+        }
+    }
 
     return (
         <ContentLayout>
@@ -72,8 +120,8 @@ export function WelcomeApp() {
                             </ListItem>
                         }
                         { (event.enableSchedule || isAdministrator) &&
-                            <ListItem sx={!event.enableSchedule ? kStyles.hidden : {}}
-                                      component={Link} href={`/schedule/${event.identifier}/`} divider button>
+                            <ListItemButton divider sx={!event.enableSchedule ? kStyles.hidden : {}}
+                                            onClick={() => handleScheduleAccessRequest(event)}>
                                 <ListItemIcon>
                                     <EventNoteIcon />
                                 </ListItemIcon>
@@ -82,7 +130,7 @@ export function WelcomeApp() {
                                     <Tooltip title="Administrator access">
                                         <NewReleasesIcon htmlColor="#E57373" />
                                     </Tooltip> }
-                            </ListItem>
+                            </ListItemButton>
                         }
                         { (!event.enableContent && event.website) &&
                             <ListItem component="a" href={event.website} divider button>
@@ -103,6 +151,36 @@ export function WelcomeApp() {
                     </ListItem>
                 }
             </List>
+
+            <UserLoginDialog onClose={() => setAuthenticationDialogOpen(false)}
+                             open={authenticationDialogOpen} />
+
+            { participationDialogEvent &&
+                <Dialog onClose={() => setParticipationDialogOpen(false)}
+                        open={participationDialogOpen}>
+
+                    <DialogTitle>
+                        {participationDialogEvent.name}
+                    </DialogTitle>
+
+                    <DialogContent>
+                        <DialogContentText>
+                            {firstName(user.name)}, you're not on the list for the {participationDialogEvent.name} {environment.themeTitle}!
+                            { participationDialogEvent.enableRegistration &&
+                                " Fortunately, there's still time for your application to go through if you continue to the event's mini site. " }
+                            { !participationDialogEvent.enableRegistration &&
+                                " Unfortunately, applications for this event have closed. Please contact one of the seniors if you think this is a mistake." }
+                        </DialogContentText>
+                    </DialogContent>
+
+                    <DialogActions sx={kStyles.buttons}>
+                        <Button onClick={() => setParticipationDialogOpen(false)}>Close</Button>
+                        { participationDialogEvent.enableRegistration &&
+                            <Button onClick={() => route(`/registration/${participationDialogEvent.identifier}/`)}
+                                    variant="contained">Apply today!</Button> }
+                    </DialogActions>
+                </Dialog> }
+
         </ContentLayout>
     );
 }

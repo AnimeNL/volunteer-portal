@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
-import { useContext, useEffect, useState } from 'preact/hooks';
+import { useContext, useEffect, useRef, useState } from 'preact/hooks';
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import AppBar from '@mui/material/AppBar';
@@ -196,6 +196,26 @@ export function ApplicationBar(props: ApplicationBarProps) {
         return user.signOut();
     }
 
+    // Allows <ctrl+f> to be captured for keyboard-based users, as a shortcut to quickly search
+    // through the event. Pages generally aren't compilicated enough to need Find in Page.
+    const searchBarRef = useRef<HTMLInputElement>();
+
+    useEffect(() => {
+        function interceptSearchKey(event: KeyboardEvent): void {
+            if (!searchBarRef.current)
+                return;
+
+            if (!event.ctrlKey || event.keyCode !== /* f= */ 70)
+                return;
+
+            event.preventDefault();
+            searchBarRef.current.focus();
+        }
+
+        window.addEventListener('keydown', interceptSearchKey);
+        return () => window.removeEventListener('keydown', interceptSearchKey);
+    });
+
     return (
         <Fragment>
             <AppBar position="sticky" sx={kStyles.container}>
@@ -209,6 +229,7 @@ export function ApplicationBar(props: ApplicationBarProps) {
                         </SearchIconWrapper>
                         <StyledInputBase placeholder="Search..."
                                          inputProps={{ 'aria-label': 'search' }}
+                                         inputRef={searchBarRef}
                                          onChange={handleSearchInput}
                                          onKeyUp={handleSearchKeyPress}
                                          value={searchQuery} />

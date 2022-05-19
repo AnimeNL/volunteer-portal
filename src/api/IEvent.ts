@@ -175,9 +175,6 @@ export interface IEventResponseMeta {
  * influence avialability of privileged UI throughout the application.
  */
 export type IEventResponsePrivilege =
-    /** Whether this volunteer has the ability to update event notes: */
-    'update-event-notes' |
-
     /** Whether this volunteer has the ability to update avatars of anyone: */
     'update-avatar-any' |
 
@@ -185,7 +182,13 @@ export type IEventResponsePrivilege =
     'update-avatar-environment' |
 
     /** Whether this volunteer has the ability to update their own avatar: */
-    'update-avatar-self';
+    'update-avatar-self' |
+
+    /** Whether this volunteer has the ability to update event notes: */
+    'update-event-notes' |
+
+    /** Whether this volunteer has the ability to update user notes: */
+    'update-user-notes';
 
 /**
  * Structure defining one of the sessions that will be hosted during one of the events.

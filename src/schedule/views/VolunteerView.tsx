@@ -39,6 +39,7 @@ import { NotesEditor } from '../components/NotesEditor';
 import { ShiftListItem } from '../components/ShiftListItem';
 import { SubTitle } from '../components/SubTitle';
 import { firstName } from '../../base/NameUtilities';
+import { isAcceptedEventRole } from '../../base/User';
 import { uploadNotes } from '../../base/Notes';
 
 // Styles for the <VolunteerView> component. Used to highlight the sort of interactions that are
@@ -76,17 +77,6 @@ function createAccessCodeLink(volunteer: EventVolunteer, type: 'sms' | 'whatsapp
     }
 }
 
-// Returns whether the given |volunteer| is a Senior volunteer for this convention. This is the case
-// when their role includes either Senior or Staff, using case-sensitive matching.
-function isSeniorVolunteer(volunteer?: EventVolunteer): boolean {
-    if (volunteer) {
-        const roles = [ ...Object.values(volunteer.environments) ];
-        return roles.some(role => role.includes('Senior') || role.includes('Staff'));
-    }
-
-    return false;
-}
-
 // Properties passed to the <VolunteerView> component.
 export interface VolunteerViewProps {
     // The event for which we want to display the volunteer's information.
@@ -122,9 +112,28 @@ export function VolunteerView(props: VolunteerViewProps) {
     const [ accessCodeVisible, setAccessCodeVisible ] = useState(false);
 
     // Whether the current |user| has the ability to edit the avatar of this |volunteer|. This is
-    // the case for administrators, Senior and Staff volunteers, and for the volunteers themselves.
-    const canEditAvatar =
-        user.isAdministrator() || isSeniorVolunteer(userVolunteer) || user.name === volunteer.name;
+    // controlled by the user privileges made available through the server.
+    let canEditAvatar = event.hasUserPrivilege('update-avatar-any');
+    if (!canEditAvatar && userVolunteer) {
+        if (event.hasUserPrivilege('update-avatar-self') && userVolunteer === volunteer) {
+            canEditAvatar = true;
+        } else if (event.hasUserPrivilege('update-avatar-environment')) {
+            const userEnvironmentIdentifiers = Object.keys(userVolunteer.environments);
+            for (const userEnvironmentIdentifier of userEnvironmentIdentifiers) {
+                const userRole = userVolunteer.environments[userEnvironmentIdentifier];
+                if (!isAcceptedEventRole(userRole))
+                    continue;  // the |user| isn't participating in the given environment
+
+                if (!volunteer.environments.hasOwnProperty(userEnvironmentIdentifier) ||
+                        !isAcceptedEventRole(volunteer.environments[userEnvironmentIdentifier])) {
+                    continue;  // the |volunteer| isn't participating in the given environment
+                }
+
+                canEditAvatar = true;
+                break;
+            }
+        }
+    }
 
     // Toggles whether a dialog should be visible with the volunteer's avatar. When the user has the
     // ability to edit the avatar, this will open an editor. When they don't, a dialog will be
@@ -146,10 +155,6 @@ export function VolunteerView(props: VolunteerViewProps) {
 
         return success;
     }
-
-    // Whether the notes for this volunteer can be edited. This functionality is restricted to
-    // administrators and seniors, regardless of team.
-    const canEditNotes = user.isAdministrator() || isSeniorVolunteer(userVolunteer);
 
     // Uploads the given |notes| after the user made a change in the notes editor. This initiates a
     // network call, and may take an arbitrary amount of time to complete.
@@ -262,7 +267,7 @@ export function VolunteerView(props: VolunteerViewProps) {
                                       secondary={role} />
                         { (volunteer.accessCode || volunteer.phoneNumber) &&
                             <Stack direction="row" spacing={2}>
-                                { canEditNotes &&
+                                { event.hasUserPrivilege('update-user-notes') &&
                                     <IconButton color="primary"
                                                 onClick={e => setNoteEditorOpen(true)}
                                                 size="medium"
@@ -363,7 +368,7 @@ export function VolunteerView(props: VolunteerViewProps) {
 
                 </Dialog> }
 
-            { canEditNotes &&
+            { event.hasUserPrivilege('update-user-notes') &&
                 <NotesEditor open={noteEditorOpen}
                              notes={volunteer.notes}
                              requestClose={() => setNoteEditorOpen(false)}

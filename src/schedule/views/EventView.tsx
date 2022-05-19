@@ -86,8 +86,6 @@ export function EventView(props: EventViewProps) {
 
     // TODO: Allow events to be favourited for display on the overview page.
     // TODO: Should we enable linking to a map with the location information?
-    // TODO: Figure out what to do with the following:
-    let canUpdateNotes = true;
 
     // ---------------------------------------------------------------------------------------------
     // Shifts associated with this event.
@@ -155,7 +153,7 @@ export function EventView(props: EventViewProps) {
                                       primary={info.sessions[0].name}
                                       secondary={info.sessions[0].location.name} />
 
-                            { canUpdateNotes &&
+                            { event.hasUserPrivilege('update-event-notes') &&
                                     <IconButton onClick={() => setNoteEditorOpen(true)}
                                                 color="primary" size="medium"
                                                 sx={kStyles.actionButton}>
@@ -208,7 +206,7 @@ export function EventView(props: EventViewProps) {
                         </Paper>
                 </Fragment> }
 
-            { canUpdateNotes &&
+            { event.hasUserPrivilege('update-event-notes') &&
                 <NotesEditor open={noteEditorOpen}
                              notes={info.notes}
                              requestClose={() => setNoteEditorOpen(false)}

@@ -478,10 +478,11 @@
     },
     "IEventResponsePrivilege": {
       "enum": [
-        "update-event-notes",
         "update-avatar-any",
         "update-avatar-environment",
-        "update-avatar-self"
+        "update-avatar-self",
+        "update-event-notes",
+        "update-user-notes"
       ],
       "type": "string"
     },

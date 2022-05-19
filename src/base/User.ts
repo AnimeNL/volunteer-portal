@@ -2,9 +2,9 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import type { IUserResponseEventRole } from '../api/IUser';
 import type { IApplicationRequest } from '../api/IApplication';
 import type { IAuthRequest } from '../api/IAuth';
+import type { IUserResponseEventRole } from '../api/IUser';
 
 /**
  * The interface through which the user's state can be accessed. Certain properties may only be
@@ -86,4 +86,20 @@ export interface User {
      * @throws Error when `authenticated` has not been set to TRUE.
      */
     name: Readonly<string>;
+}
+
+/**
+ * Returns whether the given |role| is one that indicates that the assignee has been accepted to an
+ * event. The predefined roles that indicate application progress are excluded from this.
+ */
+export function isAcceptedEventRole(role: IUserResponseEventRole): boolean {
+    switch (role) {
+        case 'Cancelled':
+        case 'Registered':
+        case 'Rejected':
+        case 'Unregistered':
+            return false;
+    }
+
+    return false;
 }

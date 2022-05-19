@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import { ComponentChild } from 'preact';
 import { useEffect } from 'preact/hooks';
 
 // The listener to invoke when the app's title is being updated, if any.

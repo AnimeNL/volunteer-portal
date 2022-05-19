@@ -368,6 +368,12 @@
         "meta": {
           "$ref": "#/definitions/IEventResponseMeta"
         },
+        "userPrivileges": {
+          "items": {
+            "$ref": "#/definitions/IEventResponsePrivilege"
+          },
+          "type": "array"
+        },
         "volunteers": {
           "items": {
             "$ref": "#/definitions/IEventResponseVolunteer"
@@ -469,6 +475,15 @@
         "time"
       ],
       "type": "object"
+    },
+    "IEventResponsePrivilege": {
+      "enum": [
+        "update-event-notes",
+        "update-avatar-any",
+        "update-avatar-environment",
+        "update-avatar-self"
+      ],
+      "type": "string"
     },
     "IEventResponseSession": {
       "properties": {

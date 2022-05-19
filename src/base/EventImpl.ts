@@ -11,8 +11,9 @@ import type { Event, EventArea, EventInfo, EventLocation, EventSession, EventShi
               EventVolunteer } from './Event';
 import type { IAvatarRequest } from '../api/IAvatar';
 import type { IEventRequest, IEventResponse, IEventResponseArea, IEventResponseEvent,
-              IEventResponseLocation, IEventResponseMeta, IEventResponseSession,
-              IEventResponseShift, IEventResponseVolunteer } from '../api/IEvent';
+              IEventResponseLocation, IEventResponseMeta, IEventResponsePrivilege,
+              IEventResponseSession, IEventResponseShift,
+              IEventResponseVolunteer } from '../api/IEvent';
 import type { Invalidatable } from './Invalidatable';
 
 /**
@@ -34,6 +35,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
     // Information made available after the Event was successfully retrieved.
     #meta?: IEventResponseMeta;
+    #privileges: Set<IEventResponsePrivilege> = new Set();
     #sessions?: IntervalTree<EventSessionImpl>;
 
     #startTime?: DateTime;
@@ -72,6 +74,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
         // (1) Reset all the locally cached information to an empty state.
         this.#meta = response.meta;
+        this.#privileges = new Set(response.userPrivileges);
 
         this.#startTime = DateTime.fromUnix(response.meta.time[0]);
         this.#endTime = DateTime.fromUnix(response.meta.time[1]);
@@ -222,6 +225,14 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
     locations(): IterableIterator<EventLocation> {
         return this.#locations.values();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // User API
+    // ---------------------------------------------------------------------------------------------
+
+    hasUserPrivilege(privilege: IEventResponsePrivilege): boolean {
+        return this.#privileges.has(privilege);
     }
 
     // ---------------------------------------------------------------------------------------------

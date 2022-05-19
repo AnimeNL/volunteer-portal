@@ -57,6 +57,12 @@ export interface IEventResponse {
     meta: IEventResponseMeta;
 
     /**
+     * The privileges that the authenticated user has been granted for this event. It's valid for
+     * a user to not have been granted any privileges at all.
+     */
+    userPrivileges?: IEventResponsePrivilege[];
+
+    /**
      * Zero or more volunteers who will be helping out during this event. It's possible that one of
      * the volunteers represents the user who is logged in to the portal.
      */
@@ -163,6 +169,23 @@ export interface IEventResponseMeta {
      */
     timezone?: string;
 }
+
+/**
+ * Privileges that are available for the authenticated user for this particular event. This will
+ * influence avialability of privileged UI throughout the application.
+ */
+export type IEventResponsePrivilege =
+    /** Whether this volunteer has the ability to update event notes: */
+    'update-event-notes' |
+
+    /** Whether this volunteer has the ability to update avatars of anyone: */
+    'update-avatar-any' |
+
+    /** Whether this volunteer has the ability to update avatars of anyone in their environment: */
+    'update-avatar-environment' |
+
+    /** Whether this volunteer has the ability to update their own avatar: */
+    'update-avatar-self';
 
 /**
  * Structure defining one of the sessions that will be hosted during one of the events.

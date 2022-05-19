@@ -4,6 +4,7 @@
 
 import type { DateTime } from './DateTime';
 import type { IAvatarRequest } from '../api/IAvatar';
+import type { IEventResponsePrivilege } from '../api/IEvent';
 
 /**
  * Interface that defines how code is expected to interact with information about a specific event.
@@ -85,6 +86,15 @@ export interface Event {
      * Returns an iterator that provides access to all locations for the event.
      */
     locations(): IterableIterator<EventLocation>;
+
+    // ---------------------------------------------------------------------------------------------
+    // User API
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Whether the authenticated user has been granted the given |privilege| for this event.
+     */
+    hasUserPrivilege(privilege: IEventResponsePrivilege): boolean;
 
     // ---------------------------------------------------------------------------------------------
     // Volunteer API

@@ -81,6 +81,9 @@ describe('EventImpl', () => {
                     name: 'Event Name',
                     timezone: 'Europe/London',
                 },
+                userPrivileges: [
+                    'update-avatar-any',
+                ],
                 volunteers: [
                     {
                         identifier: 'john',

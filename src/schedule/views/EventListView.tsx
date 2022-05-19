@@ -4,7 +4,7 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 
 import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
@@ -83,71 +83,83 @@ export function EventListView(props: EventListViewProps) {
     //
     // Finally, we move days for which all events have finished to the bottom of the overview. While
     // they're useful for historical context, they're likely not what the user is looking for.
-    const sessionsByDay: Record<string, DailySessionInfo> = {};
-    const eventSet = new Set();
+    const [ sessionsByDay, singularEventUrl, dayOrder ] = useMemo(() => {
+        const sessionsByDay: Record<string, DailySessionInfo> = {};
+        const eventSet = new Set();
 
-    for (const session of location.sessions) {
-        const sessionDay = session.startTime.format('date');
+        for (const session of location.sessions) {
+            const sessionDay = session.startTime.format('date');
 
-        if (!sessionsByDay.hasOwnProperty(sessionDay)) {
-            sessionsByDay[sessionDay] = {
-                remainingEvents: false,
-                sessions: [],
-            };
+            if (!sessionsByDay.hasOwnProperty(sessionDay)) {
+                sessionsByDay[sessionDay] = {
+                    remainingEvents: false,
+                    sessions: [],
+                };
+            }
+
+            eventSet.add(session.event.identifier);
+
+            sessionsByDay[sessionDay].remainingEvents ||= dateTime.isBefore(session.endTime);
+            sessionsByDay[sessionDay].sessions.push({
+                endPast: session.endTime.isBefore(dateTime),
+                startPast: session.startTime.isBefore(dateTime),
+
+                session,
+            });
         }
 
-        eventSet.add(session.event.identifier);
+        if (eventSet.size === 1) {
+            const singularEventUrl =
+                `/schedule/${event.identifier}/event/${location.sessions[0].event.identifier}/`;
 
-        sessionsByDay[sessionDay].remainingEvents ||= dateTime.isBefore(session.endTime);
-        sessionsByDay[sessionDay].sessions.push({
-            endPast: session.endTime.isBefore(dateTime),
-            startPast: session.startTime.isBefore(dateTime),
+            return [sessionsByDay, singularEventUrl, [] ];
+        }
 
-            session,
+        for (const sessionDay in sessionsByDay) {
+            sessionsByDay[sessionDay].sessions.sort((lhs, rhs) => {
+                // (1) Move past events to the bottom of the list.
+                if (lhs.endPast && !rhs.endPast)
+                    return 1;
+                if (!lhs.endPast && rhs.endPast)
+                    return -1;
+
+                // (2) Move (or keep) active events to the top of the list.
+                if (lhs.startPast && !rhs.startPast)
+                    return -1;
+                if (!lhs.startPast && rhs.startPast)
+                    return 1;
+
+                // (3) Sort the active events based on the time at which they started.
+                if (lhs.session.startTime.isBefore(rhs.session.startTime))
+                    return -1;
+                if (rhs.session.startTime.isBefore(lhs.session.startTime))
+                    return 1;
+
+                // (4) Sort events sharing a timeslot alphabetically.
+                return lhs.session.name.localeCompare(rhs.session.name);
+            });
+        }
+
+        const dayOrder = Object.keys(sessionsByDay).sort((lhs, rhs) => {
+            if (sessionsByDay[lhs].remainingEvents && !sessionsByDay[rhs].remainingEvents)
+                return -1;
+            if (!sessionsByDay[lhs].remainingEvents && sessionsByDay[rhs].remainingEvents)
+                return 1;
+
+            return lhs.localeCompare(rhs);
         });
-    }
+
+        return [ sessionsByDay, /* singularEventUrl= */ null, dayOrder ];
+
+    }, [ dateTime, location ]);
 
     // There is an optimization we support here: if this location is only used for a single event
     // (with any number of sessions), we forward the user to the event page instead. This removes a
     // bit of redundancy for locations such as changing rooms, which are rather stationary as is.
-    if (eventSet.size === 1) {
-        route(`/schedule/${event.identifier}/event/${location.sessions[0].event.identifier}/`, true);
+    if (singularEventUrl) {
+        route(singularEventUrl, /* replace= */ true);
         return <></>;
     }
-
-    for (const sessionDay in sessionsByDay) {
-        sessionsByDay[sessionDay].sessions.sort((lhs, rhs) => {
-            // (1) Move past events to the bottom of the list.
-            if (lhs.endPast && !rhs.endPast)
-                return 1;
-            if (!lhs.endPast && rhs.endPast)
-                return -1;
-
-            // (2) Move (or keep) active events to the top of the list.
-            if (lhs.startPast && !rhs.startPast)
-                return -1;
-            if (!lhs.startPast && rhs.startPast)
-                return 1;
-
-            // (3) Sort the active events based on the time at which they started.
-            if (lhs.session.startTime.isBefore(rhs.session.startTime))
-                return -1;
-            if (rhs.session.startTime.isBefore(lhs.session.startTime))
-                return 1;
-
-            // (4) Sort events sharing a timeslot alphabetically.
-            return lhs.session.name.localeCompare(rhs.session.name);
-        });
-    }
-
-    const dayOrder = Object.keys(sessionsByDay).sort((lhs, rhs) => {
-        if (sessionsByDay[lhs].remainingEvents && !sessionsByDay[rhs].remainingEvents)
-            return -1;
-        if (!sessionsByDay[lhs].remainingEvents && sessionsByDay[rhs].remainingEvents)
-            return 1;
-
-        return lhs.localeCompare(rhs);
-    });
 
     return (
         <Fragment>

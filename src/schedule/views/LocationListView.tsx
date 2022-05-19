@@ -121,8 +121,6 @@ export function LocationListView(props: LocationListViewProps) {
     const [ dateTime, setDateTime ] = useState(DateTime.local());
     // TODO: Subscribe to an effect for propagating event schedule updates.
 
-    // TODO: Make it possible to favourite locations & stick them to the Overview page.
-
     type LocationInfo = { location: EventLocation, sessions: EventSession[] };
 
     // Compile a list of all the locations that are part of this area. Memoization is used because

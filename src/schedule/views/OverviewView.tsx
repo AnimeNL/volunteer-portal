@@ -11,6 +11,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
+import { EventTracker } from '../../base/EventTracker';
 import { Event, EventVolunteer } from '../../base/Event';
 
 // Properties made available to the <EventStatusDisplay> component.
@@ -82,6 +83,11 @@ interface OverviewViewProps {
     dateTime: DateTime;
 
     /**
+     * Tracker for the event for which we're showing the overview page.
+     */
+    eventTracker: EventTracker;
+
+    /**
      * The event for which the overview page is being displayed.
      */
     event: Event;
@@ -91,10 +97,10 @@ interface OverviewViewProps {
 // the event, information about their shifts, and displays the events they've flagged. It's possible
 // for people to be able to open this page without being a volunteer themselves.
 export function OverviewView(props: OverviewViewProps) {
-    const { dateTime, event } = props;
+    const { dateTime, eventTracker, event } = props;
     const { user } = useContext(AppContext);
 
-    const volunteer = event.volunteer({ name: user.name });
+    const volunteer = eventTracker.getUserVolunteer();
 
     return (
         <Fragment>

@@ -25,7 +25,7 @@ import { NavigationActiveOptions, NavigationProps, navigateToOption } from './Na
 //
 // https://mui.com/components/bottom-navigation/
 export function MobileNavigation(props: NavigationProps) {
-    const { event } = props;
+    const { event, volunteer } = props;
 
     // Compose the activity icons part of the bottom navigation bar. Detail is deliberately lost
     // as the numeric dots take up too much space within the menu.
@@ -78,9 +78,10 @@ export function MobileNavigation(props: NavigationProps) {
                 <BottomNavigationAction label="Events"
                                         value="events"
                                         icon={eventsIcon} />
-                <BottomNavigationAction label="Volunteers"
-                                        value="volunteers"
-                                        icon={volunteersIcon} />
+                { props.volunteer &&
+                    <BottomNavigationAction label="Volunteers"
+                                            value="volunteers"
+                                            icon={volunteersIcon} /> }
                 { props.showAdministration &&
                     <BottomNavigationAction label="Admin"
                                             value="admin"

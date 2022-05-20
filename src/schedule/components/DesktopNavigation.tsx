@@ -159,11 +159,12 @@ export function DesktopNavigation(props: NavigationProps) {
                                         href={ eventBaseUrl + '/' }
                                         icon={ <HomeIcon /> }
                                         label="Overview" />
-                <DesktopNavigationEntry active={ props.active === 'shifts' }
-                                        badge={ props.badgeActiveShifts }
-                                        href={ eventBaseUrl + '/shifts/' }
-                                        icon={ <AccessTimeIcon /> }
-                                        label="Your shifts" />
+                { props.volunteer &&
+                    <DesktopNavigationEntry active={ props.active === 'shifts' }
+                                            badge={ props.badgeActiveShifts }
+                                            href={ eventBaseUrl + '/shifts/' }
+                                            icon={ <AccessTimeIcon /> }
+                                            label="Your shifts" /> }
                 <DesktopNavigationEntry active={ props.active === 'events' }
                                         badge={ props.badgeActiveEvents }
                                         href={ eventBaseUrl + '/events/' }

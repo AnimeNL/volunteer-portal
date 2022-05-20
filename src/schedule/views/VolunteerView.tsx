@@ -33,6 +33,7 @@ import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
 import { AvatarEditor } from '../components/AvatarEditor';
 import { DateTime } from '../../base/DateTime';
+import { EventTracker } from '../../base/EventTracker';
 import { Event, EventShift, EventVolunteer } from '../../base/Event';
 import { Markdown } from '../components/Markdown';
 import { NotesEditor } from '../components/NotesEditor';
@@ -82,6 +83,9 @@ export interface VolunteerViewProps {
     // DateTime for which the <VolunteerView> has been rendered.
     dateTime: DateTime;
 
+    // Tracker for the event, which provides us access to real-time information.
+    eventTracker: EventTracker;
+
     // The event for which we want to display the volunteer's information.
     event: Event;
 
@@ -94,10 +98,10 @@ export interface VolunteerViewProps {
 // The <VolunteerView> component lists all information about a particular volunteer, and enables
 // the volunteer themselves, as well as seniors, to upload a modified photo to the server.
 export function VolunteerView(props: VolunteerViewProps) {
-    const { dateTime, event, volunteerIdentifier } = props;
+    const { dateTime, event, eventTracker, volunteerIdentifier } = props;
     const { user } = useContext(AppContext);
 
-    const userVolunteer = event.volunteer({ name: user.name });
+    const userVolunteer = eventTracker.getUserVolunteer();
     const volunteer = volunteerIdentifier ? event.volunteer({ identifier: volunteerIdentifier })
                                           : userVolunteer;
 

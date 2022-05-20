@@ -4,7 +4,7 @@
 
 import { route } from 'preact-router';
 
-import { Event } from '../../base/Event';
+import { Event, EventVolunteer } from '../../base/Event';
 
 // Active navigation that the user is on, as should be highlighted in the user interface.
 export type NavigationActiveOptions = 'overview' | 'shifts' | 'events' | 'volunteers' | 'admin';
@@ -29,6 +29,9 @@ export interface NavigationProps {
 
     // Whether the navigation option to the administration screen should be displayed.
     showAdministration?: boolean;
+
+    // The volunteer for whom the navigation is being shown.
+    volunteer?: EventVolunteer;
 };
 
 // Performs a navigation to the selected |option| using preact-router. Optionally the |area| can

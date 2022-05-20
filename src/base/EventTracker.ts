@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import type { EventInfo, EventVolunteer } from './Event';
+import type { EventInfo, EventShift, EventVolunteer } from './Event';
 
 import { DateTime } from './DateTime';
 
@@ -42,6 +42,11 @@ export interface EventTracker {
      * event instance where they're helping out will be returned instead. Constant time operation.
      */
     getVolunteerActivity(volunteer: EventVolunteer): EventInfo | 'available' | 'unavailable';
+
+    /**
+     * Returns the upcoming shift for the given |volunteer|, if any. Constant time operation.
+     */
+    getVolunteerUpcomingShift(volunteer: EventVolunteer): EventShift | undefined;
 
     // TODO: Active events (total count)
 }

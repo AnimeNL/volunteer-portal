@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import type { EventInfo, EventVolunteer } from './Event';
+import type { EventInfo, EventShift, EventVolunteer } from './Event';
 import type { EventTracker } from './EventTracker';
 
 import { DateTime } from './DateTime';
@@ -19,6 +19,8 @@ export class EventTrackerImpl implements EventTracker {
     #activeVolunteers: Map<EventVolunteer, EventInfo | null> = new Map();
     #activeVolunteerCount = 0;
 
+    #upcomingVolunteerShift: Map<EventVolunteer, EventShift> = new Map();
+
     #nextUpdate: DateTime | undefined;
 
     constructor(event: Event) {
@@ -32,6 +34,8 @@ export class EventTrackerImpl implements EventTracker {
     update(dateTime: DateTime): void {
         this.#activeVolunteers = new Map();
         this.#activeVolunteerCount = 0;
+
+        this.#upcomingVolunteerShift = new Map();
 
         this.#nextUpdate = DateTime.fromUnix(kMaximumNextUpdateUnixTime);
 
@@ -64,9 +68,15 @@ export class EventTrackerImpl implements EventTracker {
                     if (shift.startTime.isBefore(this.#nextUpdate))
                         this.#nextUpdate = shift.startTime;
 
-                    // Stop iterating through the shifts; each volunteer is expected to have a
-                    // linear schedule, as they cannot be in two places at once.
-                    break;
+                    // Stop iterating through the shifts once we've identified their active and
+                    // upcoming shift; each volunteer is expected to have a linear schedule, as they
+                    // cannot be in two places at once. Right?
+                    if (shift.type === 'shift') {
+                        this.#upcomingVolunteerShift.set(volunteer, shift);
+                        break;
+                    }
+
+                    continue;
                 }
 
                 if (shift.endTime.isSameOrBefore(dateTime))
@@ -117,5 +127,9 @@ export class EventTrackerImpl implements EventTracker {
             return 'available';
 
         return volunteerState;
+    }
+
+    getVolunteerUpcomingShift(volunteer: EventVolunteer): EventShift | undefined {
+        return this.#upcomingVolunteerShift.get(volunteer);
     }
 }

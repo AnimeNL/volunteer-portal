@@ -58,7 +58,8 @@ describe('EventTrackerImpl', () => {
                     name: [ 'Volunteer', 'A' ],
                     environments: { /* none */ },
                     shifts: [
-                        { type: 'shift', event: 'event-1', time: [ 5400, 7200 ] },
+                        { type: 'shift', event: 'event-1', time: [ 5400, 7000 ] },
+                        { type: 'shift', event: 'event-1', time: [ 7000, 7200 ] },
                     ]
                 },
                 {
@@ -95,7 +96,7 @@ describe('EventTrackerImpl', () => {
         expect(eventTracker.getNextUpdateDateTime()).not.toBeUndefined();
         expect(eventTracker.getNextUpdateDateTime()?.unix()).toEqual(5400);
 
-        eventTracker.update(DateTime.fromUnix(6500));
+        eventTracker.update(DateTime.fromUnix(7000));
         expect(eventTracker.getNextUpdateDateTime()).not.toBeUndefined();
         expect(eventTracker.getNextUpdateDateTime()?.unix()).toEqual(7200);
 
@@ -107,7 +108,7 @@ describe('EventTrackerImpl', () => {
 
     });
 
-    test('it can provide the number and activities of active volunteers', () => {
+    test('it can provide the count and activities of active volunteers', () => {
         assertNotNullOrUndefined(eventTracker);
         assertNotNullOrUndefined(event);
 
@@ -119,21 +120,36 @@ describe('EventTrackerImpl', () => {
 
         expect(eventTracker.getActiveVolunteerCount()).toEqual(0);
         expect(eventTracker.getVolunteerActivity(volunteerA)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerA)).toBeUndefined();
         expect(eventTracker.getVolunteerActivity(volunteerB)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerB)).toBeUndefined();
+
+        eventTracker.update(DateTime.fromUnix(0));
+        expect(eventTracker.getActiveVolunteerCount()).toEqual(0);
+        expect(eventTracker.getVolunteerActivity(volunteerA)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerA)).toBeInstanceOf(Object);
+        expect(eventTracker.getVolunteerActivity(volunteerB)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerB)).toBeInstanceOf(Object);
 
         eventTracker.update(DateTime.fromUnix(5400));
         expect(eventTracker.getActiveVolunteerCount()).toEqual(1);
         expect(eventTracker.getVolunteerActivity(volunteerA)).toBeInstanceOf(Object);
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerA)).toBeInstanceOf(Object);
         expect(eventTracker.getVolunteerActivity(volunteerB)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerB)).toBeInstanceOf(Object);
 
         eventTracker.update(DateTime.fromUnix(6666));
         expect(eventTracker.getActiveVolunteerCount()).toEqual(2);
         expect(eventTracker.getVolunteerActivity(volunteerA)).toBeInstanceOf(Object);
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerA)).toBeInstanceOf(Object);
         expect(eventTracker.getVolunteerActivity(volunteerB)).toBeInstanceOf(Object);
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerB)).toBeUndefined();
 
         eventTracker.update(DateTime.fromUnix(7200));
         expect(eventTracker.getActiveVolunteerCount()).toEqual(0);
         expect(eventTracker.getVolunteerActivity(volunteerA)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerA)).toBeUndefined();
         expect(eventTracker.getVolunteerActivity(volunteerB)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerUpcomingShift(volunteerB)).toBeUndefined();
     });
 });

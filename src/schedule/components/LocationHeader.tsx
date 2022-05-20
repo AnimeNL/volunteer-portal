@@ -14,6 +14,11 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
     locationHeader: {
         py: 1,
 
+        '& .MuiCardHeader-action': {
+            paddingRight: 1,
+            paddingTop: 1,
+        },
+
         '& .MuiCardHeader-content': {
             minWidth: 0,
         },
@@ -22,6 +27,11 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
 
 // Properties passed to the <LocationHeader> component.
 interface LocationHeaderProps {
+    /**
+     * The action that should be displayed in the header, if any.
+     */
+    action?: h.JSX.Element;
+
     /**
      * The icon that should be shown on the right-hand side of the header.
      */
@@ -41,11 +51,12 @@ interface LocationHeaderProps {
 // The <LocationHeader> component displays a <CardHeader> specific to an area or location. It's used
 // in various parts of the application, thus has been generalized.
 export function LocationHeader(props: LocationHeaderProps) {
-    const { icon, title, url } = props;
+    const { action, icon, title, url } = props;
 
     return (
         <Link href={url} sx={{ color: 'initial', textDecoration: 'initial' }}>
-            <CardHeader avatar={icon}
+            <CardHeader action={action}
+                        avatar={icon}
                         sx={kStyles.locationHeader}
                         title={title}
                         titleTypographyProps={{

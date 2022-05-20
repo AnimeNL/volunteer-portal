@@ -11,7 +11,9 @@ import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 
 import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
@@ -90,10 +92,17 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
             <Stack spacing={2} mt={2}>
                 { sortedAreas.map(({ area, sessions }) => {
                     const url = `/schedule/${event.identifier}/events/${area.identifier}/`;
+                    const action =
+                        sessions.length ? undefined
+                                        : <Tooltip title="No active events">
+                                              <PauseCircleOutlineIcon color="primary" />
+                                          </Tooltip>
+
                     return (
                         <Fragment>
                         <Card>
-                            <LocationHeader icon={ <MapsHomeWorkIcon color="primary" /> }
+                            <LocationHeader action={action}
+                                            icon={ <MapsHomeWorkIcon color="primary" /> }
                                             title={area.name}
                                             url={url} />
                             { sessions.length > 0 &&

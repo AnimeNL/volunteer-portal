@@ -79,6 +79,7 @@ describe('EventImpl', () => {
                 ],
                 meta: {
                     name: 'Event Name',
+                    time: [ Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER ],
                     timezone: 'Europe/London',
                 },
                 userPrivileges: [

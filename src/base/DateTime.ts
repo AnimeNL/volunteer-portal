@@ -183,6 +183,13 @@ export class DateTime {
     }
 
     /**
+     * Returns whether |this| is before or at the same time as |that|.
+     */
+    isSameOrBefore(that: DateTime): boolean {
+        return this.#moment.isSameOrBefore(that.#moment);
+    }
+
+    /**
      * Returns whether |this| is in UTC.
      */
     isUTC(): boolean { return this.#moment.isUTC(); }

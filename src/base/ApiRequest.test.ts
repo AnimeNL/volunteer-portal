@@ -269,7 +269,10 @@ describe('ApiRequest', () => {
             areas: [],
             events: [],
             locations: [],
-            meta: { name: 'EventCon 2021' },
+            meta: {
+                name: 'EventCon 2021',
+                time: [ Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER ]
+            },
             volunteers: [],
         };
 

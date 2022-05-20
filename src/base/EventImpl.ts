@@ -5,7 +5,6 @@
 import { ApiRequest } from './ApiRequest';
 import { ApiRequestManager, ApiRequestObserver } from './ApiRequestManager';
 import { DateTime } from './DateTime';
-import { IntervalTree, IntervalTreeNode } from './IntervalTree';
 
 import type { Event, EventArea, EventInfo, EventLocation, EventSession, EventShift,
               EventVolunteer } from './Event';
@@ -36,7 +35,6 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     // Information made available after the Event was successfully retrieved.
     #meta?: IEventResponseMeta;
     #privileges: Set<IEventResponsePrivilege> = new Set();
-    #sessions?: IntervalTree<EventSessionImpl>;
 
     #startTime?: DateTime;
     #endTime?: DateTime;
@@ -135,9 +133,6 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
                                                              this.#events));
         }
 
-        // (6) Initialize the interval tree for the active sessions during this event.
-        this.#sessions = new IntervalTree(sessions);
-
         // (7) Run all the finalizers to make sure that the data is in order.
         for (const instance of finalizationQueue)
             instance.finalize();
@@ -195,19 +190,6 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     // ---------------------------------------------------------------------------------------------
     // Event API
     // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Finds the active sessions at the given |time|, which defaults to the current time. The search
-     * is done using an interval tree, to allow for O(log n + k) search times.
-     */
-    findActiveSessions(time?: DateTime): EventSession[] {
-        if (!this.#sessions)
-            throw new Error(kExceptionMessage);
-
-        const queryTime = time ?? DateTime.local();
-
-        return this.#sessions.query({ point: queryTime.unix() });
-    }
 
     event(identifier: string): EventInfo | undefined {
         return this.#events.get(identifier);
@@ -399,7 +381,7 @@ class EventLocationImpl implements EventLocation, Finalizer {
  * Implementation of the EventSession interface, which abstracts over the IEventResponseSession
  * response information. Times will be represented by a DateTime instance.
  */
-class EventSessionImpl implements EventSession, IntervalTreeNode {
+class EventSessionImpl implements EventSession {
     #event: EventInfo;
     #location: EventLocation;
 
@@ -408,10 +390,6 @@ class EventSessionImpl implements EventSession, IntervalTreeNode {
 
     #beginTime: DateTime;
     #endTime: DateTime;
-
-    // IntervalTreeNode implementation:
-    public start: number;
-    public end: number;
 
     constructor(event: EventInfo, location: EventLocation, response: IEventResponseSession) {
         this.#event = event;
@@ -422,9 +400,6 @@ class EventSessionImpl implements EventSession, IntervalTreeNode {
 
         this.#beginTime = DateTime.fromUnix(response.time[0]);
         this.#endTime = DateTime.fromUnix(response.time[1]);
-
-        this.start = response.time[0];
-        this.end = response.time[1];
     }
 
     get event() { return this.#event; }

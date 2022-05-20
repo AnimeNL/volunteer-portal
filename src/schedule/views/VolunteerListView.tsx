@@ -20,6 +20,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 
 import { AppTitle } from '../../AppTitle';
+import { DateTime } from '../../base/DateTime';
 import { Event, EventVolunteer } from '../../base/Event';
 import { initials } from '../../base/NameUtilities';
 
@@ -152,13 +153,23 @@ function VolunteerList(props: VolunteerListProps) {
 }
 
 // Properties available for the <VolunteerListView> component.
-type VolunteerListViewProps = { event: Event, identifier: string };
+interface VolunteerListViewProps {
+    /**
+     * DateTime for which the <VolunteerListView> has been rendered.
+     */
+    dateTime: DateTime;
+
+    /**
+     * The Event instance that's active in the scheduling application.
+     */
+    event: Event;
+};
 
 // The <VolunteerListView> provides an overview of the volunteers who are participating in this
 // event. There are two views: a singular list without headers for users who only see volunteers
 // from a single environment, or multiple tabbed lists for folks who can access multiple.
 export function VolunteerListView(props: VolunteerListViewProps) {
-    const { event, identifier } = props;
+    const { dateTime, event } = props;
 
     const environments: Record<string, EventVolunteer[]> = {};
     for (const volunteer of event.volunteers()) {
@@ -190,7 +201,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                 <Fragment>
                     <AppTitle title="Volunteers" />
                     <VolunteerList environment={environmentNames[0]}
-                                   identifier={identifier}
+                                   identifier={event.identifier}
                                    volunteers={environments[environmentNames[0]]} />
                 </Fragment>
             );
@@ -251,7 +262,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                     { environmentNames.map((name, index) =>
                         <VolunteerList volunteers={environments[name]}
                                        environment={name}
-                                       identifier={identifier}
+                                       identifier={event.identifier}
                                        value={selectedTabIndex}
                                        index={index} />) }
 

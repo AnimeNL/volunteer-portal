@@ -125,8 +125,6 @@ describe('EventImpl', () => {
         expect(event.volunteer({ identifier: 'foo' })).toBeUndefined();
         expect(event.volunteer({ name: 'foo' })).toBeUndefined();
         expect([ ...event.volunteers() ]).toHaveLength(0);
-
-        expect(() => event.findActiveSessions()).toThrowError();
     });
 
     it('should reflect the meta-information of a valid event from the network', async () => {
@@ -216,17 +214,6 @@ describe('EventImpl', () => {
         expect(triangularDance.location).toStrictEqual(tower);
         expect(triangularDance.startTime.format()).toEqual('2021-04-04 23:00:00');
         expect(triangularDance.endTime.format()).toEqual('2021-04-05 23:59:59');
-
-        // Beyond inclusion of the information, also verify that we're able to find active sessions
-        // at a particular time using the `findActiveSessions` method.
-        expect(event.findActiveSessions(DateTime.fromUnix(1617490000))).toHaveLength(0);
-        expect(event.findActiveSessions(DateTime.fromUnix(1617663600))).toHaveLength(0);
-
-        const sessions = event.findActiveSessions(DateTime.fromUnix(1617577000));
-
-        expect(sessions).toHaveLength(2);
-        expect(sessions[0]).toStrictEqual(circularDance);
-        expect(sessions[1]).toStrictEqual(triangularDance);
 
         expect([ ...event.events() ]).toHaveLength(2);
         expect(event.event('invalid-identifier')).toBeUndefined();

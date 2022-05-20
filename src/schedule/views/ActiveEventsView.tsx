@@ -17,6 +17,7 @@ import { AppTitle } from '../../AppTitle';
 import { DateTime } from '../../base/DateTime';
 import { Event, EventArea, EventSession } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
+import { EventTracker } from '../../base/EventTracker';
 import { LocationHeader } from '../components/LocationHeader';
 
 // Properties passed to the <ActiveEventsViews> component.
@@ -27,6 +28,11 @@ interface ActiveEventsViewProps {
     dateTime: DateTime;
 
     /**
+     * EventTracker instance for the scheduling app.
+     */
+    eventTracker: EventTracker;
+
+    /**
      * The event for which the active events should be listed.
      */
      event: Event;
@@ -35,12 +41,12 @@ interface ActiveEventsViewProps {
 // Lists the events that are currently active on the festival. A "card" will be displayed for each
 // area, immediately followed by the events currently active in that area.
 export function ActiveEventsView(props: ActiveEventsViewProps) {
-    const { dateTime, event } = props;
+    const { dateTime, eventTracker, event } = props;
 
     // Find all the active sessions. We work our way backwards to areas for this view as we're able
     // to use the interval tree here, which is not the case for the location-specific views.
     const [ sortedAreas, activeSessionLength ] = useMemo(() => {
-        const activeSessions = useMemo(() => event.findActiveSessions(dateTime), [ dateTime ]);
+        const activeSessions = eventTracker.getActiveSessions();
         const activeAreas = new Map<EventArea, EventSession[]>();
 
         // (1) Collate all the active sessions by the area they're being hosted in.

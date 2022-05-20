@@ -63,12 +63,6 @@ export interface Event {
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns an array of sessions that are active at the given |time|. The implementation has a
-     * time complexity of O(log n + k) on the number of sessions within the Event.
-     */
-    findActiveSessions(time?: DateTime): EventSession[];
-
-    /**
      * Returns the event identified by the given |identifier|, or undefined when it does not exist.
      */
     event(identifier: string): EventInfo | undefined;

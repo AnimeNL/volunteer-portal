@@ -51,6 +51,11 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
 // Props made available to the <EventView> component.
 export interface EventViewProps {
     /**
+     * DateTime for which the <LocationListView> has been rendered.
+     */
+    dateTime: DateTime;
+
+    /**
      * The event for which this page is being shown.
      */
     event: Event;
@@ -70,7 +75,7 @@ export interface EventViewProps {
 // between those frequently. The event's location is one of the most important pieces of information
 // to surface on this page.
 export function EventView(props: EventViewProps) {
-    const { event, eventIdentifier } = props;
+    const { dateTime, event, eventIdentifier } = props;
     const { user } = useContext(AppContext);
 
     // Validate that the |eventIdentifier| is valid on the passed Event so that we can find the
@@ -80,9 +85,6 @@ export function EventView(props: EventViewProps) {
         route(`/schedule/${event.identifier}/`);
         return <></>;
     }
-
-    const [ dateTime, setDateTime ] = useState(DateTime.local());
-    // TODO: Subscribe to an effect for propagating event schedule updates.
 
     // TODO: Allow events to be favourited for display on the overview page.
     // TODO: Should we enable linking to a map with the location information?

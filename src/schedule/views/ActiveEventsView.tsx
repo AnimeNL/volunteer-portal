@@ -22,6 +22,11 @@ import { LocationHeader } from '../components/LocationHeader';
 // Properties passed to the <ActiveEventsViews> component.
 interface ActiveEventsViewProps {
     /**
+     * DateTime for which the <ActiveEventsView> has been rendered.
+     */
+    dateTime: DateTime;
+
+    /**
      * The event for which the active events should be listed.
      */
      event: Event;
@@ -30,10 +35,7 @@ interface ActiveEventsViewProps {
 // Lists the events that are currently active on the festival. A "card" will be displayed for each
 // area, immediately followed by the events currently active in that area.
 export function ActiveEventsView(props: ActiveEventsViewProps) {
-    const { event } = props;
-
-    const [ dateTime, setDateTime ] = useState(DateTime.local());
-    // TODO: Subscribe to an effect for propagating event schedule updates.
+    const { dateTime, event } = props;
 
     // Find all the active sessions. We work our way backwards to areas for this view as we're able
     // to use the interval tree here, which is not the case for the location-specific views.

@@ -79,6 +79,9 @@ function createAccessCodeLink(volunteer: EventVolunteer, type: 'sms' | 'whatsapp
 
 // Properties passed to the <VolunteerView> component.
 export interface VolunteerViewProps {
+    // DateTime for which the <VolunteerView> has been rendered.
+    dateTime: DateTime;
+
     // The event for which we want to display the volunteer's information.
     event: Event;
 
@@ -91,7 +94,7 @@ export interface VolunteerViewProps {
 // The <VolunteerView> component lists all information about a particular volunteer, and enables
 // the volunteer themselves, as well as seniors, to upload a modified photo to the server.
 export function VolunteerView(props: VolunteerViewProps) {
-    const { event, volunteerIdentifier } = props;
+    const { dateTime, event, volunteerIdentifier } = props;
     const { user } = useContext(AppContext);
 
     const userVolunteer = event.volunteer({ name: user.name });
@@ -184,9 +187,6 @@ export function VolunteerView(props: VolunteerViewProps) {
     const theme = useTheme();
     const title = useMediaQuery(theme.breakpoints.up('sm')) ? volunteer.name
                                                             : firstName(volunteer.name);
-
-    const [ dateTime, setDateTime ] = useState(DateTime.local());
-    // TODO: Subscribe to an effect for propagating event schedule updates.
 
     type ShiftInfo = { endPast: boolean; shift: EventShift };
     type DailyShiftInfo = { remainingShifts: boolean; shifts: ShiftInfo[] };

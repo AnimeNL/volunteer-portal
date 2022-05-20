@@ -33,6 +33,11 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
 // Properties that can be passed to the <EventListView> component.
 export interface EventListViewProps {
     /**
+     * DateTime for which the <EventListView> has been rendered.
+     */
+    dateTime: DateTime;
+
+    /**
      * The event for which the locations are being listed.
      */
     event: Event;
@@ -53,7 +58,7 @@ export interface EventListViewProps {
 // location, indicated through props passed to this view. The layout mimics the event and volunteer
 // detail pages, thus with a header followed by a list of sessions and volunteers.
 export function EventListView(props: EventListViewProps) {
-    const { event } = props;
+    const { dateTime, event } = props;
 
     const area = event.area(props.area);
     const location = event.location(props.location);
@@ -64,9 +69,6 @@ export function EventListView(props: EventListViewProps) {
         route(`/schedule/${event.identifier}/events/`);
         return <></>;
     }
-
-    const [ dateTime, setDateTime ] = useState(DateTime.local());
-    // TODO: Subscribe to an effect for propagating event schedule updates.
 
     type SessionInfo = { endPast: boolean; startPast: boolean; session: EventSession };
     type DailySessionInfo = { remainingEvents: boolean; sessions: SessionInfo[] };

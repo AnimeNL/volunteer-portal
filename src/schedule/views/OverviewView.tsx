@@ -77,6 +77,11 @@ function VolunteerShiftOverview(props: VolunteerShiftOverview) {
 // Properties made available to the <OverviewViewProps> component.
 interface OverviewViewProps {
     /**
+     * DateTime for which the <OverviewView> has been rendered.
+     */
+    dateTime: DateTime;
+
+    /**
      * The event for which the overview page is being displayed.
      */
     event: Event;
@@ -86,13 +91,10 @@ interface OverviewViewProps {
 // the event, information about their shifts, and displays the events they've flagged. It's possible
 // for people to be able to open this page without being a volunteer themselves.
 export function OverviewView(props: OverviewViewProps) {
-    const { event } = props;
+    const { dateTime, event } = props;
     const { user } = useContext(AppContext);
 
     const volunteer = event.volunteer({ name: user.name });
-
-    const [ dateTime, setDateTime ] = useState(DateTime.local());
-    // TODO: Subscribe to an effect for propagating event schedule updates.
 
     return (
         <Fragment>

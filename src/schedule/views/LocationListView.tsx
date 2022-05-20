@@ -96,6 +96,11 @@ function LocationListEntry(props: LocationListEntryProps) {
 // Properties available for the <LocationListView> component.
 export interface LocationListViewProps {
     /**
+     * DateTime for which the <LocationListView> has been rendered.
+     */
+    dateTime: DateTime;
+
+    /**
      * The event for which the locations are being listed.
      */
     event: Event;
@@ -110,16 +115,13 @@ export interface LocationListViewProps {
 // The <LocationListView> component is responsible for displaying the locations within a particular
 // area of the convention, including the active and common events that will take place in them.
 export function LocationListView(props: LocationListViewProps) {
-    const { event } = props;
+    const { dateTime, event } = props;
 
     const area = event.area(props.area);
     if (!area) {
         route(`/schedule/${event.identifier}/events/`);
         return <></>;
     }
-
-    const [ dateTime, setDateTime ] = useState(DateTime.local());
-    // TODO: Subscribe to an effect for propagating event schedule updates.
 
     type LocationInfo = { location: EventLocation, sessions: EventSession[] };
 

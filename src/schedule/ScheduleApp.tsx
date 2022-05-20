@@ -231,7 +231,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
     // ---------------------------------------------------------------------------------------------
 
     render() {
-        const { eventTracker } = this.state;
+        const { eventTracker, dateTime } = this.state;
         const { event, user } = this.props;
 
         const { environment } = useContext(AppContext);
@@ -286,15 +286,15 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                 { user.isAdministrator() &&
                                     <Route path="/schedule/:identifier/admin/" component={AdministratorView} app={this} /> }
 
-                                <Route path="/schedule/:identifier/events/:area/:location/" component={EventListView} event={event} />
-                                <Route path="/schedule/:identifier/events/:area/" component={LocationListView} event={event} />
-                                <Route path="/schedule/:identifier/events/" component={ActiveEventsView} event={event} />
-                                <Route path="/schedule/:identifier/event/:eventIdentifier/" component={EventView} event={event} />
+                                <Route path="/schedule/:identifier/events/:area/:location/" component={EventListView} dateTime={dateTime} event={event} />
+                                <Route path="/schedule/:identifier/events/:area/" component={LocationListView} dateTime={dateTime} event={event} />
+                                <Route path="/schedule/:identifier/events/" component={ActiveEventsView} dateTime={dateTime} event={event} />
+                                <Route path="/schedule/:identifier/event/:eventIdentifier/" component={EventView} dateTime={dateTime} event={event} />
                                 <Route path="/schedule/:identifier/shifts/" component={VolunteerView} event={event} />
-                                <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/" component={VolunteerView} event={event} />
+                                <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/" component={VolunteerView} dateTime={dateTime} event={event} />
                                 <Route path="/schedule/:identifier/volunteers/" component={VolunteerListView} event={event} />
 
-                                <Route default component={OverviewView} event={event} />
+                                <Route default component={OverviewView} dateTime={dateTime} event={event} />
                             </Router>
                         </Box>
 

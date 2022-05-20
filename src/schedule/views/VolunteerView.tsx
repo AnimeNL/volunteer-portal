@@ -102,7 +102,7 @@ export function VolunteerView(props: VolunteerViewProps) {
     const { user } = useContext(AppContext);
 
     const userVolunteer = eventTracker.getUserVolunteer();
-    const volunteer = volunteerIdentifier ? event.volunteer({ identifier: volunteerIdentifier })
+    const volunteer = volunteerIdentifier ? event.volunteer(volunteerIdentifier)
                                           : userVolunteer;
 
     if (!volunteer) {

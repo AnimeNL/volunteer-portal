@@ -161,10 +161,10 @@ describe('EventTrackerImpl', () => {
         assertNotNullOrUndefined(eventTracker);
         assertNotNullOrUndefined(event);
 
-        const volunteerA = event.volunteer({ identifier: 'volunteer-a' });
+        const volunteerA = event.volunteer('volunteer-a');
         assertNotNullOrUndefined(volunteerA);
 
-        const volunteerB = event.volunteer({ identifier: 'volunteer-b' });
+        const volunteerB = event.volunteer('volunteer-b');
         assertNotNullOrUndefined(volunteerB);
 
         expect(eventTracker.getActiveVolunteerCount()).toEqual(0);

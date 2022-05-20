@@ -110,10 +110,10 @@ export interface Event {
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns the volunteer identified by the given |identifier| (O(1) operation), the volunteer by
-     * the given |name| (O(n) operation), or undefined when not found.
+     * Returns the volunteer identified by the given |identifier| (O(1) operation), or undefined
+     * when no volunteer with such an identifier could be found.
      */
-    volunteer(query: { identifier?: string; name?: string; }): EventVolunteer | undefined;
+    volunteer(identifier: string): EventVolunteer | undefined;
 
     /**
      * Returns an iterator that provides access to all volunteers known to the system.

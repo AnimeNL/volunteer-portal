@@ -122,8 +122,7 @@ describe('EventImpl', () => {
         expect(event.location('identifier')).toBeUndefined();
         expect([ ...event.locations() ]).toHaveLength(0);
 
-        expect(event.volunteer({ identifier: 'foo' })).toBeUndefined();
-        expect(event.volunteer({ name: 'foo' })).toBeUndefined();
+        expect(event.volunteer('foo')).toBeUndefined();
         expect([ ...event.volunteers() ]).toHaveLength(0);
     });
 
@@ -227,15 +226,14 @@ describe('EventImpl', () => {
         const event = new EventImpl({ authToken: 'my-token', event: '2022-regular' });
         expect(await event.initialize()).toBeTruthy();
 
-        expect(event.volunteer({ identifier: 'john' })).not.toBeUndefined();
-        expect(event.volunteer({ name: 'Jane Doe' })).not.toBeUndefined();
+        expect(event.volunteer('john')).not.toBeUndefined();
 
         expect([ ...event.volunteers() ].map(volunteer => volunteer.name)).toEqual([
             'John Doe',
             'Jane Doe',
         ]);
 
-        const john = event.volunteer({ identifier: 'john' })!;
+        const john = event.volunteer('john')!;
         expect(john.identifier).toEqual('john');
         expect(john.firstName).toEqual('John');
         expect(john.lastName).toEqual('Doe');
@@ -243,7 +241,7 @@ describe('EventImpl', () => {
         expect(john.avatar).toBeUndefined();
         expect(john.phoneNumber).toEqual('+3100000000')
 
-        const jane = event.volunteer({ identifier: 'jane' })!;
+        const jane = event.volunteer('jane')!;
         expect(jane.accessCode).toBeUndefined();
         expect(jane.avatar).toEqual('/jane-doe.png');
         expect(jane.phoneNumber).toBeUndefined();
@@ -255,7 +253,7 @@ describe('EventImpl', () => {
         const event = new EventImpl({ authToken: 'my-token', event: '2022-regular' });
         expect(await event.initialize()).toBeTruthy();
 
-        const john = event.volunteer({ identifier: 'john' })!;
+        const john = event.volunteer('john')!;
         expect(john).not.toBeUndefined();
 
         // (1) Attempt to upload an avatar, but have the server respond with non-ok response.

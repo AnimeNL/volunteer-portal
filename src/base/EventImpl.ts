@@ -231,17 +231,8 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     // Volunteer API
     // ---------------------------------------------------------------------------------------------
 
-    volunteer(query: { identifier?: string; name?: string; }): EventVolunteer | undefined {
-        if (query.identifier) {
-            return this.#volunteers.get(query.identifier);
-        } else if (query.name) {
-            for (const [ _, volunteer ] of this.#volunteers) {
-                if (volunteer.name === query.name)
-                    return volunteer;
-            }
-        }
-
-        return undefined;
+    volunteer(identifier: string): EventVolunteer | undefined {
+        return this.#volunteers.get(identifier);
     }
 
     volunteers(): IterableIterator<EventVolunteer> {

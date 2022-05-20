@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import type { EventInfo, EventShift, EventVolunteer } from './Event';
+import type { EventArea, EventInfo, EventSession, EventShift, EventVolunteer } from './Event';
 import type { EventTracker } from './EventTracker';
 
 import { DateTime } from './DateTime';
@@ -16,6 +16,8 @@ const kMaximumNextUpdateUnixTime = 2147483646;
 export class EventTrackerImpl implements EventTracker {
     #event: Event;
 
+    #activeSessions: EventSession[] = [];
+    #activeSessionsByArea: Map<EventArea, number> = new Map();
     #activeVolunteers: Map<EventVolunteer, EventInfo | null> = new Map();
     #activeVolunteerCount = 0;
 
@@ -32,6 +34,8 @@ export class EventTrackerImpl implements EventTracker {
     // ---------------------------------------------------------------------------------------------
 
     update(dateTime: DateTime): void {
+        this.#activeSessions = [];
+        this.#activeSessionsByArea = new Map();
         this.#activeVolunteers = new Map();
         this.#activeVolunteerCount = 0;
 
@@ -54,7 +58,10 @@ export class EventTrackerImpl implements EventTracker {
                 if (session.endTime.isSameOrBefore(dateTime))
                     continue;  // the |session| has finished already
 
-                // TODO: Store the |session| somewhere.
+                this.#activeSessions.push(session);
+                this.#activeSessionsByArea.set(
+                    session.location.area,
+                    1 + (this.#activeSessionsByArea.get(session.location.area) || 0));
 
                 if (session.endTime.isBefore(this.#nextUpdate))
                     this.#nextUpdate = session.endTime;
@@ -112,6 +119,18 @@ export class EventTrackerImpl implements EventTracker {
 
     getNextUpdateDateTime(): DateTime | undefined {
         return this.#nextUpdate;
+    }
+
+    getActiveSessionCount(): number {
+        return this.#activeSessions.length;
+    }
+
+    getActiveSessionCountForArea(area: EventArea): number {
+        return this.#activeSessionsByArea.get(area) || 0;
+    }
+
+    getActiveSessions(): EventSession[] {
+        return this.#activeSessions;
     }
 
     getActiveVolunteerCount(): number {

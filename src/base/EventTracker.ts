@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-import type { EventInfo, EventShift, EventVolunteer } from './Event';
+import type { EventArea, EventInfo, EventSession, EventShift, EventVolunteer } from './Event';
 
 import { DateTime } from './DateTime';
 
@@ -32,6 +32,21 @@ export interface EventTracker {
     getNextUpdateDateTime(): DateTime | undefined;
 
     /**
+     * Returns the number of active sessions at this very moment. Constant time operation.
+     */
+    getActiveSessionCount(): number;
+
+    /**
+     * Returns the number of active sessions in |area| at this very moment. Constant time operation.
+     */
+    getActiveSessionCountForArea(area: EventArea): number;
+
+    /**
+     * Returns an array of the active sessions at this very moment. Constant time operation.
+     */
+    getActiveSessions(): EventSession[];
+
+    /**
      * Returns the number of volunteers who are currently active on a shift. Volunteers who are
      * available are ignored for this method. Constant time operation.
      */
@@ -47,6 +62,4 @@ export interface EventTracker {
      * Returns the upcoming shift for the given |volunteer|, if any. Constant time operation.
      */
     getVolunteerUpcomingShift(volunteer: EventVolunteer): EventShift | undefined;
-
-    // TODO: Active events (total count)
 }

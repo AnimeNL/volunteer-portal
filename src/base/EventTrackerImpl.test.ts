@@ -6,7 +6,6 @@ import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 
 import { DateTime } from './DateTime';
 import { EventImpl } from './EventImpl';
-import { EventInfo } from './Event';
 import { EventTrackerImpl } from './EventTrackerImpl';
 
 describe('EventTrackerImpl', () => {
@@ -39,6 +38,14 @@ describe('EventTrackerImpl', () => {
                         { location: 'location-a-1', name: 'Session 1', time: [ 0, 3600 ] },
                         { location: 'location-a-1', name: 'Session 2', time: [ 3600, 7200 ] },
                     ],
+                },
+                {
+                    identifier: 'event-2',
+                    hidden: false,
+                    sessions: [
+                        { location: 'location-b-1', name: 'Session 3', time: [ 3600, 7000 ] },
+                        { location: 'location-b-2', name: 'Session 4', time: [ 5400, 7200 ] },
+                    ]
                 },
             ],
             locations: [
@@ -105,7 +112,49 @@ describe('EventTrackerImpl', () => {
     });
 
     test('it can provide the number of active events', () => {
+        assertNotNullOrUndefined(eventTracker);
+        assertNotNullOrUndefined(event);
 
+        const areaA = event.area('area-a');
+        assertNotNullOrUndefined(areaA);
+
+        const areaB = event.area('area-b');
+        assertNotNullOrUndefined(areaB);
+
+        expect(eventTracker.getActiveSessionCount()).toEqual(0);
+        expect(eventTracker.getActiveSessionCountForArea(areaA)).toEqual(0);
+        expect(eventTracker.getActiveSessionCountForArea(areaB)).toEqual(0);
+        expect(eventTracker.getActiveSessions()).toHaveLength(0);
+
+        eventTracker.update(DateTime.fromUnix(0));
+        expect(eventTracker.getActiveSessionCount()).toEqual(1);
+        expect(eventTracker.getActiveSessionCountForArea(areaA)).toEqual(1);
+        expect(eventTracker.getActiveSessionCountForArea(areaB)).toEqual(0);
+        expect(eventTracker.getActiveSessions()).toHaveLength(1);
+
+        eventTracker.update(DateTime.fromUnix(3600));
+        expect(eventTracker.getActiveSessionCount()).toEqual(2);
+        expect(eventTracker.getActiveSessionCountForArea(areaA)).toEqual(1);
+        expect(eventTracker.getActiveSessionCountForArea(areaB)).toEqual(1);
+        expect(eventTracker.getActiveSessions()).toHaveLength(2);
+
+        eventTracker.update(DateTime.fromUnix(5400));
+        expect(eventTracker.getActiveSessionCount()).toEqual(3);
+        expect(eventTracker.getActiveSessionCountForArea(areaA)).toEqual(1);
+        expect(eventTracker.getActiveSessionCountForArea(areaB)).toEqual(2);
+        expect(eventTracker.getActiveSessions()).toHaveLength(3);
+
+        eventTracker.update(DateTime.fromUnix(7100));
+        expect(eventTracker.getActiveSessionCount()).toEqual(2);
+        expect(eventTracker.getActiveSessionCountForArea(areaA)).toEqual(1);
+        expect(eventTracker.getActiveSessionCountForArea(areaB)).toEqual(1);
+        expect(eventTracker.getActiveSessions()).toHaveLength(2);
+
+        eventTracker.update(DateTime.fromUnix(7200));
+        expect(eventTracker.getActiveSessionCount()).toEqual(0);
+        expect(eventTracker.getActiveSessionCountForArea(areaA)).toEqual(0);
+        expect(eventTracker.getActiveSessionCountForArea(areaB)).toEqual(0);
+        expect(eventTracker.getActiveSessions()).toHaveLength(0);
     });
 
     test('it can provide the count and activities of active volunteers', () => {

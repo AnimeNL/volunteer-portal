@@ -6,10 +6,13 @@ import { RestoreConsole, default as mockConsole } from 'jest-mock-console';
 
 import { DateTime } from './DateTime';
 import { EventImpl } from './EventImpl';
+import { EventInfo } from './Event';
 import { EventTrackerImpl } from './EventTrackerImpl';
 
 describe('EventTrackerImpl', () => {
     let restoreConsole: RestoreConsole | undefined;
+
+    let event: EventImpl | undefined;
     let eventTracker: EventTrackerImpl | undefined;
 
     afterEach(() => restoreConsole!());
@@ -18,7 +21,7 @@ describe('EventTrackerImpl', () => {
         restoreConsole = mockConsole();
 
         // (2) Install a mocked |event| object to run the EventTrackerImpl on.
-        const event = new EventImpl({
+        event = new EventImpl({
             authToken: 'auth-token',
             event: 'event-identifier',
         });
@@ -57,6 +60,14 @@ describe('EventTrackerImpl', () => {
                     shifts: [
                         { type: 'shift', event: 'event-1', time: [ 5400, 7200 ] },
                     ]
+                },
+                {
+                    identifier: 'volunteer-b',
+                    name: [ 'Volunteer', 'B' ],
+                    environments: { /* none */ },
+                    shifts: [
+                        { type: 'shift', event: 'event-1', time: [ 6300, 7200 ] },
+                    ],
                 }
             ]
         });
@@ -84,7 +95,7 @@ describe('EventTrackerImpl', () => {
         expect(eventTracker.getNextUpdateDateTime()).not.toBeUndefined();
         expect(eventTracker.getNextUpdateDateTime()?.unix()).toEqual(5400);
 
-        eventTracker.update(DateTime.fromUnix(5500));
+        eventTracker.update(DateTime.fromUnix(6500));
         expect(eventTracker.getNextUpdateDateTime()).not.toBeUndefined();
         expect(eventTracker.getNextUpdateDateTime()?.unix()).toEqual(7200);
 
@@ -96,7 +107,33 @@ describe('EventTrackerImpl', () => {
 
     });
 
-    test('it can provide the number of active volunteers', () => {
+    test('it can provide the number and activities of active volunteers', () => {
+        assertNotNullOrUndefined(eventTracker);
+        assertNotNullOrUndefined(event);
 
+        const volunteerA = event.volunteer({ identifier: 'volunteer-a' });
+        assertNotNullOrUndefined(volunteerA);
+
+        const volunteerB = event.volunteer({ identifier: 'volunteer-b' });
+        assertNotNullOrUndefined(volunteerB);
+
+        expect(eventTracker.getActiveVolunteerCount()).toEqual(0);
+        expect(eventTracker.getVolunteerActivity(volunteerA)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerActivity(volunteerB)).toEqual('unavailable');
+
+        eventTracker.update(DateTime.fromUnix(5400));
+        expect(eventTracker.getActiveVolunteerCount()).toEqual(1);
+        expect(eventTracker.getVolunteerActivity(volunteerA)).toBeInstanceOf(Object);
+        expect(eventTracker.getVolunteerActivity(volunteerB)).toEqual('unavailable');
+
+        eventTracker.update(DateTime.fromUnix(6666));
+        expect(eventTracker.getActiveVolunteerCount()).toEqual(2);
+        expect(eventTracker.getVolunteerActivity(volunteerA)).toBeInstanceOf(Object);
+        expect(eventTracker.getVolunteerActivity(volunteerB)).toBeInstanceOf(Object);
+
+        eventTracker.update(DateTime.fromUnix(7200));
+        expect(eventTracker.getActiveVolunteerCount()).toEqual(0);
+        expect(eventTracker.getVolunteerActivity(volunteerA)).toEqual('unavailable');
+        expect(eventTracker.getVolunteerActivity(volunteerB)).toEqual('unavailable');
     });
 });

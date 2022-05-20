@@ -2,6 +2,7 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import type { EventInfo, EventVolunteer } from './Event';
 import type { EventTracker } from './EventTracker';
 
 import { DateTime } from './DateTime';
@@ -15,6 +16,9 @@ const kMaximumNextUpdateUnixTime = 2147483646;
 export class EventTrackerImpl implements EventTracker {
     #event: Event;
 
+    #activeVolunteers: Map<EventVolunteer, EventInfo | null> = new Map();
+    #activeVolunteerCount = 0;
+
     #nextUpdate: DateTime | undefined;
 
     constructor(event: Event) {
@@ -26,6 +30,9 @@ export class EventTrackerImpl implements EventTracker {
     // ---------------------------------------------------------------------------------------------
 
     update(dateTime: DateTime): void {
+        this.#activeVolunteers = new Map();
+        this.#activeVolunteerCount = 0;
+
         this.#nextUpdate = DateTime.fromUnix(kMaximumNextUpdateUnixTime);
 
         // (1) Iterate through the events and their sessions.
@@ -65,7 +72,19 @@ export class EventTrackerImpl implements EventTracker {
                 if (shift.endTime.isSameOrBefore(dateTime))
                     continue;  // the |shift| has finished already
 
-                // TODO: Store the |shift| somewhere.
+                switch (shift.type) {
+                    case 'unavailable':
+                        break;
+
+                    case 'available':
+                        this.#activeVolunteers.set(volunteer, /* available= */ null);
+                        break;
+
+                    case 'shift':
+                        this.#activeVolunteers.set(volunteer, shift.event!);
+                        this.#activeVolunteerCount++;
+                        break;
+                }
 
                 if (shift.endTime.isBefore(this.#nextUpdate))
                     this.#nextUpdate = shift.endTime;
@@ -83,5 +102,20 @@ export class EventTrackerImpl implements EventTracker {
 
     getNextUpdateDateTime(): DateTime | undefined {
         return this.#nextUpdate;
+    }
+
+    getActiveVolunteerCount(): number {
+        return this.#activeVolunteerCount;
+    }
+
+    getVolunteerActivity(volunteer: EventVolunteer): EventInfo | 'available' | 'unavailable' {
+        const volunteerState = this.#activeVolunteers.get(volunteer);
+        if (volunteerState === undefined)
+            return 'unavailable';
+
+        if (volunteerState === null)
+            return 'available';
+
+        return volunteerState;
     }
 }

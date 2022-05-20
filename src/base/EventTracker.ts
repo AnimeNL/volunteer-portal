@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
+import type { EventInfo, EventVolunteer } from './Event';
+
 import { DateTime } from './DateTime';
 
 /**
@@ -29,7 +31,17 @@ export interface EventTracker {
      */
     getNextUpdateDateTime(): DateTime | undefined;
 
+    /**
+     * Returns the number of volunteers who are currently active on a shift. Volunteers who are
+     * available are ignored for this method. Constant time operation.
+     */
+    getActiveVolunteerCount(): number;
+
+    /**
+     * Returns the current activity for the given |volunteer|. When they're active on a shift, the
+     * event instance where they're helping out will be returned instead. Constant time operation.
+     */
+    getVolunteerActivity(volunteer: EventVolunteer): EventInfo | 'available' | 'unavailable';
+
     // TODO: Active events (total count)
-    // TODO: Active volunteers (total count)
-    // TODO: Active state for each volunteer
 }

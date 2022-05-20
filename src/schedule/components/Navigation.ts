@@ -19,7 +19,7 @@ export interface NavigationProps {
     badgeActiveEvents?: number;
 
     // Badge to display when the user's schedule has an active entry.
-    badgeActiveShifts?: true;
+    badgeActiveShifts?: boolean;
 
     // Badge to display for the number of active volunteers, if any.
     badgeActiveVolunteers?: number;

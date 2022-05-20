@@ -5,6 +5,7 @@
 import type { DateTime } from './DateTime';
 import type { IAvatarRequest } from '../api/IAvatar';
 import type { IEventResponsePrivilege } from '../api/IEvent';
+import type { Invalidatable } from './Invalidatable';
 
 /**
  * Interface that defines how code is expected to interact with information about a specific event.
@@ -42,6 +43,20 @@ export interface Event {
      * Time at which this event will officially end. (Sessions may continue after this.)
      */
     readonly endTime: DateTime;
+
+    // ---------------------------------------------------------------------------------------------
+    // Observer API
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Includes the given |observer| in event invalidation signalling.
+     */
+    addObserver(observer: Invalidatable): void;
+
+    /**
+     * Removes the given |observer| from being included in invalidation signalling.
+     */
+    removeObserver(observer: Invalidatable): void;
 
     // ---------------------------------------------------------------------------------------------
     // Event API

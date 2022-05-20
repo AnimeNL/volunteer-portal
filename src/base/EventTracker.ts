@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import type { EventArea, EventInfo, EventSession, EventShift, EventVolunteer } from './Event';
+import type { User } from './User';
 
 import { DateTime } from './DateTime';
 
@@ -17,9 +18,10 @@ export interface EventTracker {
 
     /**
      * Advances the EventTracker state to the given |dateTime|. This is a potentially expensive
-     * operation, as it's O(n+s) on the number of events (n) and shifts (s) in the schedule.
+     * operation, as it's O(n+s) on the number of events (n) and shifts (s) in the schedule. When
+     * given, the |user| will be used to determine the current volunteer as well.
      */
-    update(dateTime: DateTime): void;
+    update(dateTime: DateTime, user?: User): void;
 
     // ---------------------------------------------------------------------------------------------
     // Query API
@@ -51,6 +53,11 @@ export interface EventTracker {
      * available are ignored for this method. Constant time operation.
      */
     getActiveVolunteerCount(): number;
+
+    /**
+     * Returns the EventVolunteer for the user that is logged in, if any. Constant time operation.
+     */
+    getUserVolunteer(): EventVolunteer | undefined;
 
     /**
      * Returns the current activity for the given |volunteer|. When they're active on a shift, the

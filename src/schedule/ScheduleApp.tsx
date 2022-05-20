@@ -15,9 +15,14 @@ import { AppContext } from '../AppContext';
 import { AppTitleListener, clearTitleListener, setTitleListener } from '../AppTitle';
 import { ApplicationBar } from './components/ApplicationBar';
 import { ContentTheme } from '../ContentTheme';
+import { DateTime } from '../base/DateTime';
 import { DesktopNavigation } from './components/DesktopNavigation';
+import { EventTrackerImpl } from '../base/EventTrackerImpl';
+import type { Event } from '../base/Event';
+import { Invalidatable } from '../base/Invalidatable';
 import { MobileNavigation } from './components/MobileNavigation';
 import { NavigationActiveOptions } from './components/Navigation';
+import { User } from '../base/User';
 
 import { ActiveEventsView } from './views/ActiveEventsView';
 import { AdministratorView } from './views/AdministratorView';
@@ -68,6 +73,9 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
 
 // Properties accepted by the <ScheduleApp> component.
 export interface ScheduleAppProps {
+    // The Event instance that has been loaded for the schedule.
+    event: Event;
+
     // Identifier of the event to load. Retrieved from the URL. Data for this event will already
     // have been loaded by the <App> component, before routing the request to us.
     identifier: string;
@@ -75,6 +83,10 @@ export interface ScheduleAppProps {
     // Remainder of the request path, i.e. the portion that follows after the event identifier. Any
     // subsequent navigation within the schedule should be done based on this location.
     request?: string;
+
+    // The user for whom the schedule is being displayed. This is used to compute their volunteer
+    // instance, used commonly throughout the app.
+    user: User;
 }
 
 // State maintained by the <ScheduleApp> component. This generally reflects state of the event that
@@ -83,6 +95,12 @@ interface ScheduleAppState {
     // Whether Dark Mode should be enabled in the application. Will be toggled based on the device's
     // current colour mode, but can be overridden by the user as well.
     darkMode: boolean;
+
+    // The DateTime which is current at the time the schedule application last processed an update.
+    dateTime: DateTime;
+
+    // The EventTrackerImpl which has been updated to the given |dateTime|.
+    eventTracker: EventTrackerImpl;
 
     // Title of the application. Visible both in the user interface and in the browser tab.
     title?: string;
@@ -116,11 +134,37 @@ interface ScheduleAppState {
 //
 // Individual components may have further optimizations where they make sense to support.
 export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
-        implements AppTitleListener {
+        implements AppTitleListener, Invalidatable {
 
-    public state: ScheduleAppState = {
-        darkMode: false,
-    };
+    public state: ScheduleAppState;
+
+    constructor(props: ScheduleAppProps) {
+        super();
+
+        const eventTracker = new EventTrackerImpl(props.event, props.user);
+        const dateTime = DateTime.local();
+
+        eventTracker.update(dateTime);
+
+        this.state = {
+            darkMode: false,
+            dateTime, eventTracker
+        }
+    }
+
+
+    // ---------------------------------------------------------------------------------------------
+    // Invalidatable implementation
+    // ---------------------------------------------------------------------------------------------
+
+    // Called when the event has been invalidated, i.e. because an update was fetched from the
+    // network. This will lead to the EventTracker instance ot be updated.
+    invalidate() {
+        const currentTime = DateTime.local();
+
+        this.state.eventTracker.update(currentTime);
+        this.setState({ dateTime: currentTime });
+    }
 
     // ---------------------------------------------------------------------------------------------
     // AppTitleListener implementation & lifetime.
@@ -135,8 +179,15 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
     }
 
     // Ensures that the title listener is active while this component has been mounted.
-    componentDidMount() { setTitleListener(this); }
-    componentWillUnmount() { clearTitleListener(); }
+    componentDidMount() {
+        this.props.event.addObserver(this);
+        setTitleListener(this);
+    }
+
+    componentWillUnmount() {
+        this.props.event.removeObserver(this);
+        clearTitleListener();
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Setting routines.
@@ -180,10 +231,14 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
     // ---------------------------------------------------------------------------------------------
 
     render() {
-        const { environment, event, user } = useContext(AppContext);
+        const { eventTracker } = this.state;
+        const { event, user } = this.props;
+
+        const { environment } = useContext(AppContext);
         if (!event)
             return <></>;
 
+        // TODO: Move title behaviour to <ApplicationBar>.
         const defaultTitle = event.name + ' ' + environment.themeTitle;
         const navigationActiveOption = this.determineNavigationActiveOptions();
 
@@ -194,6 +249,17 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                 document.title = defaultTitle;
 
         }, [ this.state.title ]);
+
+        // While seemingly expensive, each of these operations executes in constant time. We
+        // therefore don't cache or memoize them, as that would actually lead to a regression.
+        const userVolunteer = eventTracker.getUserVolunteer();
+        const userVolunteerActivity =
+            userVolunteer ? eventTracker.getVolunteerActivity(userVolunteer)
+                          : 'unavailable';
+
+        const badgeActiveEvents = this.state.eventTracker.getActiveSessionCount();
+        const badgeActiveShifts = typeof userVolunteerActivity !== 'string';
+        const badgeActiveVolunteers = this.state.eventTracker.getActiveVolunteerCount();
 
         return (
             <ContentTheme environment={environment} darkMode={this.state.darkMode}>
@@ -207,9 +273,9 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                         <Hidden mdDown>
                             <Box sx={kStyles.menuAndSpacing}>
                                 <DesktopNavigation active={navigationActiveOption}
-                                                   badgeActiveEvents={12}
-                                                   badgeActiveShifts={true}
-                                                   badgeActiveVolunteers={7}
+                                                   badgeActiveEvents={badgeActiveEvents}
+                                                   badgeActiveShifts={badgeActiveShifts}
+                                                   badgeActiveVolunteers={badgeActiveVolunteers}
                                                    event={event}
                                                    showAdministration={user.isAdministrator()} />
                             </Box>
@@ -236,9 +302,9 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
 
                     <Hidden mdUp>
                         <MobileNavigation active={navigationActiveOption}
-                                          badgeActiveEvents={12}
-                                          badgeActiveShifts={true}
-                                          badgeActiveVolunteers={7}
+                                          badgeActiveEvents={badgeActiveEvents}
+                                          badgeActiveShifts={badgeActiveShifts}
+                                          badgeActiveVolunteers={badgeActiveVolunteers}
                                           event={event}
                                           showAdministration={user.isAdministrator()} />
                     </Hidden>

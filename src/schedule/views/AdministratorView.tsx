@@ -64,6 +64,8 @@ export function AdministratorView(props: AdministratorViewProps) {
         await kvDelete(kDateOverrideStorageKey);
 
         DateTime.setOverrideDiff(/* reset */);
+        app.invalidate(/* update the event tracker */);
+
         setDateOverrideLabel(/* reset */ '');
         setDateOverrideValue(DateTime.local());
     }
@@ -77,6 +79,8 @@ export function AdministratorView(props: AdministratorViewProps) {
         await kvSet(kDateOverrideStorageKey, diffMs);
 
         DateTime.setOverrideDiff(diffMs);
+        app.invalidate(/* update the event tracker */);
+
         setDateOverrideLabel(DateTime.local().format('full'));
         setDateOverrideValue(DateTime.local());
     }

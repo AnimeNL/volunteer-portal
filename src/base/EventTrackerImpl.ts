@@ -4,6 +4,7 @@
 
 import type { EventArea, EventInfo, EventSession, EventShift, EventVolunteer } from './Event';
 import type { EventTracker } from './EventTracker';
+import type { User } from './User';
 
 import { DateTime } from './DateTime';
 import { Event } from './Event';
@@ -16,6 +17,9 @@ const kMaximumNextUpdateUnixTime = 2147483646;
 export class EventTrackerImpl implements EventTracker {
     #event: Event;
 
+    #user: User | undefined;
+    #userVolunteer: EventVolunteer | undefined;
+
     #activeSessions: EventSession[] = [];
     #activeSessionsByArea: Map<EventArea, number> = new Map();
     #activeVolunteers: Map<EventVolunteer, EventInfo | null> = new Map();
@@ -25,15 +29,18 @@ export class EventTrackerImpl implements EventTracker {
 
     #nextUpdate: DateTime | undefined;
 
-    constructor(event: Event) {
+    constructor(event: Event, user?: User) {
         this.#event = event;
+        this.#user = user;
     }
 
     // ---------------------------------------------------------------------------------------------
     // Mutation API
     // ---------------------------------------------------------------------------------------------
 
-    update(dateTime: DateTime): void {
+    update(dateTime: DateTime, ): void {
+        this.#userVolunteer = undefined;
+
         this.#activeSessions = [];
         this.#activeSessionsByArea = new Map();
         this.#activeVolunteers = new Map();
@@ -70,6 +77,9 @@ export class EventTrackerImpl implements EventTracker {
 
         // (2) Iterate through the volunteers and their shifts.
         for (const volunteer of this.#event.volunteers()) {
+            if (this.#user && this.#user.name === volunteer.name)
+                this.#userVolunteer = volunteer;
+
             for (const shift of volunteer.shifts) {
                 if (dateTime.isBefore(shift.startTime)) {
                     if (shift.startTime.isBefore(this.#nextUpdate))
@@ -135,6 +145,10 @@ export class EventTrackerImpl implements EventTracker {
 
     getActiveVolunteerCount(): number {
         return this.#activeVolunteerCount;
+    }
+
+    getUserVolunteer(): EventVolunteer | undefined {
+        return this.#userVolunteer;
     }
 
     getVolunteerActivity(volunteer: EventVolunteer): EventInfo | 'available' | 'unavailable' {

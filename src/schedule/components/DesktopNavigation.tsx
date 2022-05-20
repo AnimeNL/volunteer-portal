@@ -101,7 +101,7 @@ interface DesktopNavigationEntryProps {
      * The badge to display as part of this component. Will display a dot when set to `true`, or a
      * larger badge with a number when set to any other accepted value.
      */
-    badge?: true | number;
+    badge?: boolean | number;
 
     /**
      * URL that should be navigated to when the component has been clicked on.

@@ -124,7 +124,7 @@ export class App extends Component<{}, AppState> implements Invalidatable {
         const event = new EventImpl({
             authToken: this.user.authToken,
             event: identifier
-        }, /* observer= */ this);
+        });
 
         if (!await event.initialize()) {
             document.location.href = '/';
@@ -150,8 +150,11 @@ export class App extends Component<{}, AppState> implements Invalidatable {
                         <Route path="/registration/:event*" component={RegistrationApp} />
 
                         { /* The schedule is only available for authenticated users. */ }
-                        { this.state.authenticated &&
-                            <Route path="/schedule/:identifier/:request*" component={ScheduleApp} /> }
+                        { (this.state.authenticated && this.appContext.event) &&
+                            <Route path="/schedule/:identifier/:request*"
+                                   component={ScheduleApp}
+                                   event={this.appContext.event}
+                                   user={this.appContext.user} /> }
 
                         <Route default component={WelcomeApp} />
                     </Router>

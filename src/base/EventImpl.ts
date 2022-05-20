@@ -31,7 +31,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     private requestManager: ApiRequestManager<'IEvent'>;
     private request: IEventRequest;
 
-    private observer?: Invalidatable;
+    private observers: Set<Invalidatable> = new Set();
 
     // Information made available after the Event was successfully retrieved.
     #meta?: IEventResponseMeta;
@@ -46,11 +46,9 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     #locations: Map<string, EventLocationImpl> = new Map();
     #volunteers: Map<string, EventVolunteerImpl> = new Map();
 
-    constructor(request: IEventRequest, observer?: Invalidatable) {
+    constructor(request: IEventRequest) {
         this.requestManager = new ApiRequestManager('IEvent', this);
         this.request = request;
-
-        this.observer = observer;
     }
 
     /**
@@ -144,8 +142,8 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
         for (const instance of finalizationQueue)
             instance.finalize();
 
-        if (this.observer)
-            this.observer.invalidate();
+        for (const observer of this.observers)
+            observer.invalidate();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -180,6 +178,18 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
             throw new Error(kExceptionMessage);
 
         return this.#endTime;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Observer API
+    // ---------------------------------------------------------------------------------------------
+
+    addObserver(observer: Invalidatable): void {
+        this.observers.add(observer);
+    }
+
+    removeObserver(observer: Invalidatable): void {
+        this.observers.delete(observer);
     }
 
     // ---------------------------------------------------------------------------------------------

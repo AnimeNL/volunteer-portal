@@ -23,7 +23,6 @@ import { AppContext } from '../../AppContext';
 import { Event } from '../../base/Event';
 import { SearchResults } from './SearchResults';
 import { kDesktopMenuWidthPx, kDesktopMaximumWidthPx } from '../ResponsiveConstants';
-import React from 'react';
 
 // Containing element for the search field. Provides relative positioning, and a hover effect on
 // desktop to illustrate that interaction with this element is possible.

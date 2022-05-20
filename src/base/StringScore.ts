@@ -11,6 +11,20 @@
  */
 
 /**
+ * Normalizes the |input|. This means changing the string's case to lowercase consistently for all
+ * users, where those in modern(ish) browsers will also normalize away accent marks.
+ *
+ * @param input The input string that is to be normalized.
+ * @return The normalized string.
+ */
+export function NormalizeString(input: string): string {
+    if (String.prototype.hasOwnProperty('normalize'))
+        input = input.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    return input.toLowerCase();
+}
+
+/**
  * Scores a target string against a query string.
  *
  * @param target The target string to score the query against.
@@ -19,7 +33,7 @@
  * @return A number between 0 and 1. 0 being no match and 1 being perfect match.
  */
 export function StringScore(target: string, query: string, fuzzyFactor?: number) {
-    return StringScoreEx(target, query, query.toLowerCase(), fuzzyFactor);
+    return StringScoreEx(target, query, NormalizeString(query), fuzzyFactor);
 }
 
 /**
@@ -28,11 +42,11 @@ export function StringScore(target: string, query: string, fuzzyFactor?: number)
  *
  * @param target The target string to score the query against.
  * @param query The query to score against the target string.
- * @param queryLower The query to score against the target string, in lower case.
+ * @param queryNormalized The query to score against the target string, in normalized format.
  * @param fuzzyFactor A number between 0 and 1 which increases scores of non-perfect matches.
  * @return A number between 0 and 1. 0 being no match and 1 being perfect match.
  */
-export function StringScoreEx(target: string, query: string, queryLower: string, fuzzyFactor?: number) {
+export function StringScoreEx(target: string, query: string, queryNormalized: string, fuzzyFactor?: number) {
     if (target === query)
         return 1;
 
@@ -41,7 +55,7 @@ export function StringScoreEx(target: string, query: string, queryLower: string,
         return 0;
 
     const targetLength = target.length;
-    const targetLower = target.toLowerCase();
+    const targetNormalized = NormalizeString(target);
     const queryLength = query.length;
 
     let runningScore = 0;
@@ -54,7 +68,7 @@ export function StringScoreEx(target: string, query: string, queryLower: string,
     // Walk through query and add up scores.
     for (let i = 0; i < queryLength; ++i) {
         // Find next first case-insensitive match of a character.
-        const index = targetLower.indexOf(queryLower[i], startAt);
+        const index = targetNormalized.indexOf(queryNormalized[i], startAt);
 
         if (index === -1) {
             if (fuzzyFactor)
@@ -88,7 +102,7 @@ export function StringScoreEx(target: string, query: string, queryLower: string,
     // Reduce penalty for longer strings.
     var finalScore = 0.5 * (runningScore / targetLength + runningScore / queryLength) / fuzzies;
 
-    if (queryLower[0] === targetLower[0] && finalScore < 0.85)
+    if (queryNormalized[0] === targetNormalized[0] && finalScore < 0.85)
         finalScore += 0.15;
 
     return finalScore;

@@ -10,7 +10,7 @@
  * https://github.com/joshaven/string_score (Joshaven Potter, joshaven.com)
  */
 
-import { StringScore } from './StringScore';
+import { NormalizeString, StringScore } from './StringScore';
 
 describe('StringScore', () => {
     const hello = 'Hello, World!';
@@ -98,5 +98,10 @@ describe('StringScore', () => {
 
     it('should have varying degrees of fuzziness', () => {
         expect(StringScore(hello, 'Hz', 0.9)).toBeGreaterThan(StringScore(hello, '0.5'));
+    });
+
+    it('should be able to normalize accent marks away from strings', () => {
+        expect(NormalizeString('Hello')).toEqual('hello');
+        expect(NormalizeString('ä â ë í ő ń ü')).toEqual('a a e i o n u');
     });
 });

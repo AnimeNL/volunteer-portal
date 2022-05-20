@@ -15,14 +15,13 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import Popover from '@mui/material/Popover';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { SxProps, Theme } from '@mui/system';
 import { styled } from '@mui/material/styles';
 
 import { Event } from '../../base/Event';
-import { StringScoreEx } from '../../base/StringScore';
+import { NormalizeString, StringScoreEx } from '../../base/StringScore';
 
 // CSS customizations applied to the <EventListItem> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
@@ -113,11 +112,8 @@ const kSearchScoreTypeBonus: { [K in SearchResult['type']]: number } = {
 export function Search(event: Event, query: string, limit?: number): [ number, SearchResult[] ] {
     const baseUrl = `/schedule/${event.identifier}`;
 
-    const normalizedQuery = query.toLocaleLowerCase();
+    const normalizedQuery = NormalizeString(query);
     const results: SearchResult[] = [];
-
-    // TODO: Should we collapse certain locations and events? (I.e. Bag & Changing Rooms)
-    // TODO: Should we memorize historic search queries to optimize low-entropy searches?
 
     // Priority (1): Volunteers
     for (const volunteer of event.volunteers()) {

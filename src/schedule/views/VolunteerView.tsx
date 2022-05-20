@@ -93,7 +93,7 @@ export interface VolunteerViewProps {
     // who is currently logged in to the portal will have their information shown. When that's not
     // available either, a redirect to the portal's volunteers page will be issued instead.
     volunteerIdentifier?: string;
-};
+}
 
 // The <VolunteerView> component lists all information about a particular volunteer, and enables
 // the volunteer themselves, as well as seniors, to upload a modified photo to the server.

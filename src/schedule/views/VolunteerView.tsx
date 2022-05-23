@@ -6,8 +6,10 @@ import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
 import { useContext, useMemo, useState } from 'preact/compat';
 
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -53,6 +55,18 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
             '@media (hover: none)': {
                 backgroundColor: theme => lighten(theme.palette.primary.main, .96),
             },
+        }
+    },
+    avatarEditBadge: {
+        '& .MuiBadge-badge': {
+            backgroundColor: 'background.paper',
+            color: 'primary.main',
+            cursor: 'pointer',
+            padding: '0',
+
+            '&> svg': {
+                fontSize: '1.25rem',
+            }
         }
     },
     nameTypography: {
@@ -263,9 +277,20 @@ export function VolunteerView(props: VolunteerViewProps) {
                 <List>
                     <ListItem>
                         <ListItemAvatar onClick={e => setAvatarDialogVisible(true)}>
-                            <Avatar alt={volunteer.name} src={volunteer.avatar}>
-                                <PersonIcon />
-                            </Avatar>
+                            { canEditAvatar &&
+                                <Tooltip title="Upload photo">
+                                    <Badge anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
+                                           badgeContent={ <AddCircleIcon /> } color="info"
+                                           overlap="circular" sx={kStyles.avatarEditBadge}>
+                                        <Avatar alt={volunteer.name} src={volunteer.avatar}>
+                                            <PersonIcon />
+                                        </Avatar>
+                                    </Badge>
+                                </Tooltip> }
+                            { !canEditAvatar &&
+                                <Avatar alt={volunteer.name} src={volunteer.avatar}>
+                                    <PersonIcon />
+                                </Avatar> }
                         </ListItemAvatar>
                         <ListItemText primaryTypographyProps={{ sx: kStyles.nameTypography }}
                                       primary={title}

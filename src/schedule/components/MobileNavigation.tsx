@@ -72,16 +72,16 @@ export function MobileNavigation(props: NavigationProps) {
                 <BottomNavigationAction label="Overview"
                                         value="overview"
                                         icon={ <HomeIcon /> } />
-                <BottomNavigationAction label="Shifts"
-                                        value="shifts"
-                                        icon={shiftsIcon} />
+                { props.volunteer &&
+                    <BottomNavigationAction label="Shifts"
+                                            value="shifts"
+                                            icon={shiftsIcon} /> }
                 <BottomNavigationAction label="Events"
                                         value="events"
                                         icon={eventsIcon} />
-                { props.volunteer &&
-                    <BottomNavigationAction label="Volunteers"
-                                            value="volunteers"
-                                            icon={volunteersIcon} /> }
+                <BottomNavigationAction label="Volunteers"
+                                        value="volunteers"
+                                        icon={volunteersIcon} />
                 { props.showAdministration &&
                     <BottomNavigationAction label="Admin"
                                             value="admin"

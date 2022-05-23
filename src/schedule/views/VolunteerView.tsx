@@ -26,7 +26,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
 import SmsIcon from '@mui/icons-material/Sms';
 import Stack from '@mui/material/Stack';
-import { SystemStyleObject, Theme, lighten, useTheme } from '@mui/system';
+import { SystemStyleObject, Theme, useTheme } from '@mui/system';
 import Tooltip from '@mui/material/Tooltip';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -44,19 +44,12 @@ import { ShiftListItem } from '../components/ShiftListItem';
 import { SubTitle } from '../components/SubTitle';
 import { firstName } from '../../base/NameUtilities';
 import { isAcceptedEventRole } from '../../base/User';
+import { kActionButtonStyle } from '../ActionButtonStyle';
 import { uploadNotes } from '../../base/Notes';
 
 // Styles for the <VolunteerView> component. Used to highlight the sort of interactions that are
 // possible on this page, which depends on the user's access level.
 const kStyles: Record<string, SystemStyleObject<Theme>> = {
-    actionButton: {
-        backgroundColor: theme => lighten(theme.palette.primary.main, .96),
-        '&:hover': {
-            '@media (hover: none)': {
-                backgroundColor: theme => lighten(theme.palette.primary.main, .96),
-            },
-        }
-    },
     avatarEditBadge: {
         '& .MuiBadge-badge': {
             backgroundColor: 'background.paper',
@@ -302,7 +295,7 @@ export function VolunteerView(props: VolunteerViewProps) {
                                         <IconButton color="primary"
                                                     onClick={e => setNoteEditorOpen(true)}
                                                     size="medium"
-                                                    sx={kStyles.actionButton}>
+                                                    sx={kActionButtonStyle}>
                                             <NotesIcon />
                                         </IconButton>
                                     </Tooltip> }
@@ -312,7 +305,7 @@ export function VolunteerView(props: VolunteerViewProps) {
                                         <IconButton color="primary"
                                                     onClick={e => setAccessCodeVisible(true)}
                                                     size="medium"
-                                                    sx={kStyles.actionButton}>
+                                                    sx={kActionButtonStyle}>
                                             <VpnKeyIcon />
                                         </IconButton>
                                     </Tooltip>}
@@ -321,7 +314,7 @@ export function VolunteerView(props: VolunteerViewProps) {
                                         <IconButton color="primary"
                                                     href={`tel:${volunteer.phoneNumber}`}
                                                     size="medium"
-                                                    sx={kStyles.actionButton}>
+                                                    sx={kActionButtonStyle}>
                                             <PhoneIcon />
                                         </IconButton>
                                     </Tooltip> }

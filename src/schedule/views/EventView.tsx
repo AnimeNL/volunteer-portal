@@ -29,19 +29,11 @@ import { Markdown } from '../components/Markdown';
 import { NotesEditor } from '../components/NotesEditor';
 import { ShiftListItem } from '../components/ShiftListItem';
 import { SubTitle } from '../components/SubTitle';
+import { kActionButtonStyle } from '../ActionButtonStyle';
 import { uploadNotes } from '../../base/Notes';
 
 // CSS customizations applied to the <EventListView>.
 const kStyles: { [key: string]: SxProps<Theme> } = {
-    actionButton: {
-        backgroundColor: theme => lighten(theme.palette.primary.main, .96),
-        marginLeft: 2,
-        '&:hover': {
-            '@media (hover: none)': {
-                backgroundColor: theme => lighten(theme.palette.primary.main, .96),
-            },
-        }
-    },
     nameTypography: {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -160,7 +152,7 @@ export function EventView(props: EventViewProps) {
                                     <Tooltip title="Event notes">
                                         <IconButton onClick={() => setNoteEditorOpen(true)}
                                                     color="primary" size="medium"
-                                                    sx={kStyles.actionButton}>
+                                                    sx={kActionButtonStyle}>
                                             <NotesIcon />
                                         </IconButton>
                                     </Tooltip> }

@@ -276,7 +276,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                                    badgeActiveEvents={badgeActiveEvents}
                                                    badgeActiveShifts={badgeActiveShifts}
                                                    badgeActiveVolunteers={badgeActiveVolunteers}
-                                                   event={event}
+                                                   event={event} volunteer={userVolunteer}
                                                    showAdministration={user.isAdministrator()} />
                             </Box>
                         </Hidden>
@@ -286,15 +286,22 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                 { user.isAdministrator() &&
                                     <Route path="/schedule/:identifier/admin/" component={AdministratorView} app={this} /> }
 
-                                <Route path="/schedule/:identifier/events/:area/:location/" component={EventListView} dateTime={dateTime} event={event} />
-                                <Route path="/schedule/:identifier/events/:area/" component={LocationListView} dateTime={dateTime} event={event} />
-                                <Route path="/schedule/:identifier/events/" component={ActiveEventsView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
-                                <Route path="/schedule/:identifier/event/:eventIdentifier/" component={EventView} dateTime={dateTime} event={event} />
-                                <Route path="/schedule/:identifier/shifts/" component={VolunteerView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
-                                <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/" component={VolunteerView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
-                                <Route path="/schedule/:identifier/volunteers/" component={VolunteerListView} dateTime={dateTime} event={event} />
+                                <Route path="/schedule/:identifier/events/:area/:location/"
+                                       component={EventListView} dateTime={dateTime} event={event} />
+                                <Route path="/schedule/:identifier/events/:area/"
+                                       component={LocationListView} dateTime={dateTime} event={event} />
+                                <Route path="/schedule/:identifier/events/"
+                                       component={ActiveEventsView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
+                                <Route path="/schedule/:identifier/event/:eventIdentifier/"
+                                       component={EventView} dateTime={dateTime} event={event} />
+                                <Route path="/schedule/:identifier/shifts/"
+                                       component={VolunteerView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
+                                <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/"
+                                       component={VolunteerView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
+                                <Route path="/schedule/:identifier/volunteers/"
+                                       component={VolunteerListView} dateTime={dateTime} event={event} />
 
-                                <Route default component={OverviewView} dateTime={dateTime} event={event} />
+                                <Route default component={OverviewView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
                             </Router>
                         </Box>
 
@@ -305,7 +312,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                           badgeActiveEvents={badgeActiveEvents}
                                           badgeActiveShifts={badgeActiveShifts}
                                           badgeActiveVolunteers={badgeActiveVolunteers}
-                                          event={event}
+                                          event={event} volunteer={userVolunteer}
                                           showAdministration={user.isAdministrator()} />
                     </Hidden>
 

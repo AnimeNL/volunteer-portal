@@ -18,6 +18,7 @@ import NotesIcon from '@mui/icons-material/Notes';
 import Paper from '@mui/material/Paper';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { SxProps, Theme, lighten } from '@mui/system';
+import Tooltip from '@mui/material/Tooltip';
 
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
@@ -156,11 +157,13 @@ export function EventView(props: EventViewProps) {
                                       secondary={info.sessions[0].location.name} />
 
                             { event.hasUserPrivilege('update-event-notes') &&
-                                    <IconButton onClick={() => setNoteEditorOpen(true)}
-                                                color="primary" size="medium"
-                                                sx={kStyles.actionButton}>
-                                        <NotesIcon />
-                                    </IconButton> }
+                                    <Tooltip title="Event notes">
+                                        <IconButton onClick={() => setNoteEditorOpen(true)}
+                                                    color="primary" size="medium"
+                                                    sx={kStyles.actionButton}>
+                                            <NotesIcon />
+                                        </IconButton>
+                                    </Tooltip> }
 
                     </ListItem>
                 </List>

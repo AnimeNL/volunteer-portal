@@ -25,6 +25,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import SmsIcon from '@mui/icons-material/Sms';
 import Stack from '@mui/material/Stack';
 import { SystemStyleObject, Theme, lighten, useTheme } from '@mui/system';
+import Tooltip from '@mui/material/Tooltip';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -272,27 +273,33 @@ export function VolunteerView(props: VolunteerViewProps) {
                         { (volunteer.accessCode || volunteer.phoneNumber) &&
                             <Stack direction="row" spacing={2}>
                                 { event.hasUserPrivilege('update-user-notes') &&
-                                    <IconButton color="primary"
-                                                onClick={e => setNoteEditorOpen(true)}
-                                                size="medium"
-                                                sx={kStyles.actionButton}>
-                                        <NotesIcon />
-                                    </IconButton> }
+                                    <Tooltip title={`${volunteer.firstName}'s notes`}>
+                                        <IconButton color="primary"
+                                                    onClick={e => setNoteEditorOpen(true)}
+                                                    size="medium"
+                                                    sx={kStyles.actionButton}>
+                                            <NotesIcon />
+                                        </IconButton>
+                                    </Tooltip> }
 
                                 { volunteer.accessCode &&
-                                    <IconButton color="primary"
-                                                onClick={e => setAccessCodeVisible(true)}
-                                                size="medium"
-                                                sx={kStyles.actionButton}>
-                                        <VpnKeyIcon />
-                                    </IconButton> }
+                                    <Tooltip title="Access information">
+                                        <IconButton color="primary"
+                                                    onClick={e => setAccessCodeVisible(true)}
+                                                    size="medium"
+                                                    sx={kStyles.actionButton}>
+                                            <VpnKeyIcon />
+                                        </IconButton>
+                                    </Tooltip>}
                                 { volunteer.phoneNumber &&
-                                    <IconButton color="primary"
-                                                href={`tel:${volunteer.phoneNumber}`}
-                                                size="medium"
-                                                sx={kStyles.actionButton}>
-                                        <PhoneIcon />
-                                    </IconButton> }
+                                    <Tooltip title="Give them a call">
+                                        <IconButton color="primary"
+                                                    href={`tel:${volunteer.phoneNumber}`}
+                                                    size="medium"
+                                                    sx={kStyles.actionButton}>
+                                            <PhoneIcon />
+                                        </IconButton>
+                                    </Tooltip> }
                             </Stack> }
                     </ListItem>
                 </List>

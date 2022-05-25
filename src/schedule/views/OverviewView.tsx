@@ -11,11 +11,19 @@ import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
 import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
+import { EducationCard } from '../components/EducationCard';
 import { EventTracker } from '../../base/EventTracker';
 import { Event, EventVolunteer } from '../../base/Event';
+import { NardoAdvice } from '../components/NardoAdvice';
+import { TimeTicker } from '../components/TimeTicker';
 
 // Properties made available to the <EventStatusDisplay> component.
 interface EventStatusDisplayProps {
+    /**
+     * Date & time at which the event status card is being displayed.
+     */
+    dateTime: DateTime;
+
     /**
      * Event for which the <EventStatusDisplay> component is being displayed.
      */
@@ -28,16 +36,13 @@ interface EventStatusDisplayProps {
 // The <EventStatusDisplay> does not share the DateTime instance with the parent components, as is
 // more common, as the component will end up refreshing itself every second during certain times.
 function EventStatusDisplay(props: EventStatusDisplayProps) {
-    const { event } = props;
-
-    const [ dateTime, setDateTime ] = useState(DateTime.local());
-    // TODO: Schedule updates based on the distance between |dateTime| and either the |event|'s
-    // start of end time, depending on which is being displayed.
+    const { dateTime, event } = props;
 
     if (dateTime.isBefore(event.startTime)) {
         return (
             <DarkModeCapableAlert elevation={2} sx={{ marginTop: { lg: 2 } }} severity="info">
-                <strong>{event.name}</strong> will officially start {dateTime.moment().to(event.startTime.moment())}.
+                <strong>{event.name}</strong> will officially
+                start <TimeTicker dateTime={dateTime} target={event.startTime} />.
             </DarkModeCapableAlert>
         );
     } else if (dateTime.isBefore(event.endTime)) {
@@ -49,7 +54,8 @@ function EventStatusDisplay(props: EventStatusDisplayProps) {
     } else {
         return (
             <DarkModeCapableAlert elevation={2} sx={{ marginTop: { lg: 2 } }} severity="info">
-                <strong>{event.name}</strong> finished {event.endTime.moment().from(dateTime.moment())}.
+                <strong>{event.name}</strong> unfortunately
+                finished <TimeTicker dateTime={dateTime} target={event.endTime} />.
             </DarkModeCapableAlert>
         );
     }
@@ -106,7 +112,8 @@ export function OverviewView(props: OverviewViewProps) {
         <Fragment>
             <AppTitle />
 
-            <EventStatusDisplay event={event} />
+            <EventStatusDisplay dateTime={dateTime}
+                                event={event} />
 
             { (volunteer && volunteer.shifts.length > 0) &&
                 <VolunteerShiftOverview dateTime={dateTime}
@@ -120,6 +127,11 @@ export function OverviewView(props: OverviewViewProps) {
                 </DarkModeCapableAlert> }
 
             { /* flagged events */ }
+
+            <EducationCard dateTime={dateTime} />
+
+            { eventTracker.getActiveSessionCount() > 0 &&
+                <NardoAdvice dateTime={dateTime} /> }
 
         </Fragment>
     );

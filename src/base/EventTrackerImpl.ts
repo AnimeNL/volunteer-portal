@@ -27,6 +27,7 @@ export class EventTrackerImpl implements EventTracker {
 
     #upcomingVolunteerShift: Map<EventVolunteer, EventShift> = new Map();
 
+    #nextSession: EventSession | undefined;
     #nextUpdate: DateTime | undefined;
 
     constructor(event: Event, user?: User) {
@@ -38,7 +39,7 @@ export class EventTrackerImpl implements EventTracker {
     // Mutation API
     // ---------------------------------------------------------------------------------------------
 
-    update(dateTime: DateTime, ): void {
+    update(dateTime: DateTime): void {
         this.#userVolunteer = undefined;
 
         this.#activeSessions = [];
@@ -48,14 +49,17 @@ export class EventTrackerImpl implements EventTracker {
 
         this.#upcomingVolunteerShift = new Map();
 
+        this.#nextSession = undefined;
         this.#nextUpdate = DateTime.fromUnix(kMaximumNextUpdateUnixTime);
 
         // (1) Iterate through the events and their sessions.
         for (const event of this.#event.events()) {
             for (const session of event.sessions) {
                 if (dateTime.isBefore(session.startTime)) {
-                    if (session.startTime.isBefore(this.#nextUpdate))
+                    if (session.startTime.isSameOrBefore(this.#nextUpdate)) {
+                        this.#nextSession = session;
                         this.#nextUpdate = session.startTime;
+                    }
 
                     // Continue iterating through all events; hypothetically an |event| can have
                     // multiple timeslots that happen simultaneously.
@@ -145,6 +149,10 @@ export class EventTrackerImpl implements EventTracker {
 
     getActiveVolunteerCount(): number {
         return this.#activeVolunteerCount;
+    }
+
+    getUpcomingSession() : EventSession | undefined {
+        return this.#nextSession;
     }
 
     getUserVolunteer(): EventVolunteer | undefined {

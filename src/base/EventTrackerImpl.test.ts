@@ -94,21 +94,28 @@ describe('EventTrackerImpl', () => {
         assertNotNullOrUndefined(eventTracker);
 
         expect(eventTracker.getNextUpdateDateTime()).toBeUndefined();
+        expect(eventTracker.getUpcomingSession()).toBeUndefined();
 
         eventTracker.update(DateTime.fromUnix(2000));
         expect(eventTracker.getNextUpdateDateTime()).not.toBeUndefined();
         expect(eventTracker.getNextUpdateDateTime()?.unix()).toEqual(3600);
+        expect(eventTracker.getUpcomingSession()).not.toBeUndefined();
+        expect(eventTracker.getUpcomingSession()?.name).toEqual('Session 3');
 
         eventTracker.update(DateTime.fromUnix(3600));
         expect(eventTracker.getNextUpdateDateTime()).not.toBeUndefined();
         expect(eventTracker.getNextUpdateDateTime()?.unix()).toEqual(5400);
+        expect(eventTracker.getUpcomingSession()).not.toBeUndefined();
+        expect(eventTracker.getUpcomingSession()?.name).toEqual('Session 4');
 
         eventTracker.update(DateTime.fromUnix(7000));
         expect(eventTracker.getNextUpdateDateTime()).not.toBeUndefined();
         expect(eventTracker.getNextUpdateDateTime()?.unix()).toEqual(7200);
+        expect(eventTracker.getUpcomingSession()).toBeUndefined();
 
         eventTracker.update(DateTime.fromUnix(7200));
         expect(eventTracker.getNextUpdateDateTime()).toBeUndefined();
+        expect(eventTracker.getUpcomingSession()).toBeUndefined();
     });
 
     test('it can provide the number of active events', () => {

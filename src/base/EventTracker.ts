@@ -55,6 +55,12 @@ export interface EventTracker {
     getActiveVolunteerCount(): number;
 
     /**
+     * Returns the first upcoming session among all of those in the event, that hasn't started yet.
+     * There may not be any. Constant time operation.
+     */
+    getUpcomingSession(): EventSession | undefined;
+
+    /**
      * Returns the EventVolunteer for the user that is logged in, if any. Constant time operation.
      */
     getUserVolunteer(): EventVolunteer | undefined;

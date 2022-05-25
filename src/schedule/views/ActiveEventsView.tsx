@@ -37,7 +37,7 @@ interface ActiveEventsViewProps {
     /**
      * The event for which the active events should be listed.
      */
-     event: Event;
+    event: Event;
 }
 
 // Lists the events that are currently active on the festival. A "card" will be displayed for each

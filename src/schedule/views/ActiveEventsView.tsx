@@ -21,6 +21,7 @@ import { Event, EventArea, EventSession } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
 import { EventTracker } from '../../base/EventTracker';
 import { LocationHeader } from '../components/LocationHeader';
+import { TimeTicker } from '../components/TimeTicker';
 
 // Properties passed to the <ActiveEventsViews> component.
 interface ActiveEventsViewProps {
@@ -47,7 +48,7 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
 
     // Find all the active sessions. We work our way backwards to areas for this view as we're able
     // to use the interval tree here, which is not the case for the location-specific views.
-    const [ sortedAreas, activeSessionLength ] = useMemo(() => {
+    const [ sortedAreas, activeSessionLength, upcomingSession ] = useMemo(() => {
         const activeSessions = eventTracker.getActiveSessions();
         const activeAreas = new Map<EventArea, EventSession[]>();
 
@@ -76,7 +77,7 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
             });
         }
 
-        return [ populatedAreas, activeSessions.length ];
+        return [ populatedAreas, activeSessions.length, eventTracker.getUpcomingSession() ];
 
     }, [ dateTime ]);
 
@@ -85,8 +86,17 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
             <AppTitle title="Active events" />
             { !activeSessionLength &&
                 <DarkModeCapableAlert elevation={1} severity="warning" sx={{ mt: { xs: 0, lg: 2 } }}>
-                    <AlertTitle>Nothing to see here…</AlertTitle>
-                    None of the <strong>{event.name}</strong> events are currently in progress.
+                    { upcomingSession &&
+                        <Fragment>
+                            <AlertTitle>There are no active events</AlertTitle>
+                            The next {event.name} event is scheduled to
+                            start <TimeTicker dateTime={dateTime} target={upcomingSession.startTime} />.
+                        </Fragment> }
+                    { !upcomingSession &&
+                        <Fragment>
+                            <AlertTitle>{event.name} has finished</AlertTitle>
+                            There won't be any further events as the festival has finished.
+                        </Fragment> }
                 </DarkModeCapableAlert> }
 
             <Stack spacing={2} mt={2}>

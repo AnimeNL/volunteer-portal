@@ -17,6 +17,7 @@ import Stack from '@mui/material/Stack';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { styled } from '@mui/material/styles';
+import { useTheme } from '@mui/system';
 
 import ReactAvatarEditor from 'react-avatar-editor';
 
@@ -137,6 +138,12 @@ export function AvatarEditor(props: AvatarEditorProps) {
         setZoomLevel(1);
     }
 
+    // The <ReactAvatarEditor>'s background should either be lit up (for light mode) or be further
+    // darkened (for dark mode). We use the theme's mode to detect that.
+    const theme = useTheme();
+    const themedBackground = theme.palette.mode === 'light' ? [ 255, 255, 255, .75 ]
+                                                            : [ 0, 0, 0, .68 ];
+
     return (
         <Dialog onClose={handleDialogClose} open={!!open}>
 
@@ -144,7 +151,7 @@ export function AvatarEditor(props: AvatarEditorProps) {
             <DialogContent dividers sx={{ padding: 0, paddingTop: 2, paddingBottom: 1 }}>
                 <ReactAvatarEditor width={250} height={250} scale={zoomLevel}
                                    border={[ 32, 0 ]} borderRadius={125}
-                                   color={[ 255, 255, 255, .75 ]}
+                                   color={themedBackground}
                                    image={image}
                                    /** @ts-ignore */
                                    ref={editorRef} />

@@ -7,7 +7,6 @@ import { route } from 'preact-router';
 import { useContext, useMemo, useState } from 'preact/compat';
 
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
@@ -35,6 +34,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
 import { AvatarEditor } from '../components/AvatarEditor';
+import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
 import { EventTracker } from '../../base/EventTracker';
 import { Event, EventShift, EventVolunteer } from '../../base/Event';
@@ -352,9 +352,9 @@ export function VolunteerView(props: VolunteerViewProps) {
             })}
 
             { sortedDays.length === 0 &&
-                <Alert elevation={2} sx={{ p: 2, mt: 2 }} severity="warning">
+                <DarkModeCapableAlert elevation={2} sx={{ p: 2, mt: 2 }} severity="warning">
                     {volunteer.firstName} does not have any shifts during {event.name}.
-                </Alert> }
+                </DarkModeCapableAlert> }
 
             { volunteer.accessCode &&
                 <Dialog onClose={e => setAccessCodeVisible(false)}

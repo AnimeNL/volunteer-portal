@@ -6,7 +6,6 @@ import { h } from 'preact';
 import { useMemo } from 'preact/compat';
 import { route } from 'preact-router';
 
-import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import EventIcon from '@mui/icons-material/Event';
 import List from '@mui/material/List';
@@ -20,6 +19,7 @@ import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import { SxProps, Theme } from '@mui/system';
 import { styled } from '@mui/material/styles';
 
+import { DarkModeCapableAlert } from './DarkModeCapableAlert';
 import { Event } from '../../base/Event';
 import { NormalizeString, StringScoreEx } from '../../base/StringScore';
 
@@ -258,9 +258,9 @@ export function SearchResults(props: SearchResultsProps) {
                  onClose={onClose}>
 
             { !searchResults.length &&
-                <Alert severity="warning">
+                <DarkModeCapableAlert severity="warning">
                     No search results could be found.
-                </Alert> }
+                </DarkModeCapableAlert> }
 
             { searchResults.length > 0 &&
                 <List disablePadding>

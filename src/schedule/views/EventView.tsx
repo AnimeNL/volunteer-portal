@@ -6,7 +6,6 @@ import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
 import { useContext, useMemo, useState } from 'preact/hooks';
 
-import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -22,6 +21,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
+import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
 import { Event } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
@@ -173,11 +173,11 @@ export function EventView(props: EventViewProps) {
             <Paper sx={{ maxWidth: '100vw' }}>
                 { info.sessions[0].event.hidden &&
                     <Fragment>
-                        <Alert severity="info">
+                        <DarkModeCapableAlert severity="warning">
                             { info.sessions.length === 1 && 'This session is ' }
                             { info.sessions.length > 1 && 'These sessions are ' }
                             not visible to visitors.
-                        </Alert>
+                        </DarkModeCapableAlert>
                         <Divider />
                     </Fragment> }
                 <List disablePadding>

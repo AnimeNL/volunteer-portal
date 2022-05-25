@@ -5,7 +5,6 @@
 import { h } from 'preact';
 import { useEffect, useRef, useState } from 'preact/compat';
 
-import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DialogActions from '@mui/material/DialogActions';
@@ -15,6 +14,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import LoadingButton from '@mui/lab/LoadingButton';
 import TextField from '@mui/material/TextField';
+
+import { DarkModeCapableAlert } from './DarkModeCapableAlert';
 
 function usePrevious<T>(value?: T): T | undefined {
     const reference = useRef<T>();
@@ -120,9 +121,9 @@ export function NotesEditor(props: NotesEditorProps) {
                            value={currentNotes} />
 
                 <Collapse in={!!saveError}>
-                    <Alert severity="error" sx={{ mt: 2 }}>
+                    <DarkModeCapableAlert severity="error" sx={{ mt: 2 }}>
                         {saveError}
-                    </Alert>
+                    </DarkModeCapableAlert>
                 </Collapse>
 
             </DialogContent>

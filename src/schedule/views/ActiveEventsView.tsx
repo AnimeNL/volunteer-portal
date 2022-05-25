@@ -5,7 +5,6 @@
 import { Fragment, h } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 
-import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
@@ -16,6 +15,7 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 
 import { AppTitle } from '../../AppTitle';
+import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
 import { Event, EventArea, EventSession } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
@@ -84,10 +84,10 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
         <Fragment>
             <AppTitle title="Active events" />
             { !activeSessionLength &&
-                <Alert elevation={1} severity="warning" sx={{ mt: { xs: 0, lg: 2 } }}>
+                <DarkModeCapableAlert elevation={1} severity="warning" sx={{ mt: { xs: 0, lg: 2 } }}>
                     <AlertTitle>Nothing to see here…</AlertTitle>
                     None of the <strong>{event.name}</strong> events are currently in progress.
-                </Alert> }
+                </DarkModeCapableAlert> }
 
             <Stack spacing={2} mt={2}>
                 { sortedAreas.map(({ area, sessions }) => {

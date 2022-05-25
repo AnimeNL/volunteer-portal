@@ -6,7 +6,6 @@ import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
 import { useState } from 'preact/compat';
 
-import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -20,6 +19,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 
 import { AppTitle } from '../../AppTitle';
+import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
 import { Event, EventVolunteer } from '../../base/Event';
 import { initials } from '../../base/NameUtilities';
@@ -267,15 +267,15 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                                        index={index} />) }
 
                     <Snackbar autoHideDuration={2000} onClose={_ => setPinnedOpen(false)} open={pinnedOpen}>
-                        <Alert severity="success" variant="filled">
+                        <DarkModeCapableAlert severity="success" variant="filled">
                             Team has been pinned
-                        </Alert>
+                        </DarkModeCapableAlert>
                     </Snackbar>
 
                     <Snackbar autoHideDuration={2000} onClose={_ => setUnpinnedOpen(false)} open={unpinnedOpen}>
-                        <Alert severity="info" variant="filled">
+                        <DarkModeCapableAlert severity="info" variant="filled">
                             Team has been unpinned
-                        </Alert>
+                        </DarkModeCapableAlert>
                     </Snackbar>
 
                 </Fragment>

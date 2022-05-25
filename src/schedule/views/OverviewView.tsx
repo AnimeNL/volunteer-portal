@@ -5,11 +5,11 @@
 import { Fragment, h } from 'preact';
 import { useContext, useState } from 'preact/compat';
 
-import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 
 import { AppContext } from '../../AppContext';
 import { AppTitle } from '../../AppTitle';
+import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
 import { EventTracker } from '../../base/EventTracker';
 import { Event, EventVolunteer } from '../../base/Event';
@@ -36,21 +36,21 @@ function EventStatusDisplay(props: EventStatusDisplayProps) {
 
     if (dateTime.isBefore(event.startTime)) {
         return (
-            <Alert elevation={2} sx={{ marginTop: { lg: 2 } }} severity="info">
+            <DarkModeCapableAlert elevation={2} sx={{ marginTop: { lg: 2 } }} severity="info">
                 <strong>{event.name}</strong> will officially start {dateTime.moment().to(event.startTime.moment())}.
-            </Alert>
+            </DarkModeCapableAlert>
         );
     } else if (dateTime.isBefore(event.endTime)) {
         return (
-            <Alert elevation={2} sx={{ marginTop: { lg: 2 } }} severity="success">
+            <DarkModeCapableAlert elevation={2} sx={{ marginTop: { lg: 2 } }} severity="success">
                 <strong>{event.name}</strong> is currently happening!
-            </Alert>
+            </DarkModeCapableAlert>
         );
     } else {
         return (
-            <Alert elevation={2} sx={{ marginTop: { lg: 2 } }} severity="info">
+            <DarkModeCapableAlert elevation={2} sx={{ marginTop: { lg: 2 } }} severity="info">
                 <strong>{event.name}</strong> finished {event.endTime.moment().from(dateTime.moment())}.
-            </Alert>
+            </DarkModeCapableAlert>
         );
     }
 }
@@ -113,11 +113,11 @@ export function OverviewView(props: OverviewViewProps) {
                                         volunteer={volunteer} /> }
 
             { (!volunteer || !volunteer.shifts.length) &&
-                <Alert severity="error" elevation={2} sx={{ marginTop: { lg: 2 } }}>
+                <DarkModeCapableAlert severity="error" elevation={2} sx={{ marginTop: { lg: 2 } }}>
                     <AlertTitle>Shifts are unavailable</AlertTitle>
                     Not all of the volunteer portal's functionality will be available because no
                     shifts have been scheduled for <strong>{user.name}</strong>. Are you even real?
-                </Alert> }
+                </DarkModeCapableAlert> }
 
             { /* flagged events */ }
 

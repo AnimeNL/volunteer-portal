@@ -6,7 +6,6 @@ import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
 import { useMemo, useState } from 'preact/hooks';
 
-import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -16,6 +15,7 @@ import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import Stack from '@mui/material/Stack';
 
 import { AppTitle } from '../../AppTitle';
+import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
 import { Event, EventLocation, EventSession } from '../../base/Event';
 import { EventListItem } from '../components/EventListItem';
@@ -75,9 +75,9 @@ function LocationListEntry(props: LocationListEntryProps) {
             <Divider />
             <CardContent sx={{ px: 0, '&:last-child': { p: 0 } }}>
                 { !sessions.length &&
-                    <Alert severity="warning">
+                    <DarkModeCapableAlert severity="warning">
                         No further events have been scheduled.
-                    </Alert> }
+                    </DarkModeCapableAlert> }
 
                 { sessions.length > 0 &&
                     <List dense disablePadding>
@@ -187,11 +187,11 @@ export function LocationListView(props: LocationListViewProps) {
             <AppTitle title={area.name} />
             <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
                 { !locations.length &&
-                    <Alert elevation={1} severity="warning">
+                    <DarkModeCapableAlert elevation={1} severity="warning">
                         <AlertTitle>Nothing to see here…</AlertTitle>
                         The locations that are part of <strong>{area.name}</strong> haven't been
                         announced yet—please check again later!
-                    </Alert> }
+                    </DarkModeCapableAlert> }
 
                 { locations.length > 0 && locations.map(({ location, sessions }) =>
                     <LocationListEntry areaIdentifier={location.area.identifier}

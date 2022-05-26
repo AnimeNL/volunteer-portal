@@ -22,7 +22,7 @@ export class EventTrackerImpl implements EventTracker {
 
     #activeSessions: EventSession[] = [];
     #activeSessionsByArea: Map<EventArea, number> = new Map();
-    #activeVolunteers: Map<EventVolunteer, EventInfo | null> = new Map();
+    #activeVolunteers: Map<EventVolunteer, EventShift | null> = new Map();
     #activeVolunteerCount = 0;
 
     #upcomingVolunteerShift: Map<EventVolunteer, EventShift> = new Map();
@@ -108,11 +108,11 @@ export class EventTrackerImpl implements EventTracker {
                         break;
 
                     case 'available':
-                        this.#activeVolunteers.set(volunteer, /* available= */ null);
+                        this.#activeVolunteers.set(volunteer, /* shift= */ null);
                         break;
 
                     case 'shift':
-                        this.#activeVolunteers.set(volunteer, shift.event!);
+                        this.#activeVolunteers.set(volunteer, shift);
                         this.#activeVolunteerCount++;
                         break;
                 }
@@ -159,7 +159,7 @@ export class EventTrackerImpl implements EventTracker {
         return this.#userVolunteer;
     }
 
-    getVolunteerActivity(volunteer: EventVolunteer): EventInfo | 'available' | 'unavailable' {
+    getVolunteerActivity(volunteer: EventVolunteer): EventShift | 'available' | 'unavailable' {
         const volunteerState = this.#activeVolunteers.get(volunteer);
         if (volunteerState === undefined)
             return 'unavailable';

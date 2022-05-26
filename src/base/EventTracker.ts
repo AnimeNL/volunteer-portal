@@ -69,7 +69,7 @@ export interface EventTracker {
      * Returns the current activity for the given |volunteer|. When they're active on a shift, the
      * event instance where they're helping out will be returned instead. Constant time operation.
      */
-    getVolunteerActivity(volunteer: EventVolunteer): EventInfo | 'available' | 'unavailable';
+    getVolunteerActivity(volunteer: EventVolunteer): EventShift | 'available' | 'unavailable';
 
     /**
      * Returns the upcoming shift for the given |volunteer|, if any. Constant time operation.

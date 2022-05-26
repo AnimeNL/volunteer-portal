@@ -127,7 +127,7 @@ export class App extends Component<{}, AppState> implements Invalidatable {
         });
 
         if (!await event.initialize()) {
-            document.location.href = '/';
+            this.setState({ error: 'Unable to initialize the event information' });
             return;
         }
 

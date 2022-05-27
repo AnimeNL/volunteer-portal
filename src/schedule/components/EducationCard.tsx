@@ -4,14 +4,11 @@
 
 import { h } from 'preact';
 
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { DateTime } from '../../base/DateTime';
+import { OverviewCard } from './OverviewCard';
 
 // Educational messages that can be displayed on the portal.
 const kEducationalMessages = [
@@ -36,19 +33,13 @@ export function EducationCard(props: EducationCardProps) {
     const message = kEducationalMessages[props.dateTime.unix() % kEducationalMessages.length];
 
     return (
-        <Paper sx={{ mt: 2, p: 2 }}>
-            <Stack direction="row" spacing={2}
-                   divider={ <Divider orientation="vertical" flexItem /> }>
-                <NewReleasesIcon color="info" />
-                <Box>
-                    <Typography variant="body2" gutterBottom>
-                        Did you know…
-                    </Typography>
-                    <Typography variant="body1">
-                        {message}
-                    </Typography>
-                </Box>
-            </Stack>
-        </Paper>
+        <OverviewCard icon={ <NewReleasesIcon color="info" /> }>
+            <Typography variant="body2" gutterBottom>
+                Did you know…
+            </Typography>
+            <Typography variant="body1">
+                {message}
+            </Typography>
+        </OverviewCard>
     );
 }

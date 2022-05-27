@@ -7,10 +7,6 @@ import { useContext } from 'preact/compat';
 
 import AlertTitle from '@mui/material/AlertTitle';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Typography from '@mui/material/Typography';
 
@@ -22,6 +18,7 @@ import { EducationCard } from '../components/EducationCard';
 import { EventTracker } from '../../base/EventTracker';
 import { Event, EventShift, EventVolunteer } from '../../base/Event';
 import { NardoAdvice } from '../components/NardoAdvice';
+import { OverviewCard } from '../components/OverviewCard';
 import { TimeTicker } from '../components/TimeTicker';
 
 // Properties made available to the <EventStatusDisplay> component.
@@ -158,49 +155,48 @@ function VolunteerShiftOverview(props: VolunteerShiftOverviewProps) {
         }
     }
 
+    // Linkify the card if a |shift| was set with a valid event.
+    const href = (shift && shift.event)
+                     ? `/schedule/${props.event.identifier}/event/${shift.event.identifier}/`
+                     : undefined;
+
     return (
-        <Paper sx={{ mt: 2, p: 2 }}>
-            <Stack direction="row" spacing={2}
-                   divider={ <Divider orientation="vertical" flexItem /> }>
+        <OverviewCard href={ href }
+                      icon={ display === 'finished' ? <TaskAltIcon color="success" />
+                                                    : <AssignmentIcon color="info" /> }>
 
-                { display === 'finished' &&
-                    <TaskAltIcon color="success" /> }
-                { display !== 'finished' &&
-                    <AssignmentIcon color="info" /> }
+            { display === 'finished' &&
+                <Typography variant="body1">
+                    You're done with all your shifts! Thank you for all your time and hard
+                    work, {volunteer.firstName}, it helped make {props.event.name} a success!
+                </Typography> }
 
-                { display === 'finished' &&
+            { (display === 'active' && shift && session) &&
+                <>
+                    <Typography variant="body2" gutterBottom>
+                        You're currently on duty
+                    </Typography>
                     <Typography variant="body1">
-                        You're done with all your shifts! Thank you for all your time and hard
-                        work, {volunteer.firstName}, it helped make {props.event.name} a success!
-                    </Typography> }
+                        You're at the <strong>{session.name}</strong> shift at
+                        the <strong>{session.location.name}</strong><VolunteerShiftFellows volunteers={volunteers} />.
+                        Your shift <strong>finishes <TimeTicker dateTime={dateTime} target={shift.endTime} /></strong>.
+                    </Typography>
+                </> }
 
-                { (display === 'active' && shift && session) &&
-                    <Box>
-                        <Typography variant="body2" gutterBottom>
-                            You're currently on duty
-                        </Typography>
-                        <Typography variant="body1">
-                            You're at the <strong>{session.name}</strong> shift at
-                            the <strong>{session.location.name}</strong><VolunteerShiftFellows volunteers={volunteers} />.
-                            Your shift <strong>finishes <TimeTicker dateTime={dateTime} target={shift.endTime} /></strong>.
-                        </Typography>
-                    </Box> }
+            { (display === 'upcoming' && shift && session) &&
+                <>
+                    <Typography variant="body2" gutterBottom>
+                        Your upcoming shift
+                    </Typography>
+                    <Typography variant="body1">
+                        Your <strong>{session.name}</strong> shift
+                        will <strong>start <TimeTicker dateTime={dateTime} target={shift.startTime} /></strong> at
+                        the <strong>{session.location.name}</strong><VolunteerShiftFellows volunteers={volunteers} />.
+                        Please try to be there 15 minutes early.
+                    </Typography>
+                </> }
 
-                { (display === 'upcoming' && shift && session) &&
-                    <Box>
-                        <Typography variant="body2" gutterBottom>
-                            Your upcoming shift
-                        </Typography>
-                        <Typography variant="body1">
-                            Your <strong>{session.name}</strong> shift
-                            will <strong>start <TimeTicker dateTime={dateTime} target={shift.startTime} /></strong> at
-                            the <strong>{session.location.name}</strong><VolunteerShiftFellows volunteers={volunteers} />.
-                            Please try to be there 15 minutes early.
-                        </Typography>
-                    </Box> }
-
-            </Stack>
-        </Paper>
+        </OverviewCard>
     );
 }
 

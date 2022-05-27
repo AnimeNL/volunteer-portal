@@ -173,7 +173,7 @@ export function EventView(props: EventViewProps) {
             <Paper sx={{ maxWidth: '100vw' }}>
                 { info.sessions[0].event.hidden &&
                     <Fragment>
-                        <DarkModeCapableAlert severity="warning">
+                        <DarkModeCapableAlert severity="info">
                             { info.sessions.length === 1 && 'This session is ' }
                             { info.sessions.length > 1 && 'These sessions are ' }
                             not visible to visitors.

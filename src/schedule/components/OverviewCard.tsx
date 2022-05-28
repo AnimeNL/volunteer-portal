@@ -43,7 +43,7 @@ export function OverviewCard(props: OverviewCardProps) {
 
                         {icon}
 
-                        <Box>
+                        <Box sx={{ flexGrow: 1 }}>
                             {children}
                         </Box>
 
@@ -59,7 +59,7 @@ export function OverviewCard(props: OverviewCardProps) {
 
                     {icon}
 
-                    <Box>
+                    <Box sx={{ flexGrow: 1 }}>
                         {children}
                     </Box>
 

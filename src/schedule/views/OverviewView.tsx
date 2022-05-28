@@ -3,10 +3,17 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
+import { route } from 'preact-router';
 import { useContext } from 'preact/compat';
 
 import AlertTitle from '@mui/material/AlertTitle';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import Avatar from '@mui/material/Avatar';
+import ChairIcon from '@mui/icons-material/Chair';
+import List from '@mui/material/List';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Typography from '@mui/material/Typography';
 
@@ -20,6 +27,7 @@ import { Event, EventShift, EventVolunteer } from '../../base/Event';
 import { NardoAdvice } from '../components/NardoAdvice';
 import { OverviewCard } from '../components/OverviewCard';
 import { TimeTicker } from '../components/TimeTicker';
+import { initials } from '../../base/NameUtilities';
 
 // Properties made available to the <EventStatusDisplay> component.
 interface EventStatusDisplayProps {
@@ -168,7 +176,7 @@ function VolunteerShiftOverview(props: VolunteerShiftOverviewProps) {
             { display === 'finished' &&
                 <Typography variant="body1">
                     You're done with all your shifts! Thank you for all your time and hard
-                    work, {volunteer.firstName}, it helped make {props.event.name} a success!
+                    work, {volunteer.firstName}, you helped make {props.event.name} a success!
                 </Typography> }
 
             { (display === 'active' && shift && session) &&
@@ -225,7 +233,53 @@ export function OverviewView(props: OverviewViewProps) {
     const { dateTime, eventTracker, event } = props;
     const { user } = useContext(AppContext);
 
+    const backupVolunteers: Record<string, [ EventVolunteer, DateTime ][]> = {};
+
+    // Decide for which environments backup volunteer availability should be shown. If any, find the
+    // volunteers that currently are available. All in all this is an O(n) operation on the number
+    // of volunteers known to the |eventTracker|.
     const volunteer = eventTracker.getUserVolunteer();
+    if (volunteer) {
+        const applicableEnvironments = [];
+        for (const environment in volunteer.environments) {
+            const environmentRole = volunteer.environments[environment];
+            if (environmentRole.indexOf('enior') === -1 && environmentRole.indexOf('taff') === -1)
+                continue;  // the |volunteer| isn't a Senior or Staff volunteer in this environment
+
+            applicableEnvironments.push(environment);
+        }
+
+        if (applicableEnvironments.length) {
+            for (const eventVolunteer of event.volunteers()) {
+                const eventVolunteerActivity = eventTracker.getVolunteerActivity(eventVolunteer);
+                if (typeof eventVolunteerActivity === 'string' || !eventVolunteerActivity.event)
+                    continue;  // the |eventVolunteer| isn't currently on a shift
+
+                const eventVolunteerShiftName = eventVolunteerActivity.event.sessions[0].name;
+                if (eventVolunteerShiftName !== /* maybe have it be less hardcoded?= */ 'Backup')
+                    continue;  // the |eventVolunteer| isn't currently on a backup shift
+
+                for (const applicableEnvironment of applicableEnvironments) {
+                    if (!eventVolunteer.environments.hasOwnProperty(applicableEnvironment))
+                        continue;  // the |applicableEnvironment| is not applicable
+
+                    if (!backupVolunteers.hasOwnProperty(applicableEnvironment))
+                        backupVolunteers[applicableEnvironment] = [];
+
+                    backupVolunteers[applicableEnvironment].push([
+                        eventVolunteer,
+                        eventVolunteerActivity.endTime
+                    ]);
+                }
+            }
+
+            // Sort each entry in |backupVolunteers| by the name of the volunteer.
+            for (const applicableEnvironment in backupVolunteers) {
+                backupVolunteers[applicableEnvironment].sort((lhs, rhs) =>
+                    lhs[0].name.localeCompare(rhs[0].name));
+            }
+        }
+    }
 
     return (
         <Fragment>
@@ -247,6 +301,30 @@ export function OverviewView(props: OverviewViewProps) {
                 </DarkModeCapableAlert> }
 
             { /* flagged events */ }
+
+            { Object.keys(backupVolunteers).sort().map(environment =>
+                <OverviewCard icon={ <ChairIcon color="success" /> }>
+                    <Typography variant="body2" gutterBottom>
+                        Backup {environment}
+                    </Typography>
+                    <List dense disablePadding>
+                        { backupVolunteers[environment].map(([ volunteer, endTime ]) => {
+                            const url = `/schedule/${props.event.identifier}/volunteers/${volunteer.identifier}/`;
+                            return (
+                                <ListItemButton disableGutters
+                                                onClick={ _ => route(url) }>
+                                    <ListItemAvatar>
+                                        <Avatar src={volunteer.avatar}>
+                                            {initials(volunteer.name)}
+                                        </Avatar>
+                                    </ListItemAvatar>
+                                    <ListItemText primary={volunteer.name}
+                                                secondary={`until ${endTime.format('time')}`} />
+                                </ListItemButton>
+                            );
+                        } )}
+                    </List>
+                </OverviewCard> )}
 
             <EducationCard dateTime={dateTime} />
 

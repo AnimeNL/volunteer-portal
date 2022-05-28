@@ -7,6 +7,7 @@ import moment from 'moment-timezone';
 import 'moment/locale/en-gb';
 
 import CssBaseline from '@mui/material/CssBaseline';
+import GlobalStyles from '@mui/material/GlobalStyles';
 
 import { App } from './App';
 
@@ -15,6 +16,7 @@ moment.locale('en-gb');
 const root = document.getElementById('root')!;
 render(
     <Fragment>
-        <CssBaseline />
+        <CssBaseline enableColorScheme={true} />
+        <GlobalStyles styles={{ strong: { fontWeight: 500 } }} />
         <App />
     </Fragment>, root);

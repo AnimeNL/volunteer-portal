@@ -67,13 +67,8 @@ export function RegistrationContent(props: RegistrationContentProps) {
     // Inline component for the registration button. Behaviour depends on the configuration for
     // this event, which might have registration disabled whilst looking at this page.
     const RegistrationElement = (props: { children: ComponentChildren }) => {
-        if (!event.enableRegistration) {
-            return (
-                <blockquote>
-                    <p>We're currently not accepting registrations, please try again later!</p>
-                </blockquote>
-            );
-        }
+        if (!event.enableRegistration)
+            return <></>;
 
         return <Button href={`/registration/${event.identifier}/application.html`} variant="contained">
                    {props.children}

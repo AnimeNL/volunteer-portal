@@ -234,6 +234,7 @@ export function OverviewView(props: OverviewViewProps) {
     const { user } = useContext(AppContext);
 
     const backupVolunteers: Record<string, [ EventVolunteer, DateTime ][]> = {};
+    let displaySeniorTips = false;
 
     // Decide for which environments backup volunteer availability should be shown. If any, find the
     // volunteers that currently are available. All in all this is an O(n) operation on the number
@@ -250,6 +251,8 @@ export function OverviewView(props: OverviewViewProps) {
         }
 
         if (applicableEnvironments.length) {
+            displaySeniorTips = true;
+
             for (const eventVolunteer of event.volunteers()) {
                 const eventVolunteerActivity = eventTracker.getVolunteerActivity(eventVolunteer);
                 if (typeof eventVolunteerActivity === 'string' || !eventVolunteerActivity.event)
@@ -326,7 +329,7 @@ export function OverviewView(props: OverviewViewProps) {
                     </List>
                 </OverviewCard> )}
 
-            <EducationCard dateTime={dateTime} />
+            <EducationCard dateTime={dateTime} displaySeniorTips={displaySeniorTips} />
 
             { eventTracker.getActiveSessionCount() > 0 &&
                 <NardoAdvice dateTime={dateTime} /> }

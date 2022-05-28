@@ -18,6 +18,13 @@ const kEducationalMessages = [
     'Each of your shifts comes with clear notes in the volunteer portal.',
 ];
 
+// Educational messages that can be displayed on the portal for senior volunteers.
+const kEducationalMessagesForSeniors = [
+    'You can double click on a group of volunteers to make it the default view.',
+    'Volunteers engaged in a backup shift will be displayed on the overview page.',
+    'You can edit notes for events and volunteers, changes will be visible immediately!',
+];
+
 // Properties accepted by the <EducationCard> card.
 export interface EducationCardProps {
     /**
@@ -25,12 +32,31 @@ export interface EducationCardProps {
      * should be displayed to the user.
      */
     dateTime: DateTime;
+
+    /**
+     * Whether to include tips for senior volunteers. They get a slightly amended environment in the
+     * volunteer portal, with a different level of functionality.
+     */
+    displaySeniorTips: boolean;
 }
 
 // The <EducationCard> component displays a Material Card with a sequence of information about the
 // volunteer portal, helping the user find their way around.
 export function EducationCard(props: EducationCardProps) {
-    const message = kEducationalMessages[props.dateTime.unix() % kEducationalMessages.length];
+    const { dateTime, displaySeniorTips } = props;
+
+    let message: string | undefined;
+    if (!displaySeniorTips) {
+        message = kEducationalMessages[dateTime.unix() % kEducationalMessages.length];
+    } else {
+        const totalOptions = kEducationalMessages.length + kEducationalMessagesForSeniors.length;
+        const selectedOption = dateTime.unix() % totalOptions;
+
+        if (selectedOption < kEducationalMessages.length)
+            message = kEducationalMessages[selectedOption];
+        else
+            message = kEducationalMessagesForSeniors[selectedOption - kEducationalMessages.length];
+    }
 
     return (
         <OverviewCard icon={ <NewReleasesIcon color="info" /> }>

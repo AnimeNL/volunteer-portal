@@ -263,6 +263,10 @@ export function VolunteerView(props: VolunteerViewProps) {
 
     }, [ dateTime, volunteer ]);
 
+    // A warning will be displayed when the |volunteer| is currently marked as unavailable, so that
+    // seniors (& others) know to leave them alone for the time being. This is an O(1) operation.
+    const unavailable = eventTracker.getVolunteerActivity(volunteer) === 'unavailable';
+
     return (
         <Fragment>
             <AppTitle title={volunteer.name} />
@@ -323,6 +327,11 @@ export function VolunteerView(props: VolunteerViewProps) {
                 </List>
             </Paper>
 
+            { unavailable &&
+                <DarkModeCapableAlert elevation={1} sx={{ mt: 2 }} severity="warning">
+                    {volunteer.firstName} is currently unavailable.
+                </DarkModeCapableAlert> }
+
             { volunteer.notes &&
                 <Fragment>
                     <SubTitle>Notes</SubTitle>
@@ -352,7 +361,7 @@ export function VolunteerView(props: VolunteerViewProps) {
             })}
 
             { sortedDays.length === 0 &&
-                <DarkModeCapableAlert elevation={2} sx={{ p: 2, mt: 2 }} severity="warning">
+                <DarkModeCapableAlert elevation={1} sx={{ mt: 2 }} severity="warning">
                     {volunteer.firstName} does not have any shifts during {event.name}.
                 </DarkModeCapableAlert> }
 

@@ -166,7 +166,7 @@ export function EventListView(props: EventListViewProps) {
     return (
         <Fragment>
             <AppTitle title="Location" />
-            <Paper elevation={2} sx={{ maxWidth: '100vw', marginTop: { lg: 2 } }}>
+            <Paper elevation={2} sx={{ maxWidth: '100vw', marginTop: { md: 2 } }}>
                 <List>
                     <ListItem>
                         <ListItemAvatar>

@@ -103,7 +103,7 @@ export function AdministratorView(props: AdministratorViewProps) {
     return (
         <LocalizationProvider dateAdapter={AdapterMoment} dateLibInstance={moment}>
             <AppTitle title="Administrator Tools" />
-            <Paper elevation={2} sx={{ p: 2, marginTop: { lg: 2 } }}>
+            <Paper elevation={2} sx={{ p: 2, marginTop: { md: 2 } }}>
                 <Typography variant="body1">
                     The administrator tools allow behaviour of the client-side application to be
                     amended, primarily intended for development purposes. No warranties will be

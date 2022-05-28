@@ -52,20 +52,20 @@ function EventStatusDisplay(props: EventStatusDisplayProps) {
 
     if (dateTime.isBefore(event.startTime)) {
         return (
-            <DarkModeCapableAlert elevation={1} sx={{ marginTop: { lg: 2 } }} severity="info">
+            <DarkModeCapableAlert elevation={1} sx={{ marginTop: { md: 2 } }} severity="info">
                 <strong>{event.name}</strong> will officially
                 start <TimeTicker dateTime={dateTime} target={event.startTime} />.
             </DarkModeCapableAlert>
         );
     } else if (dateTime.isBefore(event.endTime)) {
         return (
-            <DarkModeCapableAlert elevation={1} sx={{ marginTop: { lg: 2 } }} severity="success">
+            <DarkModeCapableAlert elevation={1} sx={{ marginTop: { md: 2 } }} severity="success">
                 <strong>{event.name}</strong> is currently happening!
             </DarkModeCapableAlert>
         );
     } else {
         return (
-            <DarkModeCapableAlert elevation={1} sx={{ marginTop: { lg: 2 } }} severity="info">
+            <DarkModeCapableAlert elevation={1} sx={{ marginTop: { md: 2 } }} severity="info">
                 <strong>{event.name} </strong>
                 finished <TimeTicker dateTime={dateTime} target={event.endTime} />.
             </DarkModeCapableAlert>

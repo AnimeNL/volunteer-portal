@@ -270,7 +270,7 @@ export function VolunteerView(props: VolunteerViewProps) {
     return (
         <Fragment>
             <AppTitle title={volunteer.name} />
-            <Paper elevation={2} sx={{ maxWidth: '100vw', marginTop: { lg: 2 } }}>
+            <Paper elevation={2} sx={{ maxWidth: '100vw', marginTop: { md: 2 } }}>
                 <List>
                     <ListItem>
                         <ListItemAvatar onClick={e => setAvatarDialogVisible(true)}>

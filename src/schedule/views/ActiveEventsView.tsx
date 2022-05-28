@@ -85,7 +85,7 @@ export function ActiveEventsView(props: ActiveEventsViewProps) {
         <Fragment>
             <AppTitle title="Active events" />
             { !activeSessionLength &&
-                <DarkModeCapableAlert elevation={1} severity="warning" sx={{ mt: { xs: 0, lg: 2 } }}>
+                <DarkModeCapableAlert elevation={1} severity="warning" sx={{ mt: { xs: 0, md: 2 } }}>
                     { upcomingSession &&
                         <Fragment>
                             <AlertTitle>There are no active events</AlertTitle>

@@ -187,7 +187,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
             return (
                 <Fragment>
                     <AppTitle title="Volunteers" />
-                    <Paper elevation={2} sx={{ p: 2, marginTop: { lg: 2 } }}>
+                    <Paper elevation={2} sx={{ p: 2, marginTop: { md: 2 } }}>
                         <Typography variant="body1">
                             There are no volunteers for {event.name} yet for whom a schedule has
                             been published. Please be on the lookout for an e-mail from the team!

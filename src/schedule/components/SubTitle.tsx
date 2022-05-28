@@ -16,7 +16,7 @@ export interface SubTitleProps {
 export function SubTitle(props: SubTitleProps) {
     return (
         <Typography paragraph variant="button" color="primary"
-                    sx={{ m: 1, marginTop: { xs: 1.5, lg: 2 } }}>
+                    sx={{ m: 1, marginTop: { xs: 1.5, md: 2 } }}>
             {props.children}
         </Typography>
     );

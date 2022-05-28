@@ -5,6 +5,7 @@
 import { h } from 'preact';
 import { createRef, useState } from 'preact/compat';
 
+import Button from '@mui/material/Button';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -176,6 +177,10 @@ export function AvatarEditor(props: AvatarEditorProps) {
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ padding: 2, paddingRight: 4 }}>
+                <Button variant="text"
+                        onClick={handleDialogClose}>
+                    Close
+                </Button>
                 <LoadingButton variant="contained"
                                color={ uploadError ? "error" : "primary" }
                                loading={uploading}

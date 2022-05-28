@@ -86,12 +86,20 @@ export function WelcomeApp() {
     function handleScheduleAccessRequest(event: IEnvironmentResponseEvent): void {
         if (!user.authenticated) {
             setAuthenticationDialogOpen(true);
+            setParticipationDialogEvent(event);
         } else if (!userParticipatesInEvent(user, event.identifier) && !user.isAdministrator()) {
             setParticipationDialogOpen(true);
             setParticipationDialogEvent(event);
         } else {
             route(`/schedule/${event.identifier}/`);
         }
+    }
+
+    function handleAuthenticationDialogClose() {
+        if (user.authenticated && participationDialogEvent)
+            route(`/schedule/${participationDialogEvent.identifier}/`);
+
+        setAuthenticationDialogOpen(false);
     }
 
     return (
@@ -152,10 +160,10 @@ export function WelcomeApp() {
                 }
             </List>
 
-            <UserLoginDialog onClose={() => setAuthenticationDialogOpen(false)}
+            <UserLoginDialog onClose={handleAuthenticationDialogClose}
                              open={authenticationDialogOpen} />
 
-            { participationDialogEvent &&
+            { (participationDialogEvent && user.authenticated) &&
                 <Dialog onClose={() => setParticipationDialogOpen(false)}
                         open={participationDialogOpen}>
 

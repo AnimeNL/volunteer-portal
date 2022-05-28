@@ -181,10 +181,11 @@ export function DesktopNavigation(props: NavigationProps) {
                                         href={ eventBaseUrl + '/volunteers/' }
                                         icon={ <GroupIcon /> }
                                         label="Volunteers" />
-                <DesktopNavigationEntry active={ props.active === 'admin' }
-                                        href={ eventBaseUrl + '/admin/' }
-                                        icon={ <SettingsIcon /> }
-                                        label="Administration" />
+                { props.showAdministration &&
+                    <DesktopNavigationEntry active={ props.active === 'admin' }
+                                            href={ eventBaseUrl + '/admin/' }
+                                            icon={ <SettingsIcon /> }
+                                            label="Administration" /> }
             </List>
         </Fragment>
     );

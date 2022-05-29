@@ -134,26 +134,32 @@ module.exports = {
             ],
         }),
 
-        new GenerateSW({
-            clientsClaim: true,
-            skipWaiting: true,
+        ...(
+            // Only generate the service worker in production builds. This is because Workbox has
+            // some odd way of interacting with emits that's incompatible with the plugin.
+            // https://github.com/GoogleChrome/workbox/issues/1790#issuecomment-544982014
+            process.env.NODE_ENV === 'production'
+                ? new GenerateSW({
+                      clientsClaim: true,
+                      skipWaiting: true,
 
-            navigateFallback: '/index.html',
-            navigateFallbackAllowlist: [
-                /\/schedule\//,
-                /\?app$/,
-            ],
+                      navigateFallback: '/index.html',
+                      navigateFallbackAllowlist: [
+                          /\/schedule\//,
+                          /\?app$/,
+                      ],
 
-            runtimeCaching: [
-                {
-                    urlPattern: /\/avatars\//,
-                    handler: 'CacheFirst',
-                    options: {
-                        cacheName: 'vp-avatars',
-                    },
-                },
-            ],
-        }),
+                      runtimeCaching: [
+                          {
+                              urlPattern: /\/avatars\//,
+                              handler: 'CacheFirst',
+                              options: {
+                                  cacheName: 'vp-avatars',
+                              },
+                          },
+                      ],
+                  })
+                : []),
 
         new HtmlWebpackPlugin({
             filename: 'index.html',

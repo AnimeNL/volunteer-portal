@@ -13,7 +13,7 @@ import { App } from './App';
 
 moment.locale('en-gb');
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && process.env.NODE_ENV !== 'development') {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js').then(registration => {
             console.log('Service Worker registered: ', registration);

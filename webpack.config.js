@@ -10,6 +10,7 @@ const webpack = require('webpack');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { GenerateSW } = require('workbox-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin');
@@ -133,11 +134,31 @@ module.exports = {
             ],
         }),
 
+        new GenerateSW({
+            clientsClaim: true,
+            skipWaiting: true,
+
+            navigateFallback: '/index.html',
+            navigateFallbackAllowlist: [
+                /\/schedule\//
+            ],
+
+            runtimeCaching: [
+                {
+                    urlPattern: /\/avatars\//,
+                    handler: 'CacheFirst',
+                    options: {
+                        cacheName: 'vp-avatars',
+                    },
+                },
+            ],
+        }),
+
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: 'src/index.html',
             base: '/',  // Enables relative URLs to work painlessly
-            hash: true, // This is useful for cache busting
+            hash: false, // Cache busting is enabled through chunk hashes
         }),
 
         new BundleAnalyzerPlugin({

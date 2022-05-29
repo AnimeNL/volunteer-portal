@@ -4,7 +4,7 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useContext, useState } from 'preact/hooks';
+import { useContext, useEffect, useState } from 'preact/hooks';
 
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import Button from '@mui/material/Button';
@@ -73,6 +73,28 @@ export function WelcomeApp() {
     const { environment, user } = useContext(AppContext);
 
     const isAdministrator = user.authenticated && user.isAdministrator();
+
+    // Users of an installed variant of the volunteer portal should be forwarded to the schedule app
+    // straight away, in case they are signed in and have non-administrator override access to one.
+    if (document.location.search === '?app' && user.authenticated) {
+        for (const event of environment.events) {
+            if (!event.enableSchedule)
+                continue;  // the schedule for this |event| hasn't been released yet
+
+            if (!userParticipatesInEvent(user, event.identifier))
+                continue;  // the |user| does not participate in this |event|
+
+            // preact-router 4.0.1 has a bug where programmatic routes during the first render no
+            // longer work; canRoute() rejects any given URL, even when valid. We can work around
+            // this by issuing the route as a side-effect instead. Slightly slower, but it works.
+            // https://github.com/preactjs/preact-router/issues/417
+            useEffect(() => {
+                route(`/schedule/${event.identifier}/`, /* replace= */ true);
+            });
+
+            return <></>;
+        }
+    }
 
     // Accessing the schedule requires the user to be identified, which we don't necessarily know
     // at the time of click. If they're not, the user should be given the opportunity to sign in.

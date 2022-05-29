@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "AnimeCon Volunteer Portal",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS='--openssl-legacy-provider' webpack --mode production",
+    "build": "cross-env NODE_OPTIONS='--openssl-legacy-provider' NODE_PROD=1 webpack --mode production",
     "build-api": "ts-json-schema-generator --path src/api/*.ts -j basic --additional-properties -o src/api/schema.json",
     "serve": "cross-env NODE_OPTIONS='--openssl-legacy-provider' REACT_APP_API_HOST=https://stewards.team webpack serve",
     "test": "jest"

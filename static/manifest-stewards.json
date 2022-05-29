@@ -1,25 +1,43 @@
 {
     "name": "AnimeCon Steward Portal",
     "short_name": "Stewards",
+    "description": "Volunteer Portal for stewards helping out at an AnimeCon event.",
     "icons": [
         {
-            "src": "images/logo-512.png",
+            "src": "/static/images/stewards/logo-512.png",
             "sizes": "512x512",
             "type": "image/png"
         },
         {
-            "src": "images/logo-256.png",
+            "src": "/static/images/stewards/logo-256.png",
             "sizes": "256x256",
             "type": "image/png"
         },
         {
-            "src": "images/logo-192.png",
+            "src": "/static/images/stewards/logo-192.png",
             "sizes": "192x192",
+            "type": "image/png"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/static/images/screenshot-1.png",
+            "sizes": "320x620",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/images/screenshot-2.png",
+            "sizes": "320x620",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/images/screenshot-3.png",
+            "sizes": "320x620",
             "type": "image/png"
         }
     ],
     "display": "standalone",
     "theme_color": "#303F9F",
-    "background_color": "#CFD8DC",
-    "start_url": "/"
+    "background_color": "#f5f5f5",
+    "start_url": "/index.html?app"
 }

@@ -1,25 +1,43 @@
 {
     "name": "AnimeCon Gopher Portal",
     "short_name": "Gophers",
+    "description": "Volunteer Portal for gophers helping out at an AnimeCon event.",
     "icons": [
         {
-            "src": "images/logo-gophers-512.png",
+            "src": "/static/images/gophers/logo-512.png",
             "sizes": "512x512",
             "type": "image/png"
         },
         {
-            "src": "images/logo-gophers-256.png",
+            "src": "/static/images/gophers/logo-256.png",
             "sizes": "256x256",
             "type": "image/png"
         },
         {
-            "src": "images/logo-gophers-192.png",
+            "src": "/static/images/gophers/logo-192.png",
             "sizes": "192x192",
             "type": "image/png"
         }
     ],
+    "screenshots": [
+        {
+            "src": "/static/images/screenshot-1.png",
+            "sizes": "320x620",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/images/screenshot-2.png",
+            "sizes": "320x620",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/images/screenshot-3.png",
+            "sizes": "320x620",
+            "type": "image/png"
+        }
+    ],
     "display": "standalone",
-    "theme_color": "#1565c0",
-    "background_color": "#607d8b",
-    "start_url": "/"
+    "theme_color": "#5d4037",
+    "background_color": "#f5f5f5",
+    "start_url": "/index.html?app"
 }

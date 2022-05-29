@@ -140,7 +140,8 @@ module.exports = {
 
             navigateFallback: '/index.html',
             navigateFallbackAllowlist: [
-                /\/schedule\//
+                /\/schedule\//,
+                /\?app$/,
             ],
 
             runtimeCaching: [

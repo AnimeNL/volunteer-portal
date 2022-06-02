@@ -61,11 +61,7 @@ function EventStatusDisplay(props: EventStatusDisplayProps) {
             </DarkModeCapableAlert>
         );
     } else if (dateTime.isBefore(event.endTime)) {
-        return (
-            <DarkModeCapableAlert elevation={1} sx={{ marginTop: { md: 2 } }} severity="success">
-                <strong>{event.name}</strong> is currently happening!
-            </DarkModeCapableAlert>
-        );
+        return <></>;
     } else {
         return (
             <DarkModeCapableAlert elevation={1} sx={{ marginTop: { md: 2 } }} severity="info">

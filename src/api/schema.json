@@ -376,7 +376,7 @@
         },
         "userPrivileges": {
           "items": {
-            "$ref": "#/definitions/IEventResponsePrivilege"
+            "type": "string"
           },
           "type": "array"
         },

@@ -35,7 +35,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
     // Information made available after the Event was successfully retrieved.
     #meta?: IEventResponseMeta;
     #nardo?: Record<string, number>;
-    #privileges: Set<IEventResponsePrivilege> = new Set();
+    #privileges: Set<string> = new Set();
 
     #startTime?: DateTime;
     #endTime?: DateTime;

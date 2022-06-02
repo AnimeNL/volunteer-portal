@@ -64,8 +64,11 @@ export interface IEventResponse {
     /**
      * The privileges that the authenticated user has been granted for this event. It's valid for
      * a user to not have been granted any privileges at all.
+     *
+     * The type of the valid properties is |IEventResponsePrivilege|, but we don't want the portal
+     * to break when the server responds with another value.
      */
-    userPrivileges?: IEventResponsePrivilege[];
+    userPrivileges?: string[];
 
     /**
      * Zero or more volunteers who will be helping out during this event. It's possible that one of

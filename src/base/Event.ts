@@ -50,6 +50,16 @@ export interface Event {
     readonly endTime: DateTime;
 
     // ---------------------------------------------------------------------------------------------
+    // Lifetime API
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Requests the event to be refreshed. This is an asynchronous process, for which no success
+     * information will be returned beyond signalling to any attached observers.
+     */
+    refresh(): void;
+
+    // ---------------------------------------------------------------------------------------------
     // Observer API
     // ---------------------------------------------------------------------------------------------
 

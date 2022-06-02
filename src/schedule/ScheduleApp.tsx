@@ -34,6 +34,9 @@ import { VolunteerView } from './views/VolunteerView';
 
 import { kDesktopMaximumWidthPx, kDesktopMenuWidthPx } from './ResponsiveConstants';
 
+// Interval, in milliseconds, between which we should request event updates from the network.
+const kEventInvalidationIntervalMs = 5 /* =minutes */ * 60 * 1000;
+
 // Styling for the <ScheduleApp> component. See the component-level comment for a description of the
 // responsive behaviour that this component implements, which this styling exists to enable.
 const kStyles: Record<string, SystemStyleObject<Theme>> = {
@@ -135,10 +138,15 @@ interface ScheduleAppState {
 export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         implements Invalidatable {
 
+    // Time, in milliseconds, at which a request for the Event API was last requested.
+    #lastEventRequestIssued: number;
+
     public state: ScheduleAppState;
 
     constructor(props: ScheduleAppProps) {
         super();
+
+        this.#lastEventRequestIssued = performance.now();
 
         const eventTracker = new EventTrackerImpl(props.event, props.user);
         const dateTime = DateTime.local();
@@ -150,7 +158,6 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
             dateTime, eventTracker
         }
     }
-
 
     // ---------------------------------------------------------------------------------------------
     // Invalidatable implementation
@@ -166,15 +173,32 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
     }
 
     // ---------------------------------------------------------------------------------------------
-    // Component lifetime callbacks
+    // Component and page lifetime callbacks
     // ---------------------------------------------------------------------------------------------
 
+    // Called when the document's visibility has changed.
+    handleVisibilityChange = () => {
+        if (document.hidden) {
+            // TODO: Cancel timers
+        } else {
+            const currentTime = performance.now();
+            if ((currentTime - this.#lastEventRequestIssued) >= kEventInvalidationIntervalMs) {
+                this.#lastEventRequestIssued = currentTime;
+                this.props.event.refresh()
+            }
+
+            // TODO: Set timers
+        }
+    };
+
     componentDidMount() {
+        document.addEventListener('visibilitychange', this.handleVisibilityChange);
         this.props.event.addObserver(this);
     }
 
     componentWillUnmount() {
         this.props.event.removeObserver(this);
+        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     }
 
     // ---------------------------------------------------------------------------------------------

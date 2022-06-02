@@ -58,6 +58,9 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
         return this.requestManager.issue(this.request);
     }
 
+    // Information-less version of the initialize function, exposed in the API.
+    refresh() { this.initialize(); }
+
     // ---------------------------------------------------------------------------------------------
     // ApiRequestObserver interface implementation
     // ---------------------------------------------------------------------------------------------

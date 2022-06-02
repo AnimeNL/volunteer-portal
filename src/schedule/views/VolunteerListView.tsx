@@ -21,6 +21,7 @@ import Typography from '@mui/material/Typography';
 import { AppTitle } from '../../AppTitle';
 import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
+import { EventTracker } from '../../base/EventTracker';
 import { Event, EventVolunteer } from '../../base/Event';
 import { initials } from '../../base/NameUtilities';
 
@@ -163,13 +164,18 @@ interface VolunteerListViewProps {
      * The Event instance that's active in the scheduling application.
      */
     event: Event;
+
+    /**
+     * The event tracker keeping track of live state of everything that's going on.
+     */
+    eventTracker: EventTracker;
 };
 
 // The <VolunteerListView> provides an overview of the volunteers who are participating in this
 // event. There are two views: a singular list without headers for users who only see volunteers
 // from a single environment, or multiple tabbed lists for folks who can access multiple.
 export function VolunteerListView(props: VolunteerListViewProps) {
-    const { dateTime, event } = props;
+    const { dateTime, event, eventTracker } = props;
 
     const environments: Record<string, EventVolunteer[]> = {};
     for (const volunteer of event.volunteers()) {
@@ -182,6 +188,23 @@ export function VolunteerListView(props: VolunteerListViewProps) {
     }
 
     const environmentNames = Object.getOwnPropertyNames(environments);
+    const userVolunteer = eventTracker.getUserVolunteer();
+
+    // Determine the tab that should be pinned by default. When the user is signed in and part of
+    // an environment, that one will be preferred over the other tabs that are being displayed.
+    let defaultPin: number = /* alphabetically the first environment= */ 0;
+
+    if (userVolunteer && environmentNames.length > 1) {
+        for (const userEnvironmentName in userVolunteer.environments) {
+            const index = environmentNames.indexOf(userEnvironmentName);
+            if (index === -1)
+                continue;  // the |userVolunteer| does not participate in this environment
+
+            defaultPin = index;
+            break;
+        }
+    }
+
     switch (environmentNames.length) {
         case 0:
             return (
@@ -236,7 +259,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
             // Validate the |pinnedTeam| storage option to make sure it exists and is within bounds.
             const validatedPinnedTeam =
                 pinnedTeam === null || pinnedTeam < 0 || pinnedTeam >= environmentNames.length
-                    ? /* default value= */ 0
+                    ? /* default value= */ defaultPin
                     : pinnedTeam;
 
             const [ selectedTabIndex, setSelectedTabIndex ] = useState(validatedPinnedTeam);

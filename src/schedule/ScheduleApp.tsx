@@ -299,7 +299,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                 <Route path="/schedule/:identifier/volunteers/:volunteerIdentifier/"
                                        component={VolunteerView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
                                 <Route path="/schedule/:identifier/volunteers/"
-                                       component={VolunteerListView} dateTime={dateTime} event={event} />
+                                       component={VolunteerListView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
 
                                 <Route default component={OverviewView} dateTime={dateTime} eventTracker={eventTracker} event={event} />
                             </Router>

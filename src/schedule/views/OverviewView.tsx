@@ -16,6 +16,7 @@ import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Typography from '@mui/material/Typography';
 
@@ -288,6 +289,7 @@ export function OverviewView(props: OverviewViewProps) {
 
     // Determine whether there are any currently available senior volunteers. We display this on
     // the overview page so that volunteers can quickly find them.
+    const seniorLink = `/schedule/${props.event.identifier}/volunteers/`;
     const seniors = eventTracker.getAvailableSeniors();
 
     // Determine which consultation requests have to be shown. We show up to three, sorted by the
@@ -358,11 +360,11 @@ export function OverviewView(props: OverviewViewProps) {
                 </OverviewCard> )}
 
             { seniors.length > 0 &&
-                <OverviewCard icon={ <ChairIcon color="success" /> }>
+                <OverviewCard icon={ <PeopleAltIcon color="success" /> }>
                     <Typography variant="body2" gutterBottom>
                         Available seniors
                     </Typography>
-                    <AvatarGroup max={5} onClick={() => route(`/schedule/${props.event.identifier}/volunteers/`)}
+                    <AvatarGroup max={8} onClick={() => route(seniorLink)}
                                  sx={{ cursor: 'pointer', justifyContent: 'flex-end' }}>
                         { seniors.map(volunteer => {
                             return (

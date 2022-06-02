@@ -16,6 +16,7 @@ const kEducationalMessages = [
     'You can\'t just see your own schedule, but also the schedules of your fellow volunteers.',
     'You can quickly call one of the senior volunteers via a button on their schedules.',
     'Each of your shifts comes with clear notes in the volunteer portal.',
+    'Available senior volunteers will be highlighted on this overview page.',
 ];
 
 // Educational messages that can be displayed on the portal for senior volunteers.

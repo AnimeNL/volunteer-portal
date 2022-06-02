@@ -368,6 +368,12 @@
         "meta": {
           "$ref": "#/definitions/IEventResponseMeta"
         },
+        "nardo": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
         "userPrivileges": {
           "items": {
             "$ref": "#/definitions/IEventResponsePrivilege"
@@ -589,6 +595,37 @@
         "environments"
       ],
       "type": "object"
+    },
+    "INardo": {
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/INardoRequest"
+        },
+        "response": {
+          "$ref": "#/definitions/INardoResponse"
+        }
+      },
+      "required": [
+        "request",
+        "response"
+      ],
+      "type": "object"
+    },
+    "INardoRequest": {
+      "properties": {
+        "authToken": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authToken"
+      ],
+      "type": "object"
+    },
+    "INardoResponse": {
+      "maxItems": 0,
+      "minItems": 0,
+      "type": "array"
     },
     "INotes": {
       "properties": {

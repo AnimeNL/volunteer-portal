@@ -14,6 +14,7 @@ const kEndpoints: { [key in ApiName]: string } = {
     IContent: '/api/content',
     IEnvironment: '/api/environment',
     IEvent: '/api/event',
+    INardo: '/api/nardo',
     INotes: '/api/notes',
     IUser: '/api/user',
 };

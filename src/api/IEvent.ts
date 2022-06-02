@@ -57,6 +57,11 @@ export interface IEventResponse {
     meta: IEventResponseMeta;
 
     /**
+     * Record if {volunteer identifier} to {unix timestamp} of advice requests. Easter egg.
+     */
+    nardo?: Record<string, number>;
+
+    /**
      * The privileges that the authenticated user has been granted for this event. It's valid for
      * a user to not have been granted any privileges at all.
      */

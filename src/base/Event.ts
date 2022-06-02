@@ -23,6 +23,11 @@ export interface Event {
     readonly identifier: string;
 
     /**
+     * Record if {volunteer identifier} to {unix timestamp} of advice requests. Easter egg.
+     */
+    readonly nardo?: Record<string, number>;
+
+    /**
      * Name of the event, which can be publicly displayed in a user interface. Will throw when the
      * Event object has not been initialized yet.
      */

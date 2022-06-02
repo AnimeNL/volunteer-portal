@@ -4,8 +4,9 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useContext } from 'preact/compat';
+import { useContext, useMemo } from 'preact/compat';
 
+import AccessibilityIcon from '@mui/icons-material/Accessibility';
 import AlertTitle from '@mui/material/AlertTitle';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import Avatar from '@mui/material/Avatar';
@@ -284,6 +285,28 @@ export function OverviewView(props: OverviewViewProps) {
         }
     }
 
+    // Determine which consultation requests have to be shown. We show up to three, sorted by the
+    // time at which they requested consultation in descending order.
+    const consultations = useMemo(() => {
+        const consultations: [ EventVolunteer, DateTime ][] = [];
+        if (event.nardo) {
+            for (const volunteerIdentifier in event.nardo) {
+                const volunteer = event.volunteer(volunteerIdentifier);
+                if (!volunteer)
+                    continue;  // the |volunteerIdentifier| is not known to the signed in user
+
+                consultations.push(
+                    [ volunteer, DateTime.fromUnix(event.nardo[volunteerIdentifier]) ]);
+
+                if (consultations.length >= 3)
+                    break;
+            }
+        }
+
+        return consultations;
+
+    }, [ dateTime ]);
+
     return (
         <Fragment>
             <AppTitle />
@@ -329,10 +352,35 @@ export function OverviewView(props: OverviewViewProps) {
                     </List>
                 </OverviewCard> )}
 
+            { consultations.length > 0 &&
+                <OverviewCard icon={ <AccessibilityIcon color="success" /> }>
+                    <Typography variant="body2" gutterBottom>
+                        Del a Rie consultation requests
+                    </Typography>
+                    <List dense disablePadding>
+                        { consultations.map(([ volunteer, requestTime ]) => {
+                            const text = requestTime.moment().from(dateTime.moment());
+                            const url = `/schedule/${props.event.identifier}/volunteers/${volunteer.identifier}/`;
+                            return (
+                                <ListItemButton disableGutters
+                                                onClick={ _ => route(url) }>
+                                    <ListItemAvatar>
+                                        <Avatar src={volunteer.avatar}>
+                                            {initials(volunteer.name)}
+                                        </Avatar>
+                                    </ListItemAvatar>
+                                    <ListItemText primary={volunteer.name}
+                                                  secondary={text} />
+                                </ListItemButton>
+                            );
+                        } )}
+                    </List>
+                </OverviewCard> }
+
             <EducationCard dateTime={dateTime} displaySeniorTips={displaySeniorTips} />
 
             { eventTracker.getActiveSessionCount() > 0 &&
-                <NardoAdvice dateTime={dateTime} /> }
+                <NardoAdvice dateTime={dateTime} user={user} /> }
 
         </Fragment>
     );

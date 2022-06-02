@@ -34,6 +34,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
     // Information made available after the Event was successfully retrieved.
     #meta?: IEventResponseMeta;
+    #nardo?: Record<string, number>;
     #privileges: Set<IEventResponsePrivilege> = new Set();
 
     #startTime?: DateTime;
@@ -70,6 +71,7 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
         // (1) Reset all the locally cached information to an empty state.
         this.#meta = response.meta;
+        this.#nardo = response.nardo;
         this.#privileges = new Set(response.userPrivileges);
 
         this.#startTime = DateTime.fromUnix(response.meta.time[0]);
@@ -147,6 +149,14 @@ export class EventImpl implements ApiRequestObserver<'IEvent'>, Event {
 
     get initialized() { return !!this.#meta; }
     get identifier() { return this.request.event; }
+
+    get nardo() {
+        if (!this.#meta)
+            throw new Error(kExceptionMessage);
+
+        return this.#nardo;
+    }
+
     get name() {
         if (!this.#meta)
             throw new Error(kExceptionMessage);

@@ -24,6 +24,7 @@ export class EventTrackerImpl implements EventTracker {
     #activeSessionsByArea: Map<EventArea, number> = new Map();
     #activeVolunteers: Map<EventVolunteer, EventShift | null> = new Map();
     #activeVolunteerCount = 0;
+    #availableSeniors: EventVolunteer[] = [];
 
     #upcomingVolunteerShift: Map<EventVolunteer, EventShift> = new Map();
 
@@ -46,6 +47,7 @@ export class EventTrackerImpl implements EventTracker {
         this.#activeSessionsByArea = new Map();
         this.#activeVolunteers = new Map();
         this.#activeVolunteerCount = 0;
+        this.#availableSeniors = [];
 
         this.#upcomingVolunteerShift = new Map();
 
@@ -109,6 +111,14 @@ export class EventTrackerImpl implements EventTracker {
 
                     case 'available':
                         this.#activeVolunteers.set(volunteer, /* shift= */ null);
+                        for (const role of Object.values(volunteer.environments)) {
+                            if (role.indexOf('enior') === -1 && role.indexOf('taff') === -1)
+                                continue;  // the |volunteer| isn't a Senior or Staff volunteer
+
+                            this.#availableSeniors.push(volunteer);
+                            break;
+                        }
+
                         break;
 
                     case 'shift':
@@ -149,6 +159,10 @@ export class EventTrackerImpl implements EventTracker {
 
     getActiveVolunteerCount(): number {
         return this.#activeVolunteerCount;
+    }
+
+    getAvailableSeniors(): EventVolunteer[] {
+        return this.#availableSeniors;
     }
 
     getUpcomingSession() : EventSession | undefined {

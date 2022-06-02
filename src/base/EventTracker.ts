@@ -55,6 +55,12 @@ export interface EventTracker {
     getActiveVolunteerCount(): number;
 
     /**
+     * Returns an array with the senior (& staff) volunteers who are currently marked as available,
+     * across all the environments the authenticated user has access to. Constant time operation.
+     */
+    getAvailableSeniors(): EventVolunteer[];
+
+    /**
      * Returns the first upcoming session among all of those in the event, that hasn't started yet.
      * There may not be any. Constant time operation.
      */

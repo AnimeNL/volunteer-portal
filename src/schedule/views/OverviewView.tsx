@@ -9,6 +9,7 @@ import { useContext, useMemo } from 'preact/compat';
 import AccessibilityIcon from '@mui/icons-material/Accessibility';
 import AlertTitle from '@mui/material/AlertTitle';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import AvatarGroup from '@mui/material/AvatarGroup';
 import Avatar from '@mui/material/Avatar';
 import ChairIcon from '@mui/icons-material/Chair';
 import List from '@mui/material/List';
@@ -285,6 +286,10 @@ export function OverviewView(props: OverviewViewProps) {
         }
     }
 
+    // Determine whether there are any currently available senior volunteers. We display this on
+    // the overview page so that volunteers can quickly find them.
+    const seniors = eventTracker.getAvailableSeniors();
+
     // Determine which consultation requests have to be shown. We show up to three, sorted by the
     // time at which they requested consultation in descending order.
     const consultations = useMemo(() => {
@@ -345,12 +350,29 @@ export function OverviewView(props: OverviewViewProps) {
                                         </Avatar>
                                     </ListItemAvatar>
                                     <ListItemText primary={volunteer.name}
-                                                secondary={`until ${endTime.format('time')}`} />
+                                                  secondary={`until ${endTime.format('time')}`} />
                                 </ListItemButton>
                             );
                         } )}
                     </List>
                 </OverviewCard> )}
+
+            { seniors.length > 0 &&
+                <OverviewCard icon={ <ChairIcon color="success" /> }>
+                    <Typography variant="body2" gutterBottom>
+                        Available seniors
+                    </Typography>
+                    <AvatarGroup max={5} onClick={() => route(`/schedule/${props.event.identifier}/volunteers/`)}
+                                 sx={{ cursor: 'pointer', justifyContent: 'flex-end' }}>
+                        { seniors.map(volunteer => {
+                            return (
+                                <Avatar src={volunteer.avatar}>
+                                    {initials(volunteer.name)}
+                                </Avatar>
+                            )
+                        } )}
+                    </AvatarGroup>
+                </OverviewCard> }
 
             { consultations.length > 0 &&
                 <OverviewCard icon={ <AccessibilityIcon color="success" /> }>

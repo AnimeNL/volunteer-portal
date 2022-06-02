@@ -482,7 +482,8 @@
         "update-avatar-environment",
         "update-avatar-self",
         "update-event-notes",
-        "update-user-notes"
+        "update-user-notes-any",
+        "update-user-notes-environment"
       ],
       "type": "string"
     },

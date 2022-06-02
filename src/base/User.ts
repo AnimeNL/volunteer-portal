@@ -101,5 +101,5 @@ export function isAcceptedEventRole(role: IUserResponseEventRole): boolean {
             return false;
     }
 
-    return false;
+    return true;
 }

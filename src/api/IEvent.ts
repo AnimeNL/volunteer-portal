@@ -187,8 +187,11 @@ export type IEventResponsePrivilege =
     /** Whether this volunteer has the ability to update event notes: */
     'update-event-notes' |
 
-    /** Whether this volunteer has the ability to update user notes: */
-    'update-user-notes';
+    /** Whether this volunteer has the ability to update any user's notes: */
+    'update-user-notes-any' |
+
+    /** Whether this volunteer has the ability to update notes of users in their environment: */
+    'update-user-notes-environment';
 
 /**
  * Structure defining one of the sessions that will be hosted during one of the events.

@@ -126,13 +126,17 @@ export function VolunteerView(props: VolunteerViewProps) {
     // component. The component will only be added when an access code is known for this volunteer.
     const [ accessCodeVisible, setAccessCodeVisible ] = useState(false);
 
-    // Whether the current |user| has the ability to edit the avatar of this |volunteer|. This is
-    // controlled by the user privileges made available through the server.
+    // Whether the current |user| has the ability to edit the avatar of this |volunteer|, and to
+    // edit the notes associated with the |volunteer| This is controlled by the user privileges made
+    // available through the server.
     let canEditAvatar = event.hasUserPrivilege('update-avatar-any');
-    if (!canEditAvatar && userVolunteer) {
-        if (event.hasUserPrivilege('update-avatar-self') && userVolunteer === volunteer) {
-            canEditAvatar = true;
-        } else if (event.hasUserPrivilege('update-avatar-environment')) {
+    let canEditNotes = event.hasUserPrivilege('update-user-notes-any');
+
+    if (userVolunteer && (!canEditAvatar || !canEditNotes)) {
+        const hasEnvironmentPrivilege = event.hasUserPrivilege('update-avatar-environment') ||
+                                        event.hasUserPrivilege('update-user-notes-environment');
+
+        if (hasEnvironmentPrivilege) {
             const userEnvironmentIdentifiers = Object.keys(userVolunteer.environments);
             for (const userEnvironmentIdentifier of userEnvironmentIdentifiers) {
                 const userRole = userVolunteer.environments[userEnvironmentIdentifier];
@@ -144,10 +148,18 @@ export function VolunteerView(props: VolunteerViewProps) {
                     continue;  // the |volunteer| isn't participating in the given environment
                 }
 
-                canEditAvatar = true;
+                if (!canEditAvatar)
+                    canEditAvatar = event.hasUserPrivilege('update-avatar-environment');
+
+                if (!canEditNotes)
+                    canEditNotes = event.hasUserPrivilege('update-user-notes-environment');
+
                 break;
             }
         }
+
+        if (event.hasUserPrivilege('update-avatar-self') && userVolunteer === volunteer)
+            canEditAvatar = true;
     }
 
     // Toggles whether a dialog should be visible with the volunteer's avatar. When the user has the
@@ -294,7 +306,7 @@ export function VolunteerView(props: VolunteerViewProps) {
                                       secondary={role} />
                         { (volunteer.accessCode || volunteer.phoneNumber) &&
                             <Stack direction="row" spacing={2}>
-                                { event.hasUserPrivilege('update-user-notes') &&
+                                { canEditNotes &&
                                     <Tooltip title={`${volunteer.firstName}'s notes`}>
                                         <IconButton color="primary"
                                                     onClick={e => setNoteEditorOpen(true)}
@@ -406,7 +418,7 @@ export function VolunteerView(props: VolunteerViewProps) {
 
                 </Dialog> }
 
-            { event.hasUserPrivilege('update-user-notes') &&
+            { canEditNotes &&
                 <NotesEditor open={noteEditorOpen}
                              notes={volunteer.notes}
                              requestClose={() => setNoteEditorOpen(false)}

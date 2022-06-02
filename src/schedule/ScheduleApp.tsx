@@ -4,7 +4,7 @@
 
 import { Component, h } from 'preact';
 import { Router, Route } from 'preact-router';
-import { useContext, useEffect } from 'preact/hooks';
+import { useContext } from 'preact/hooks';
 
 import Box from '@mui/material/Box';
 import Hidden from '@mui/material/Hidden';
@@ -12,7 +12,6 @@ import Stack from '@mui/material/Stack';
 import { SystemStyleObject, Theme } from '@mui/system';
 
 import { AppContext } from '../AppContext';
-import { AppTitleListener, clearTitleListener, setTitleListener } from '../AppTitle';
 import { ApplicationBar } from './components/ApplicationBar';
 import { ContentTheme } from '../ContentTheme';
 import { DateTime } from '../base/DateTime';
@@ -134,7 +133,7 @@ interface ScheduleAppState {
 //
 // Individual components may have further optimizations where they make sense to support.
 export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
-        implements AppTitleListener, Invalidatable {
+        implements Invalidatable {
 
     public state: ScheduleAppState;
 
@@ -167,26 +166,15 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
     }
 
     // ---------------------------------------------------------------------------------------------
-    // AppTitleListener implementation & lifetime.
+    // Component lifetime callbacks
     // ---------------------------------------------------------------------------------------------
 
-    // Called when the application's title has been changed. This should be reflected in the title
-    // bar part of our user interface, as well as the browser's tab state.
-    onAppTitleChange(newTitle?: string) {
-        this.setState({
-            title: newTitle,
-        });
-    }
-
-    // Ensures that the title listener is active while this component has been mounted.
     componentDidMount() {
         this.props.event.addObserver(this);
-        setTitleListener(this);
     }
 
     componentWillUnmount() {
         this.props.event.removeObserver(this);
-        clearTitleListener();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -238,17 +226,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         if (!event)
             return <></>;
 
-        // TODO: Move title behaviour to <ApplicationBar>.
-        const defaultTitle = event.name + ' ' + environment.themeTitle;
         const navigationActiveOption = this.determineNavigationActiveOptions();
-
-        useEffect(() => {
-            if (this.state.title)
-                document.title = `${this.state.title} | ${defaultTitle}`;
-            else
-                document.title = defaultTitle;
-
-        }, [ this.state.title ]);
 
         // While seemingly expensive, each of these operations executes in constant time. We
         // therefore don't cache or memoize them, as that would actually lead to a regression.
@@ -265,8 +243,8 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
             <ContentTheme environment={environment} darkMode={this.state.darkMode}>
                 <Box sx={kStyles.root}>
 
-                    <ApplicationBar event={event}
-                                    title={this.state.title || defaultTitle} />
+                    <ApplicationBar defaultTitle={`${event.name} ${environment.themeTitle}`}
+                                    event={event} />
 
                     <Stack direction="row" sx={kStyles.container}>
 

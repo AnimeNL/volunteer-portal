@@ -4,13 +4,11 @@
 
 import { useEffect } from 'preact/hooks';
 
-// The listener to invoke when the app's title is being updated, if any.
-let g_listener: AppTitleListener | undefined;
-
 // Interface for the listener that will be invoked whenever the app's title changes.
-export interface AppTitleListener {
-    onAppTitleChange(newTitle?: string): void;
-}
+type AppTitleListenerFn = (newTitle?: string) => void;
+
+// The listener to invoke when the app's title is being updated, if any.
+let g_listener: AppTitleListenerFn | undefined;
 
 // Clears the currently registered title listener.
 export function clearTitleListener() {
@@ -18,7 +16,7 @@ export function clearTitleListener() {
 }
 
 // Updates the application title listener to |listener|.
-export function setTitleListener(listener?: AppTitleListener) {
+export function setTitleListener(listener?: AppTitleListenerFn) {
     g_listener = listener;
 }
 
@@ -33,7 +31,8 @@ export interface AppTitleProps {
 export function AppTitle(props: AppTitleProps): null {
     useEffect(() => {
         if (g_listener)
-            g_listener.onAppTitleChange(props.title);
+            g_listener(props.title);
+
     }, [ props.title ]);
 
     return null;  // nothing to render

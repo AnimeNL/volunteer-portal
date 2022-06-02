@@ -22,6 +22,7 @@ import { alpha, styled } from '@mui/material/styles';
 import { AppContext } from '../../AppContext';
 import { Event } from '../../base/Event';
 import { SearchResults } from './SearchResults';
+import { clearTitleListener, setTitleListener } from '../../AppTitle';
 import { kDesktopMenuWidthPx, kDesktopMaximumWidthPx } from '../ResponsiveConstants';
 
 // Containing element for the search field. Provides relative positioning, and a hover effect on
@@ -122,9 +123,9 @@ export interface ApplicationBarProps {
     event: Event;
 
     /**
-     * Title to display in the application bar.
+     * Default title to display in the application bar.
      */
-    title: string;
+    defaultTitle: string;
 }
 
 // The <ApplicationBar> component is the title bar of our application. It provides three main pieces
@@ -139,7 +140,21 @@ export interface ApplicationBarProps {
 // Finally, a user menu. This allows the user to sign out of their account. More functionality may
 // be added later, I just haven't thought of it yet.
 export function ApplicationBar(props: ApplicationBarProps) {
+    const { defaultTitle } = props;
     const { user } = useContext(AppContext);
+
+    const [ title, setTitle ] = useState<string>(defaultTitle);
+    useEffect(() => {
+        setTitleListener(updatedTitle => {
+            setTitle(updatedTitle || defaultTitle);
+
+            document.title = updatedTitle ? `${updatedTitle} | ${defaultTitle}`
+                                          : defaultTitle;
+        });
+
+        return () => clearTitleListener();
+
+    }, [ props.defaultTitle ]);
 
     const [ searchBarAnchor, setSearchBarAnchor ] = useState<any>(null);
     const [ searchClearFocus, setSearchClearFocus ] = useState<boolean>(false);
@@ -220,7 +235,7 @@ export function ApplicationBar(props: ApplicationBarProps) {
             <AppBar position="sticky" sx={kStyles.container}>
                 <Toolbar sx={kStyles.toolbar}>
                     <Typography variant="h6" component="div" sx={kStyles.title}>
-                        {props.title}
+                        {title}
                     </Typography>
                     <Search>
                         <SearchIconWrapper>

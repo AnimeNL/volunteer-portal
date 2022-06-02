@@ -187,7 +187,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
         }
     }
 
-    const environmentNames = Object.getOwnPropertyNames(environments);
+    const environmentNames = Object.getOwnPropertyNames(environments).sort();
     const userVolunteer = eventTracker.getUserVolunteer();
 
     // Determine the tab that should be pinned by default. When the user is signed in and part of

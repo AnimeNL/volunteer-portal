@@ -15,6 +15,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
+import StarsIcon from '@mui/icons-material/Stars';
 import { SxProps, Theme } from '@mui/system';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -62,6 +63,12 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
             return theme.palette.mode === 'dark' ? darken(/* green[900]= */ '#1B5E20', .25)
                                                  : lighten(theme.palette.success.light, .9);
         },
+    },
+    seniorBadge: {
+        color: theme => theme.palette.mode === 'dark' ? '#FFEA00' : '#FBC02D',
+
+        position: 'relative',
+        top: '2px',
     },
     unavailableAvatar: {
         filter: theme => {
@@ -131,6 +138,16 @@ function Volunteer(props: VolunteerProps) {
         route(`/schedule/${identifier}/volunteers/${volunteer.identifier}/`);
     }
 
+    // The first part in a volunteer's activity composition is their role. Normally this is just a
+    // string, but for Senior and Staff volunteers we give them a badge to highlight their role.
+    const role = volunteer.environments[environment];
+    const roleComponent =
+        (role.indexOf('taff') !== -1 || role.indexOf('enior') !== -1)
+            ? <Fragment>
+                 <StarsIcon fontSize="inherit" sx={kStyles.seniorBadge} /> <strong>{role}</strong>
+              </Fragment>
+            : role;
+
     return (
         <ListItemButton onClick={handleClick}
                         sx={sx({ condition: state === 'active', sx: kStyles.active },
@@ -144,7 +161,11 @@ function Volunteer(props: VolunteerProps) {
             </ListItemAvatar>
 
             <ListItemText primary={volunteer.name}
-                          secondary={volunteer.environments[environment]} />
+                          secondary={
+                            <Fragment>
+                                {roleComponent}
+                            </Fragment>
+                          } />
 
         </ListItemButton>
     );

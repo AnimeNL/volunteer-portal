@@ -71,7 +71,7 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         marginTop: -0.5,
     },
     card: {
-        marginTop: 2,
+        marginY: 2,
         backgroundColor: theme => theme.palette.mode === 'light' ? blueGrey[100]
                                                                  : blueGrey[800],
     },

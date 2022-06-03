@@ -139,6 +139,9 @@ interface ScheduleAppState {
 export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         implements Invalidatable {
 
+    // Timer responsible for forwarding the internal DateTime instance based on program updates.
+    #refreshDateTimeTimer: Timer;
+
     // Timer responsible for refreshing the event information from the network.
     #refreshEventTimer: Timer;
 
@@ -148,6 +151,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         super();
 
         this.#refreshEventTimer = new Timer(this.handleRefreshEvent);
+        this.#refreshDateTimeTimer = new Timer(this.handleRefreshDateTime);
 
         const eventTracker = new EventTrackerImpl(props.event, props.user);
         const dateTime = DateTime.local();
@@ -179,23 +183,38 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
 
     // Called when the refresh event timer has fired. Will actually refresh the event information
     // from the network, and then (in parallel) schedule the timer to fire again later.
-    handleRefreshEvent = () => {
+    private handleRefreshEvent = () => {
         this.props.event.refresh();
         this.#refreshEventTimer.start(kEventInvalidationIntervalMs);
+
+        console.info('FYI: Refreshed the schedule from the network.');
+    };
+
+    // Called when the refresh DateTime timer has fired. Will forward the current local time, and
+    // schedule a new program update to happen during the next invocation.
+    private handleRefreshDateTime = () => {
+        this.invalidate();
+        this.#refreshDateTimeTimer.start(this.millisecondsUntilNextScheduleUpdate());
+
+        console.info('FYI: Refreshed the DateTime state of the schedule app.');
     };
 
     // Called when the document's visibility has changed. All timers will be suspended when the
     // document has been hidden, whereas they will be resumed when the document is shown again.
-    handleVisibilityChange = () => {
-        if (document.hidden)
+    private handleVisibilityChange = () => {
+        if (document.hidden) {
+            this.#refreshDateTimeTimer.suspend();
             this.#refreshEventTimer.suspend();
-        else
+        } else {
+            this.#refreshDateTimeTimer.resumeOrRestart(this.millisecondsUntilNextScheduleUpdate());
             this.#refreshEventTimer.resumeOrRestart(kEventInvalidationIntervalMs);
+        }
     };
 
     componentDidMount() {
         this.props.event.addObserver(this);
 
+        this.#refreshDateTimeTimer.start(this.millisecondsUntilNextScheduleUpdate());
         this.#refreshEventTimer.start(kEventInvalidationIntervalMs);
 
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
@@ -205,8 +224,19 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
 
         this.#refreshEventTimer.stop();
+        this.#refreshDateTimeTimer.stop();
 
         this.props.event.removeObserver(this);
+    }
+
+    // Calculates the number of milliseconds until the next program update. If there won't be any
+    // more updates, for example because the event has finished, we'll refresh state once per hour.
+    private millisecondsUntilNextScheduleUpdate(): number {
+        const nextUpdateDateTime = this.state.eventTracker.getNextUpdateDateTime();
+        if (!nextUpdateDateTime)
+            return 60 * 60 * 1000;  // one hour
+
+        return Math.max(nextUpdateDateTime.moment().diff(DateTime.local().moment()), 16);
     }
 
     // ---------------------------------------------------------------------------------------------

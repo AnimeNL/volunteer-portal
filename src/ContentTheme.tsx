@@ -15,6 +15,9 @@ import { Environment } from './base/Environment';
 // The possible states that the app's dark mode state can be in.
 export type AppThemeState = 'light' | 'auto' | 'dark';
 
+// Default dark mode state that should apply to users who have not overridden the setting.
+const kDefaultDarkModeState = 'auto';
+
 // Interface for the listener that will be invoked whenever the app's dark mode state changes.
 type AppThemeListener = (newState: AppThemeState) => void;
 
@@ -24,7 +27,21 @@ let applicationThemeListener: AppThemeListener | undefined;
 
 // The global application theme state. Values written to this local are assumed to have been stored
 // in local storage, and persist across volunteer portal sessions.
-let applicationThemeState: AppThemeState | undefined;
+let applicationThemeState: AppThemeState = (function() {
+    try {
+        const storedValue = localStorage.getItem('vp-theme-state');
+        switch (storedValue) {
+            case 'auto':
+            case 'dark':
+            case 'light':
+                return storedValue;
+        }
+    } catch (exception) {
+        console.info('FYI: Unable to read the cached theme state.', exception);
+    }
+
+    return kDefaultDarkModeState;
+})();
 
 // The global application theme. Will be initialized lazily once the environment configuration is
 // available, but will in memory thereafter. Private to this implementation unit.
@@ -35,7 +52,7 @@ let applicationTheme: Theme | undefined;
  * setter. This function does not resolve the "auto" value based on device state.
  */
 export function getApplicationThemeState(): AppThemeState {
-    return applicationThemeState || 'auto';
+    return applicationThemeState;
 }
 
 /**
@@ -45,7 +62,11 @@ export function getApplicationThemeState(): AppThemeState {
 export function setApplicationThemeState(state: AppThemeState): void {
     applicationThemeState = state;
 
-    // TODO: Persist the setting
+    try {
+        localStorage.setItem('vp-theme-state', state);
+    } catch (exception) {
+        console.info('FYI: Unable to write the cached theme state.', exception);
+    }
 
     if (applicationThemeListener)
         applicationThemeListener(state);
@@ -65,7 +86,7 @@ export function ContentTheme(props: ContentThemeProps) {
 
     // The default dark mode state will depend on whether light mode has been forced. Otherwise we
     // follow the system's default setting, which might even impose different colors during the day.
-    const defaultDarkModeState = forceLightMode ? 'light' : 'auto';
+    const defaultDarkModeState = forceLightMode ? 'light' : applicationThemeState;
 
     // Maintain the intended dark mode state of the application, and attach an observer to the
     // configuration functions that may be invoked from application UI (e.g. the menu).

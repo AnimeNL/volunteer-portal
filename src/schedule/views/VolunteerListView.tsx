@@ -4,7 +4,7 @@
 
 import { Fragment, h } from 'preact';
 import { route } from 'preact-router';
-import { useState } from 'preact/compat';
+import { useMemo, useState } from 'preact/compat';
 
 import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
@@ -22,12 +22,38 @@ import { AppTitle } from '../../AppTitle';
 import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
 import { EventTracker } from '../../base/EventTracker';
-import { Event, EventVolunteer } from '../../base/Event';
+import { Event, EventShift, EventVolunteer } from '../../base/Event';
 import { initials } from '../../base/NameUtilities';
 
 // Storage index (in localStorage) for the pinned team. This is a feature for power users who have
 // the ability to display multiple teams in the portal at once.
 const kPinnedTeamStorageKey = 'vp-pinned-team-index';
+
+// Represents information about an individual volunteer within the volunteer portal.
+interface VolunteerEntry {
+    /**
+     * The current activity of this volunteer.
+     */
+    currentActivity: EventShift | 'available' | 'unavailable';
+
+    /**
+     * The volunteer that's being described by this entry.
+     */
+    volunteer: EventVolunteer;
+}
+
+// Represents information about a group of volunteers within the volunteer portal.
+interface VolunteerGroup {
+    /**
+     * Number of volunteers within this group who are actively doing a shift.
+     */
+    activeShifts: number;
+
+    /**
+     * Array of the volunteers within this group, already sorted by display order.
+     */
+    volunteers: VolunteerEntry[];
+}
 
 // Function to get the pinned team's index. Wrapped in a try/catch for Safari behaviour.
 function getPinnedTeam(): number | null {
@@ -56,23 +82,30 @@ function isSenior(role?: string): boolean {
     return role !== undefined && (role.includes('Senior') || role.includes('Staff'));
 }
 
-// Type defining what we mean by a "volunteer".
+// Properties accepted by the <Volunteer> component.
 interface VolunteerProps {
-    volunteer: EventVolunteer;
+    /**
+     * The volunteer for whom this component is being drawn.
+     */
+    volunteerEntry: VolunteerEntry;
 
-    // When known, the identifier will be used to link from this volunteer tile to a page on which
-    // their activities can be seen. Volunteers will not be clickable unless this has been provided.
-    identifier?: string;
+    /**
+     * When known, the identifier will be used to link from this volunteer tile to a page on which
+     * their activities can be seen. Volunteers will not be clickable unless this has been provided.
+     */
+    identifier: string;
 
-    // When known, the environment can be specified to specialize the volunteer's role that will be
-    // displayed, which can theoretically differ between environments.
-    environment?: string;
+    /**
+     * When known, the environment can be specified to specialize the volunteer's role that will be
+     * displayed, which can theoretically differ between environments.
+     */
+    environment: string;
 };
 
 // The <Volunteer> component renders an individual volunteer, which always have to be displayed as
 // a list item. The volunteer's component will be themed based on their current occupation.
 function Volunteer(props: VolunteerProps) {
-    const { volunteer } = props;
+    const { volunteer } = props.volunteerEntry;
 
     // TODO: Visually identify the volunteer's availability
     // TODO: Visually identify their current occupation
@@ -110,17 +143,24 @@ function Volunteer(props: VolunteerProps) {
     );
 }
 
-// Type defining what we mean by a "volunteer list".
+// Properties accepted by the <VolunteerList> component.
 interface VolunteerListProps {
-    volunteers: EventVolunteer[];
+    /**
+     * The group of volunteers accepted by this component.
+     */
+    volunteerGroup: VolunteerGroup;
 
-    // When known, the environment can help specialize display of individual volunteers, whereas the
-    // event identifier is necessary to be able to link volunteers to the right location.
+    /**
+     * When known, the environment can help specialize display of individual volunteers, whereas the
+     * event identifier is necessary to be able to link volunteers to the right location.
+     */
     identifier: string;
     environment: string;
 
-    // When used in a tab display, the full list doesn't always have to be displayed. The following
-    // two properties can be used to identify and deal with that situation.
+    /**
+     * When used in a tab display, the full list doesn't always have to be displayed. The following
+     * two properties can be used to identify and deal with that situation.
+     */
     index?: number;
     value?: number;
 };
@@ -128,7 +168,7 @@ interface VolunteerListProps {
 // The <VolunteerList> component renders a list of volunteers. Each volunteer will be shown with
 // an appropriate amount of meta-information to make the list immediately actionable.
 function VolunteerList(props: VolunteerListProps) {
-    const { volunteers, environment, identifier, index, value } = props;
+    const { volunteerGroup, environment, identifier, index, value } = props;
 
     // The list will be hidden when used in a tab switcher, and it's not the selected item.
     const visible = index === undefined || index === value;
@@ -143,10 +183,10 @@ function VolunteerList(props: VolunteerListProps) {
             { visible &&
                 <Paper square={square} sx={{ marginTop: { lg: desktopMarginTop } }}>
                     <List>
-                        { volunteers.map(volunteer =>
+                        { volunteerGroup.volunteers.map(entry =>
                             <Volunteer environment={environment}
                                        identifier={identifier}
-                                       volunteer={volunteer} />) }
+                                       volunteerEntry={entry} />) }
                     </List>
                 </Paper> }
         </div>
@@ -177,34 +217,67 @@ interface VolunteerListViewProps {
 export function VolunteerListView(props: VolunteerListViewProps) {
     const { dateTime, event, eventTracker } = props;
 
-    const environments: Record<string, EventVolunteer[]> = {};
-    for (const volunteer of event.volunteers()) {
-        for (const environment of Object.keys(volunteer.environments)) {
-            if (!environments.hasOwnProperty(environment))
-                environments[environment] = [];
+    // Use a memoized representation of the environments because we consult a fair amount of data
+    // and sort the results, which, for larger groups of volunteers, quickly becomes non-trivial.
+    const [ environments, environmentNames, defaultPin ] = useMemo(() => {
+        const environments: Record<string, VolunteerGroup> = {};
 
-            environments[environment].push(volunteer);
+        // Compile each of the groups of volunteers that the signed in user has access to by
+        // iterating over all known volunteers. The eventTracker will be consulted for their state.
+        for (const volunteer of event.volunteers()) {
+            const volunteerEntry: VolunteerEntry = {
+                currentActivity: eventTracker.getVolunteerActivity(volunteer),
+                volunteer,
+            };
+
+            for (const environment of Object.keys(volunteer.environments)) {
+                if (!environments.hasOwnProperty(environment))
+                    environments[environment] = { activeShifts: 0, volunteers: [] };
+
+                if (typeof volunteerEntry.currentActivity !== 'string')
+                    environments[environment].activeShifts++;
+
+                environments[environment].volunteers.push(volunteerEntry);
+            }
         }
-    }
 
-    const environmentNames = Object.getOwnPropertyNames(environments).sort();
-    const userVolunteer = eventTracker.getUserVolunteer();
+        const environmentNames = Object.getOwnPropertyNames(environments).sort();
+        const userVolunteer = eventTracker.getUserVolunteer();
 
-    // Determine the tab that should be pinned by default. When the user is signed in and part of
-    // an environment, that one will be preferred over the other tabs that are being displayed.
-    let defaultPin: number = /* alphabetically the first environment= */ 0;
+        // Determine the tab that should be pinned by default. When the user is signed in, their
+        // environment will be preferred over the other tabs that are being displayed.
+        let defaultPin: number = /* alphabetically the first environment= */ 0;
 
-    if (userVolunteer && environmentNames.length > 1) {
-        for (const userEnvironmentName in userVolunteer.environments) {
-            const index = environmentNames.indexOf(userEnvironmentName);
-            if (index === -1)
-                continue;  // the |userVolunteer| does not participate in this environment
+        if (userVolunteer && environmentNames.length > 1) {
+            for (const userEnvironmentName in userVolunteer.environments) {
+                const index = environmentNames.indexOf(userEnvironmentName);
+                if (index === -1)
+                    continue;  // the |userVolunteer| does not participate in this environment
 
-            defaultPin = index;
-            break;
+                defaultPin = index;
+                break;
+            }
         }
-    }
 
+        // Sort the lists of volunteers for each of the environments. Unavailable volunteers will
+        // be moved to the bottom of the list, otherwise they will be sorted by name.
+        for (const environment in environments) {
+            environments[environment].volunteers.sort((lhs, rhs) => {
+                if (lhs.currentActivity === 'unavailable' && rhs.currentActivity !== 'unavailable')
+                    return 1;
+                if (rhs.currentActivity === 'unavailable' && lhs.currentActivity !== 'unavailable')
+                    return -1;
+
+                return lhs.volunteer.name.localeCompare(rhs.volunteer.name);
+            });
+        }
+
+        return [ environments, environmentNames, defaultPin ];
+
+    }, [ dateTime ]);
+
+    // The actual view will depend on the number of environments that are accessible to the signed
+    // in volunteer. Three options: none, one or many.
     switch (environmentNames.length) {
         case 0:
             return (
@@ -225,7 +298,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                     <AppTitle title="Volunteers" />
                     <VolunteerList environment={environmentNames[0]}
                                    identifier={event.identifier}
-                                   volunteers={environments[environmentNames[0]]} />
+                                   volunteerGroup={environments[environmentNames[0]]} />
                 </Fragment>
             );
 
@@ -283,7 +356,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
                     </Tabs>
 
                     { environmentNames.map((name, index) =>
-                        <VolunteerList volunteers={environments[name]}
+                        <VolunteerList volunteerGroup={environments[name]}
                                        environment={name}
                                        identifier={event.identifier}
                                        value={selectedTabIndex}

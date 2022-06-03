@@ -50,7 +50,7 @@ export class Timer {
             return;
         }
 
-        this.#timeout = setTimeout(Timer.prototype.onFire.bind(this), currentTime - this.#target);
+        this.#timeout = setTimeout(Timer.prototype.onFire.bind(this), this.#target - currentTime);
     }
 
     // Safe version of resume() that automatically restarts a timer when it cannot be resumed.

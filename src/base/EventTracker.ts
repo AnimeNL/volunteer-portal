@@ -78,6 +78,11 @@ export interface EventTracker {
     getVolunteerActivity(volunteer: EventVolunteer): EventShift | 'available' | 'unavailable';
 
     /**
+     * Returns the upcoming activity for the given |volunteer|, if any. Constant time operation.
+     */
+    getVolunteerUpcomingActivity(volunteer: EventVolunteer): EventShift | undefined;
+
+    /**
      * Returns the upcoming shift for the given |volunteer|, if any. Constant time operation.
      */
     getVolunteerUpcomingShift(volunteer: EventVolunteer): EventShift | undefined;

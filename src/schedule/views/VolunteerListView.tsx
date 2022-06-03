@@ -64,6 +64,11 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
                                                  : lighten(theme.palette.success.light, .9);
         },
     },
+    labelTypography: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+    },
     seniorBadge: {
         color: theme => theme.palette.mode === 'dark' ? '#FFEA00' : '#FBC02D',
 
@@ -97,6 +102,11 @@ interface VolunteerEntry {
     currentActivity: EventShift | 'available' | 'unavailable';
 
     /**
+     * The upcoming activity of this volunteer.
+     */
+    upcomingActivity: EventShift | undefined;
+
+    /**
      * The volunteer that's being described by this entry.
      */
     volunteer: EventVolunteer;
@@ -108,6 +118,11 @@ interface VolunteerProps {
      * The volunteer for whom this component is being drawn.
      */
     volunteerEntry: VolunteerEntry;
+
+    /**
+     * The DateTime instance of when this page has been rendered.
+     */
+    dateTime: DateTime;
 
     /**
      * When known, the identifier will be used to link from this volunteer tile to a page on which
@@ -125,8 +140,8 @@ interface VolunteerProps {
 // The <Volunteer> component renders an individual volunteer, which always have to be displayed as
 // a list item. The volunteer's component will be themed based on their current occupation.
 function Volunteer(props: VolunteerProps) {
-    const { environment, identifier, volunteerEntry } = props;
-    const { currentActivity, volunteer } = volunteerEntry;
+    const { dateTime, environment, identifier, volunteerEntry } = props;
+    const { currentActivity, upcomingActivity, volunteer } = volunteerEntry;
 
     // TODO: Visually identify their current occupation
 
@@ -148,6 +163,32 @@ function Volunteer(props: VolunteerProps) {
               </Fragment>
             : role;
 
+    // The second part in their composition is their current activity. There are three options that
+    // we distinguish between: available and unavailable, for which we display until when it lasts,
+    // and active, for which we'll show when their current shift will end.
+    let activityComponent: React.ReactNode | undefined;
+
+    switch (state) {
+        case 'active':
+            const currentActivityShift = currentActivity as EventShift;
+            activityComponent = (
+                <Fragment>
+                    , <strong>{currentActivityShift.name} </strong>
+                    until {currentActivityShift.endTime.format('time')}
+                </Fragment>
+            );
+            break;
+
+        case 'available':
+        case 'unavailable':
+            activityComponent = `, ${state}`;
+
+            if (upcomingActivity)
+                activityComponent += ` ${dateTime.formatUntil(upcomingActivity.startTime)}`;
+
+            break;
+    }
+
     return (
         <ListItemButton onClick={handleClick}
                         sx={sx({ condition: state === 'active', sx: kStyles.active },
@@ -161,9 +202,11 @@ function Volunteer(props: VolunteerProps) {
             </ListItemAvatar>
 
             <ListItemText primary={volunteer.name}
+                          secondaryTypographyProps={{ sx: kStyles.labelTypography }}
                           secondary={
                             <Fragment>
                                 {roleComponent}
+                                {activityComponent}
                             </Fragment>
                           } />
 
@@ -177,6 +220,11 @@ interface VolunteerListProps {
      * The group of volunteers accepted by this component.
      */
     volunteerEntries: VolunteerEntry[];
+
+    /**
+     * The DateTime instance of when this page has been rendered.
+     */
+    dateTime: DateTime;
 
     /**
      * When known, the environment can help specialize display of individual volunteers, whereas the
@@ -196,7 +244,7 @@ interface VolunteerListProps {
 // The <VolunteerList> component renders a list of volunteers. Each volunteer will be shown with
 // an appropriate amount of meta-information to make the list immediately actionable.
 function VolunteerList(props: VolunteerListProps) {
-    const { volunteerEntries, environment, identifier, index, value } = props;
+    const { volunteerEntries, dateTime, environment, identifier, index, value } = props;
 
     // The list will be hidden when used in a tab switcher, and it's not the selected item.
     const visible = index === undefined || index === value;
@@ -212,7 +260,8 @@ function VolunteerList(props: VolunteerListProps) {
                 <Paper square={square} sx={{ marginTop: { lg: desktopMarginTop }, mb: 2 }}>
                     <List disablePadding>
                         { volunteerEntries.map(entry =>
-                            <Volunteer environment={environment}
+                            <Volunteer dateTime={dateTime}
+                                       environment={environment}
                                        identifier={identifier}
                                        volunteerEntry={entry} />) }
                     </List>
@@ -255,6 +304,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
         for (const volunteer of event.volunteers()) {
             const volunteerEntry: VolunteerEntry = {
                 currentActivity: eventTracker.getVolunteerActivity(volunteer),
+                upcomingActivity: eventTracker.getVolunteerUpcomingActivity(volunteer),
                 volunteer,
             };
 
@@ -321,7 +371,8 @@ export function VolunteerListView(props: VolunteerListViewProps) {
             return (
                 <Fragment>
                     <AppTitle title="Volunteers" />
-                    <VolunteerList environment={environmentNames[0]}
+                    <VolunteerList dateTime={dateTime}
+                                   environment={environmentNames[0]}
                                    identifier={event.identifier}
                                    volunteerEntries={environments[environmentNames[0]]} />
                 </Fragment>
@@ -378,6 +429,7 @@ export function VolunteerListView(props: VolunteerListViewProps) {
 
                     { environmentNames.map((name, index) =>
                         <VolunteerList volunteerEntries={environments[name]}
+                                       dateTime={dateTime}
                                        environment={name}
                                        identifier={event.identifier}
                                        value={selectedTabIndex}

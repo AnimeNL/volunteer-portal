@@ -26,6 +26,7 @@ export class EventTrackerImpl implements EventTracker {
     #activeVolunteerCount = 0;
     #availableSeniors: EventVolunteer[] = [];
 
+    #upcomingVolunteerActivity: Map<EventVolunteer, EventShift> = new Map();
     #upcomingVolunteerShift: Map<EventVolunteer, EventShift> = new Map();
 
     #nextSession: EventSession | undefined;
@@ -49,6 +50,7 @@ export class EventTrackerImpl implements EventTracker {
         this.#activeVolunteerCount = 0;
         this.#availableSeniors = [];
 
+        this.#upcomingVolunteerActivity = new Map();
         this.#upcomingVolunteerShift = new Map();
 
         this.#nextSession = undefined;
@@ -90,6 +92,11 @@ export class EventTrackerImpl implements EventTracker {
                 if (dateTime.isBefore(shift.startTime)) {
                     if (shift.startTime.isBefore(this.#nextUpdate))
                         this.#nextUpdate = shift.startTime;
+
+                    // Store the volunteer's upcoming activity. This can be a shift, but also time
+                    // during which they're explicitly marked as being available.
+                    if (!this.#upcomingVolunteerActivity.has(volunteer))
+                        this.#upcomingVolunteerActivity.set(volunteer, shift);
 
                     // Stop iterating through the shifts once we've identified their active and
                     // upcoming shift; each volunteer is expected to have a linear schedule, as they
@@ -182,6 +189,10 @@ export class EventTrackerImpl implements EventTracker {
             return 'available';
 
         return volunteerState;
+    }
+
+    getVolunteerUpcomingActivity(volunteer: EventVolunteer): EventShift | undefined {
+        return this.#upcomingVolunteerActivity.get(volunteer);
     }
 
     getVolunteerUpcomingShift(volunteer: EventVolunteer): EventShift | undefined {

@@ -6,7 +6,7 @@ import { ComponentChildren, h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
 import { PaletteMode } from '@mui/material';
-import { Theme, ThemeProvider, createTheme, lighten } from '@mui/material/styles';
+import { Theme, ThemeProvider, createTheme, darken, lighten } from '@mui/material/styles';
 import grey from '@mui/material/colors/grey'
 import useMediaQuery from '@mui/material/useMediaQuery';
 
@@ -113,16 +113,28 @@ export function ContentTheme(props: ContentThemeProps) {
         switch (effectiveDarkModeState) {
             case 'dark':
                 applicationTheme = createTheme({
+                    components: {
+                        MuiAppBar: {
+                            styleOverrides: {
+                                root: {
+                                    backgroundColor: darken(environment.themeColor, .35),
+                                },
+                            },
+                        },
+                    },
                     palette: {
                         mode: effectiveDarkModeState,
+
+                        primary: {
+                            main: environment.themeColorDarkMode
+                                      ? environment.themeColorDarkMode
+                                      : lighten(environment.themeColor, .7)
+                        },
 
                         background: {
                             default: '#000000',
                             paper: lighten(grey[900], .01),
                         },
-
-                        // TODO: Bring back some colour in Dark Mode to illustrate the environment.
-                        //primary: { main: environment.themeColor },
                     }
                 });
 

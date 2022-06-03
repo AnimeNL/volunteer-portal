@@ -66,6 +66,13 @@ export class EnvironmentImpl implements ApiRequestObserver<'IEnvironment'>, Envi
         return this.responseData.themeColor;
     }
 
+    get themeColorDarkMode(): Readonly<string | undefined> {
+        if (!this.responseData)
+            throw new Error(kExceptionMessage);
+
+        return this.responseData.themeColorDarkMode
+    }
+
     get themeTitle(): Readonly<string> {
         if (!this.responseData)
             throw new Error(kExceptionMessage);

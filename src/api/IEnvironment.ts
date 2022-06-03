@@ -29,6 +29,12 @@ export interface IEnvironmentResponse {
     themeColor: string;
 
     /**
+     * Colour in which the portal should be rendered when it's shown in dark mode. When omitted, a
+     * colour will be derived from the |themeColor| property instead.
+     */
+    themeColorDarkMode?: string;
+
+    /**
      * Shortened name of the environment as it should be used in UI elements in which not all of the
      * `title` is relevant, for example the logo.
      *

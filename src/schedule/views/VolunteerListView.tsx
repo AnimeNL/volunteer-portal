@@ -77,11 +77,6 @@ function setPinnedTeam(index: null | number): void {
     } catch (error) {}
 }
 
-// Returns whether the given |role| represents a senior volunteer.
-function isSenior(role?: string): boolean {
-    return role !== undefined && (role.includes('Senior') || role.includes('Staff'));
-}
-
 // Properties accepted by the <Volunteer> component.
 interface VolunteerProps {
     /**
@@ -110,36 +105,20 @@ function Volunteer(props: VolunteerProps) {
     // TODO: Visually identify the volunteer's availability
     // TODO: Visually identify their current occupation
 
-    // The component used for the volunteer's entry depends on whether or not we can linkify it. An
-    // ignore is necessary in the TSX later on, as the properties for both options differ slightly.
-    const ListComponent = props.identifier ? ListItemButton : ListItem;
-
     function handleClick() {
-        if (props.identifier)
-            route(`/schedule/${props.identifier}/volunteers/${volunteer.identifier}/`);
+        route(`/schedule/${props.identifier}/volunteers/${volunteer.identifier}/`);
     }
 
-    // The role a volunteer has may differ depending on the environment. When it hasn't been
-    // specifically included in the |props|, assume that this is not the case.
-    const role = props.environment ? volunteer.environments[props.environment]
-                                   : Object.values(volunteer.environments).shift();
-
     return (
-        <Fragment>
-            { /* @ts-ignore */ }
-            <ListComponent onClick={handleClick}>
-                <ListItemAvatar>
-                    <Avatar alt={volunteer.name} src={volunteer.avatar}>
-                        {initials(volunteer.name)}
-                    </Avatar>
-                </ListItemAvatar>
-                <ListItemText primary={volunteer.name}
-                              secondaryTypographyProps={{
-                                  sx: { fontWeight: isSenior(role) ? 'bold' : 'normal' }
-                              }}
-                              secondary={role} />
-            </ListComponent>
-        </Fragment>
+        <ListItemButton onClick={handleClick}>
+            <ListItemAvatar>
+                <Avatar alt={volunteer.name} src={volunteer.avatar}>
+                    {initials(volunteer.name)}
+                </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary={volunteer.name}
+                          secondary={volunteer.environments[props.environment]} />
+        </ListItemButton>
     );
 }
 

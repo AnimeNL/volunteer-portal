@@ -65,9 +65,7 @@ export function ContentTheme(props: ContentThemeProps) {
 
     // The default dark mode state will depend on whether light mode has been forced. Otherwise we
     // follow the system's default setting, which might even impose different colors during the day.
-    const defaultDarkModeState = forceLightMode ? 'light'
-                                                : 'light'; // TODO: Fix remaining UI issues, then
-                                                           // update this to read "auto"
+    const defaultDarkModeState = forceLightMode ? 'light' : 'auto';
 
     // Maintain the intended dark mode state of the application, and attach an observer to the
     // configuration functions that may be invoked from application UI (e.g. the menu).

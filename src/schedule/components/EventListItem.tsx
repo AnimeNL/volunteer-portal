@@ -28,7 +28,7 @@ type EventLifecycleState = 'finished' | 'active' | 'default';
 const kStyles: { [key: string]: SxProps<Theme> } = {
     eventActive: {
         backgroundColor: theme => {
-            return theme.palette.mode === 'dark' ? darken(/* green[900]= */ '#1B5E20', .1)
+            return theme.palette.mode === 'dark' ? darken(/* green[900]= */ '#1B5E20', .25)
                                                  : lighten(theme.palette.success.light, .9);
         },
     },
@@ -147,7 +147,6 @@ interface EventListItemProps {
 //                          or relative to the |dateTime| passed to this component.
 //
 // TODO: Consider a nicer mechanism for routing rather than having to pass |event|.
-// TODO: Colour usage in this component should be Dark Mode-aware.
 export function EventListItem(props: EventListItemProps) {
     const { dateTime, event, session, timeDisplay } = props;
 

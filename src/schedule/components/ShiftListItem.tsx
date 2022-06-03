@@ -26,9 +26,16 @@ type ShiftLifecycleState = 'finished' | 'active' | 'default';
 
 // CSS customizations applied to the <ShiftListItem> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
+    avatarPast: {
+        filter: theme => {
+            return theme.palette.mode === 'dark' ? 'grayscale(1) brightness(0.6)'
+                                                 : 'grayscale(1) brightness(0.8)';
+        },
+    },
+
     eventActive: {
         backgroundColor: theme => {
-            return theme.palette.mode === 'dark' ? darken(/* green[900]= */ '#1B5E20', .1)
+            return theme.palette.mode === 'dark' ? darken(/* green[900]= */ '#1B5E20', .25)
                                                  : lighten(theme.palette.success.light, .9);
         },
     },
@@ -111,11 +118,10 @@ export function ShiftListItem(props: ShiftListItemProps) {
 
             { display === 'volunteer' &&
                 <ListItemAvatar>
-                    <Avatar alt={shift.volunteer.name}
+                    <Avatar sx={ state === 'finished' ? kStyles.avatarPast : {} }
                             src={shift.volunteer.avatar}>
                         {initials(shift.volunteer.name)}
                     </Avatar>
-
                 </ListItemAvatar> }
 
             { display === 'event' &&

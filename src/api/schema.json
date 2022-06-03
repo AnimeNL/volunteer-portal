@@ -269,6 +269,9 @@
         "themeColor": {
           "type": "string"
         },
+        "themeColorDarkMode": {
+          "type": "string"
+        },
         "themeTitle": {
           "type": "string"
         },

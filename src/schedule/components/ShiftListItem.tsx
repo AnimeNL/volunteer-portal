@@ -118,7 +118,7 @@ export function ShiftListItem(props: ShiftListItemProps) {
 
             { display === 'volunteer' &&
                 <ListItemAvatar>
-                    <Avatar sx={ state === 'finished' ? kStyles.avatarPast : {} }
+                    <Avatar sx={ state === 'finished' ? kStyles.avatarPast : undefined }
                             src={shift.volunteer.avatar}>
                         {initials(shift.volunteer.name)}
                     </Avatar>

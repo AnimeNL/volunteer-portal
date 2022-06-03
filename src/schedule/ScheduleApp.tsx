@@ -21,6 +21,7 @@ import type { Event } from '../base/Event';
 import { Invalidatable } from '../base/Invalidatable';
 import { MobileNavigation } from './components/MobileNavigation';
 import { NavigationActiveOptions } from './components/Navigation';
+import { Timer } from '../base/Timer';
 import { User } from '../base/User';
 
 import { ActiveEventsView } from './views/ActiveEventsView';
@@ -138,15 +139,15 @@ interface ScheduleAppState {
 export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         implements Invalidatable {
 
-    // Time, in milliseconds, at which a request for the Event API was last requested.
-    #lastEventRequestIssued: number;
+    // Timer responsible for refreshing the event information from the network.
+    #refreshEventTimer: Timer;
 
     public state: ScheduleAppState;
 
     constructor(props: ScheduleAppProps) {
         super();
 
-        this.#lastEventRequestIssued = performance.now();
+        this.#refreshEventTimer = new Timer(this.handleRefreshEvent);
 
         const eventTracker = new EventTrackerImpl(props.event, props.user);
         const dateTime = DateTime.local();
@@ -176,29 +177,36 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
     // Component and page lifetime callbacks
     // ---------------------------------------------------------------------------------------------
 
-    // Called when the document's visibility has changed.
-    handleVisibilityChange = () => {
-        if (document.hidden) {
-            // TODO: Cancel timers
-        } else {
-            const currentTime = performance.now();
-            if ((currentTime - this.#lastEventRequestIssued) >= kEventInvalidationIntervalMs) {
-                this.#lastEventRequestIssued = currentTime;
-                this.props.event.refresh()
-            }
+    // Called when the refresh event timer has fired. Will actually refresh the event information
+    // from the network, and then (in parallel) schedule the timer to fire again later.
+    handleRefreshEvent = () => {
+        this.props.event.refresh();
+        this.#refreshEventTimer.start(kEventInvalidationIntervalMs);
+    };
 
-            // TODO: Set timers
-        }
+    // Called when the document's visibility has changed. All timers will be suspended when the
+    // document has been hidden, whereas they will be resumed when the document is shown again.
+    handleVisibilityChange = () => {
+        if (document.hidden)
+            this.#refreshEventTimer.suspend();
+        else
+            this.#refreshEventTimer.resumeOrRestart(kEventInvalidationIntervalMs);
     };
 
     componentDidMount() {
-        document.addEventListener('visibilitychange', this.handleVisibilityChange);
         this.props.event.addObserver(this);
+
+        this.#refreshEventTimer.start(kEventInvalidationIntervalMs);
+
+        document.addEventListener('visibilitychange', this.handleVisibilityChange);
     }
 
     componentWillUnmount() {
-        this.props.event.removeObserver(this);
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+
+        this.#refreshEventTimer.stop();
+
+        this.props.event.removeObserver(this);
     }
 
     // ---------------------------------------------------------------------------------------------

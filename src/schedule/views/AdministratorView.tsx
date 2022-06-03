@@ -10,7 +10,6 @@ import moment from 'moment-timezone';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -21,7 +20,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import Paper from '@mui/material/Paper';
-import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 
 import { AppTitle } from '../../AppTitle';
@@ -40,14 +38,6 @@ interface AdministratorViewProps {
 // situation as it would be during the convention.
 export function AdministratorView(props: AdministratorViewProps) {
     const { app } = props;
-
-    // ---------------------------------------------------------------------------------------------
-    // Appearance change handlers
-    // ---------------------------------------------------------------------------------------------
-
-    function handleDarkModeToggle(event: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
-        app.setDarkMode(checked);
-    }
 
     // ---------------------------------------------------------------------------------------------
     // Behaviour change handlers
@@ -109,20 +99,6 @@ export function AdministratorView(props: AdministratorViewProps) {
                     amended, primarily intended for development purposes. No warranties will be
                     provided on the partial functionality! 😄
                 </Typography>
-            </Paper>
-            <SubTitle>Appearance</SubTitle>
-            <Paper elevation={2} sx={{ px: 2 }}>
-                <List>
-                    <ListItem>
-                        <ListItemIcon>
-                            <DarkModeIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Dark Mode" />
-                        <Switch onChange={handleDarkModeToggle}
-                                checked={app.getDarkMode()}
-                                edge="end" />
-                    </ListItem>
-                </List>
             </Paper>
             <SubTitle>Behaviour</SubTitle>
             <Paper elevation={2} sx={{ px: 2 }}>

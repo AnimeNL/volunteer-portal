@@ -80,7 +80,7 @@ export function ContentLayout(props: ContentLayoutProps) {
     ]);
 
     return (
-        <ContentTheme environment={environment}>
+        <ContentTheme environment={environment} forceLightMode>
             <Box sx={kStyles.background}></Box>
             <Box sx={kStyles.container}>
                 <Link href="/">

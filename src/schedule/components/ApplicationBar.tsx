@@ -7,19 +7,28 @@ import { useContext, useEffect, useRef, useState } from 'preact/hooks';
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import AppBar from '@mui/material/AppBar';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Button from '@mui/material/Button';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import SearchIcon from '@mui/icons-material/Search';
+import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness';
 import { SystemStyleObject, Theme } from '@mui/system';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { alpha, styled } from '@mui/material/styles';
 
 import { AppContext } from '../../AppContext';
+import { type AppThemeState, getApplicationThemeState,
+         setApplicationThemeState } from '../../ContentTheme';
 import { Event } from '../../base/Event';
 import { SearchResults } from './SearchResults';
 import { clearTitleListener, setTitleListener } from '../../AppTitle';
@@ -230,6 +239,16 @@ export function ApplicationBar(props: ApplicationBarProps) {
         return () => window.removeEventListener('keydown', interceptSearchKey);
     });
 
+    // Dark Mode of the application is controlled by the <ContentTheme> component, which also
+    // provides persistence of the configuration. A local state is used to allow the buttons to
+    // update immediately, as a form of user interaction feedback.
+    const [ darkModeState, setDarkModeState ] = useState(getApplicationThemeState());
+
+    function updateDarkModeState(state: AppThemeState): void {
+        setApplicationThemeState(state);
+        setDarkModeState(state);
+    }
+
     return (
         <Fragment>
             <AppBar position="sticky" sx={kStyles.container}>
@@ -266,11 +285,32 @@ export function ApplicationBar(props: ApplicationBarProps) {
                   onClose={() => setUserMenuOpen(false)}
                   open={userMenuOpen}>
 
-                <MenuItem onClick={signOut}>
+                <MenuItem disableRipple disableTouchRipple>
+                    <ButtonGroup variant="outlined">
+                        <Button variant={ darkModeState === 'light' ? 'contained' : 'outlined' }
+                                onClick={ () => updateDarkModeState('light') }>
+                            <LightModeIcon fontSize="small" />
+                        </Button>
+                        <Button variant={ darkModeState === 'auto' ? 'contained' : 'outlined' }
+                                onClick={ () => updateDarkModeState('auto') }>
+                            <SettingsBrightnessIcon fontSize="small" />
+                        </Button>
+                        <Button variant={ darkModeState === 'dark' ? 'contained' : 'outlined' }
+                                onClick={ () => updateDarkModeState('dark') }>
+                            <DarkModeIcon fontSize="small" />
+                        </Button>
+                    </ButtonGroup>
+                </MenuItem>
+
+                <Divider />
+
+                <MenuItem dense onClick={signOut}>
                     <ListItemIcon>
-                        <LogoutIcon />
+                        <LogoutIcon fontSize="small" />
                     </ListItemIcon>
-                    Sign out
+                    <ListItemText>
+                        Sign out
+                    </ListItemText>
                 </MenuItem>
 
             </Menu>

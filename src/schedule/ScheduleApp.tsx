@@ -95,18 +95,11 @@ export interface ScheduleAppProps {
 // State maintained by the <ScheduleApp> component. This generally reflects state of the event that
 // is being displayed within the application.
 interface ScheduleAppState {
-    // Whether Dark Mode should be enabled in the application. Will be toggled based on the device's
-    // current colour mode, but can be overridden by the user as well.
-    darkMode: boolean;
-
     // The DateTime which is current at the time the schedule application last processed an update.
     dateTime: DateTime;
 
     // The EventTrackerImpl which has been updated to the given |dateTime|.
     eventTracker: EventTrackerImpl;
-
-    // Title of the application. Visible both in the user interface and in the browser tab.
-    title?: string;
 }
 
 // The <ScheduleApp> component is the base component for the scheduling application, as it will be
@@ -158,10 +151,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
 
         eventTracker.update(dateTime);
 
-        this.state = {
-            darkMode: false,
-            dateTime, eventTracker
-        }
+        this.state = { dateTime, eventTracker }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -240,23 +230,6 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
     }
 
     // ---------------------------------------------------------------------------------------------
-    // Setting routines.
-    // ---------------------------------------------------------------------------------------------
-
-    // Returns whether dark mode has been enabled in the application.
-    getDarkMode(): boolean { return this.state.darkMode; }
-
-    // Toggles whether dark mode should be enabled in the application. This option is considered an
-    // override, and will take precedence over the device state, which is considered as a default.
-    setDarkMode(enabled: boolean): void {
-        // TODO: Persist |enabled|.
-
-        this.setState({
-            darkMode: !!enabled,
-        });
-    }
-
-    // ---------------------------------------------------------------------------------------------
     // Navigation routines.
     // ---------------------------------------------------------------------------------------------
 
@@ -302,7 +275,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
         const badgeActiveVolunteers = this.state.eventTracker.getActiveVolunteerCount();
 
         return (
-            <ContentTheme environment={environment} darkMode={this.state.darkMode}>
+            <ContentTheme environment={environment}>
                 <Box sx={kStyles.root}>
 
                     <ApplicationBar defaultTitle={`${event.name} ${environment.themeTitle}`}

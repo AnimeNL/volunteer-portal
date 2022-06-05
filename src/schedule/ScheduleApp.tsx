@@ -325,8 +325,7 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                                           badgeActiveEvents={badgeActiveEvents}
                                           badgeActiveShifts={badgeActiveShifts}
                                           badgeActiveVolunteers={badgeActiveVolunteers}
-                                          event={event} volunteer={userVolunteer}
-                                          showAdministration={user.isAdministrator()} />
+                                          event={event} volunteer={userVolunteer} />
                     </Hidden>
 
                 </Box>

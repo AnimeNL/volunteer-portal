@@ -15,7 +15,6 @@ import HomeIcon from '@mui/icons-material/Home';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
-import SettingsIcon from '@mui/icons-material/Settings';
 
 import { NavigationActiveOptions, NavigationProps, navigateToOption } from './Navigation';
 
@@ -26,6 +25,9 @@ import { NavigationActiveOptions, NavigationProps, navigateToOption } from './Na
 // https://mui.com/components/bottom-navigation/
 export function MobileNavigation(props: NavigationProps) {
     const { event, volunteer } = props;
+
+    if (props.showAdministration)
+        console.warn('The administration button is not supported in mobile navigation.');
 
     // Compose the activity icons part of the bottom navigation bar. Detail is deliberately lost
     // as the numeric dots take up too much space within the menu.
@@ -82,10 +84,6 @@ export function MobileNavigation(props: NavigationProps) {
                 <BottomNavigationAction label="Volunteers"
                                         value="volunteers"
                                         icon={volunteersIcon} />
-                { props.showAdministration &&
-                    <BottomNavigationAction label="Admin"
-                                            value="admin"
-                                            icon={ <SettingsIcon /> } /> }
             </BottomNavigation>
             <Menu anchorEl={anchorElement}
                   anchorOrigin={{ vertical: 'center', horizontal: 'center' }}

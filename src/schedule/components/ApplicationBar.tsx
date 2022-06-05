@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import { Fragment, h } from 'preact';
+import { route } from 'preact-router';
 import { useContext, useEffect, useRef, useState } from 'preact/hooks';
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -11,6 +12,7 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import Divider from '@mui/material/Divider';
+import Hidden from '@mui/material/Hidden';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -21,6 +23,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import SearchIcon from '@mui/icons-material/Search';
 import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { SystemStyleObject, Theme } from '@mui/system';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -219,6 +222,11 @@ export function ApplicationBar(props: ApplicationBarProps) {
         return user.signOut();
     }
 
+    function handleAdministration() {
+        setUserMenuOpen(false);
+        route(`/schedule/${props.event.identifier}/admin/`);
+    }
+
     // Allows <ctrl+f> to be captured for keyboard-based users, as a shortcut to quickly search
     // through the event. Pages generally aren't compilicated enough to need Find in Page.
     const searchBarRef = useRef<HTMLInputElement>();
@@ -303,6 +311,17 @@ export function ApplicationBar(props: ApplicationBarProps) {
                 </MenuItem>
 
                 <Divider />
+
+                <Hidden mdUp>
+                    <MenuItem dense onClick={handleAdministration}>
+                        <ListItemIcon>
+                            <SettingsIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>
+                            Administration
+                        </ListItemText>
+                    </MenuItem>
+                </Hidden>
 
                 <MenuItem dense onClick={signOut}>
                     <ListItemIcon>

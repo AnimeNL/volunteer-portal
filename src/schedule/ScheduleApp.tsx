@@ -221,12 +221,14 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
 
     // Calculates the number of milliseconds until the next program update. If there won't be any
     // more updates, for example because the event has finished, we'll refresh state once per hour.
+    // The diff will be clamped between [16, 60 * 60 * 1000]ms.
     private millisecondsUntilNextScheduleUpdate(): number {
         const nextUpdateDateTime = this.state.eventTracker.getNextUpdateDateTime();
         if (!nextUpdateDateTime)
             return 60 * 60 * 1000;  // one hour
 
-        return Math.max(nextUpdateDateTime.moment().diff(DateTime.local().moment()), 16);
+        const absoluteDiff = nextUpdateDateTime.moment().diff(DateTime.local().moment());
+        return Math.min(Math.max(absoluteDiff, 16), 60 * 60 * 1000);
     }
 
     // ---------------------------------------------------------------------------------------------

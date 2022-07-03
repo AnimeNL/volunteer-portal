@@ -6,24 +6,33 @@ import { Component, h } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import Alert from '@mui/material/Alert';
+import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import EventBusyIcon from '@mui/icons-material/EventBusy';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
-import Input from '@mui/material/Input';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import { SxProps, Theme } from '@mui/system';
 import TextField from '@mui/material/TextField';
+import Timeline from '@mui/lab/Timeline';
+import TimelineConnector from '@mui/lab/TimelineConnector';
+import TimelineContent from '@mui/lab/TimelineContent';
+import TimelineDot from '@mui/lab/TimelineDot';
+import TimelineItem from '@mui/lab/TimelineItem';
+import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
+import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import Typography from '@mui/material/Typography';
 
 import { DateTime } from '../base/DateTime';
+import { initials } from '../base/NameUtilities';
 
 // Customized styling for the <WelcomeApp> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
@@ -41,7 +50,60 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         px: 2,
         py: 1,
     },
+    scroller: {
+        overflowY: 'scroll',
+        flexGrow: 1,
+    },
 };
+
+// TODO: This should become part of the API.
+interface TimelineEntry {
+    // URL to the avatar of the volunteer for this shift, if any.
+    avatar?: string;
+
+    // Name of the volunteer that will be active during this shift.
+    name: string;
+
+    // Start time of the shift, as a DateTime object.
+    startTime: DateTime;
+
+    // End time of the shift, as a DateTime object.
+    endTime: DateTime;
+}
+
+// Properties made available to the <DisplayTimeline> component.
+interface DisplayTimelineProps {
+    timeline: TimelineEntry[];
+}
+
+// Component that displays a timeline based on the given |props|. The Material UI timeline component
+// is used. Performance may suffer for areas in which there are a lot of pending shifts.
+function DisplayTimeline(props: DisplayTimelineProps) {
+    return (
+        <Timeline sx={{ width: '100%' }}>
+            { props.timeline.map(item =>
+                <TimelineItem>
+                    <TimelineOppositeContent sx={{ m: 'auto 0' }} color="text.secondary">
+                        {item.startTime.format('dayTime')}–{item.endTime.format('time')}
+                    </TimelineOppositeContent>
+                    <TimelineSeparator>
+                        <TimelineConnector />
+                        <TimelineDot>
+                            <Avatar src={item.avatar} sx={{ width: 24, height: 24 }}>
+                                {initials(item.name)}
+                            </Avatar>
+                        </TimelineDot>
+                        <TimelineConnector />
+                    </TimelineSeparator>
+                    <TimelineContent sx={{ m: 'auto 0' }}>
+                        <Typography variant="h6" component="span">
+                            {item.name}
+                        </Typography>
+                    </TimelineContent>
+                </TimelineItem> )}
+        </Timeline>
+    );
+}
 
 // Component that displays the current time of the application, in a manner that maintains a timer
 // to keep it actual for the lifetime of the component.
@@ -81,6 +143,18 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
 
         const display = {
             accessCode: '1234',
+            timeline: [
+                {
+                    name: 'Volunteer A',
+                    startTime: DateTime.fromUnix(1657364400),
+                    endTime: DateTime.fromUnix(1657371600),
+                },
+                {
+                    name: 'Volunteer B',
+                    startTime: DateTime.fromUnix(1657369800),
+                    endTime: DateTime.fromUnix(1657375200),
+                }
+            ],
             title: 'Name of location',
         };
 
@@ -92,6 +166,7 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
         function handleRefresh() {
             // TODO: Fetch updated configuration from the network
             // TODO: Display a snackbar to confirm either error or success
+            setRefreshFailedSnackbarOpen(true);
         }
 
         const accessRequestInputRef = useRef();
@@ -151,11 +226,18 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
                         </IconButton>
 
                     </Stack>
+                    <Stack justifyContent="flex-start" alignItems="center" sx={kStyles.scroller}>
+                        { display.timeline.length > 0 &&
+                            <DisplayTimeline timeline={display.timeline} /> }
 
-                    <p>
-                        Content
-                    </p>
-
+                        { !display.timeline.length &&
+                            <>
+                                <EventBusyIcon htmlColor="#396a1e" sx={{ mt: 20 }} />
+                                <Typography variant="subtitle2" sx={{ pt: 2 }}>
+                                    No volunteers have been scheduled
+                                </Typography>
+                            </> }
+                    </Stack>
                 </Stack>
 
                 { /** Snackbars related to the refresh functionality **/ }

@@ -34,3 +34,6 @@ Both the ability to apply and the ability to display progression of an applicati
 
 ### Schedule App
 The [Schedule App](src/schedule/) is where volunteers can find their schedules for a particular event. It's a reasonably powerful and complex app that further displays the event's entire programme, participating volunteers, and enables a volunteer to quickly search through both.
+
+### Display App
+The [Display App](src/display/) is an interface specifically built for the physical Volunteering Location Screens, which are based on 7" Raspberry Pi touch interfaces at a very particular resolution. Access to the displayed content is only available with a specific display identifier.

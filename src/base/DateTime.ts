@@ -17,6 +17,7 @@ const kFormatRules = {
     date: 'YYYY-MM-DD',
     day: 'dddd',
     dayShort: 'ddd',
+    dayTime: 'dddd, HH:mm',
     full: 'YYYY-MM-DD HH:mm:ss',
     time: 'HH:mm',
 };

@@ -15,6 +15,7 @@ import { EventImpl } from './base/EventImpl';
 import { Invalidatable } from './base/Invalidatable';
 import { UserImpl } from './base/UserImpl';
 
+import { DisplayApp } from './display/DisplayApp';
 import { LoadingApp } from './loading/LoadingApp';
 import { RegistrationApp } from './registration/RegistrationApp';
 import { ScheduleApp } from './schedule/ScheduleApp';
@@ -147,6 +148,7 @@ export class App extends Component<{}, AppState> implements Invalidatable {
                 { this.state.error && <AppError error={this.state.error} /> }
                 { this.state.loaded &&
                     <Router onChange={ event => this.onNavigate(event) }>
+                        <Route path="/display/:identifier*" component={DisplayApp} />
                         <Route path="/registration/:event*" component={RegistrationApp} />
 
                         { /* The schedule is only available for authenticated users. */ }

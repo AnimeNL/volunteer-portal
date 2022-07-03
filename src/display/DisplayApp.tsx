@@ -5,10 +5,12 @@
 import { Component, h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
+import Alert from '@mui/material/Alert';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SettingsIcon from '@mui/icons-material/Settings';
+import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import { SxProps, Theme } from '@mui/system';
 import Typography from '@mui/material/Typography';
@@ -74,12 +76,17 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
             title: 'Name of location',
         };
 
+        const [ refreshFailedSnackbarOpen, setRefreshFailedSnackbarOpen ] = useState(false);
+        const [ refreshSuccessSnackbarOpen, setRefreshSuccessSnackbarOpen ] = useState(false);
+
         // Called when the refresh button is clicked. Content should be reloaded from the network,
         // after which visual feedback will be issued to the success of the operation.
         function handleRefresh() {
             // TODO: Fetch updated configuration from the network
             // TODO: Display a snackbar to confirm either error or success
         }
+
+        const [ accessDeniedSnackbarOpen, setAccessDeniedSnackbarOpen ] = useState(false);
 
         // Called when the settings button is clicked. Access to the menu is guarded behind an
         // access code (given through the API) to protect against unintentional access.
@@ -118,6 +125,32 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
                     </p>
 
                 </Stack>
+
+                { /** Snackbars related to the refresh functionality **/ }
+
+                <Snackbar open={refreshFailedSnackbarOpen} autoHideDuration={2500}
+                          onClose={() => setRefreshFailedSnackbarOpen(false)}>
+                    <Alert severity="error" variant="filled">
+                        Unable to refresh the schedule
+                    </Alert>
+                </Snackbar>
+
+                <Snackbar open={refreshSuccessSnackbarOpen} autoHideDuration={2500}
+                          onClose={() => setRefreshSuccessSnackbarOpen(false)}>
+                    <Alert severity="success" variant="filled">
+                        The schedule has been refreshed
+                    </Alert>
+                </Snackbar>
+
+                { /** Snackbar related to the settings functionality **/ }
+
+                <Snackbar open={accessDeniedSnackbarOpen} autoHideDuration={2500}
+                          onClose={() => setAccessDeniedSnackbarOpen(false)}>
+                    <Alert severity="error" variant="filled">
+                        Access to the settings has been denied
+                    </Alert>
+                </Snackbar>
+
             </Grid>
         );
     }

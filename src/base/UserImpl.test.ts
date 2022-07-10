@@ -219,6 +219,8 @@ describe('UserImpl', () => {
             shirtSize: 'L',
 
             // Participative information:
+            commitmentHours: '12–16 hours',
+            commitmentTiming: 'Regular (10:00–22:00)',
             preferences: 'None',
 
             available: true,

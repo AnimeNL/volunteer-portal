@@ -30,6 +30,8 @@ export interface IApplication {
     shirtSize: string;
 
     // Participative information:
+    commitmentHours: string;
+    commitmentTiming: string;
     preferences: string;
 
     available: boolean;

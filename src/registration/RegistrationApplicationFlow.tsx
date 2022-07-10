@@ -110,7 +110,22 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
         l: 'Large (L)',
         xl: 'Extra large (XL)',
         xxl: 'Extra-extra large (XXL)',
+        xxxl: '3-Extra Large (3XL)',
         none: 'No t-shirt',
+    };
+
+    const kCommitmentHours = {
+        low: 'Up to 12 hours',
+        mid: '12–16 hours',
+        high: '16–20 hours',
+        max: 'More than 20 hours',
+    };
+
+    const kCommitmentTiming = {
+        early: 'Early (07:00–18:00)',
+        regular: 'Regular (10:00–22:00)',
+        late: 'Late (14:00–02:00)',
+        night: 'Night (18:00–07:00)',
     };
 
     // (3) Values for each of the fields within the form.
@@ -137,6 +152,12 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
 
     const [ shirtSize, setShirtSize ] = useState(/* empty string: */ '');
     const [ shirtSizeError, setShirtSizeError ] = useState(false);
+
+    const [ commitmentHours, setCommitmentHours ] = useState(/* empty string: */ '');
+    const [ commitmentHoursError, setCommitmentHoursError ] = useState(false);
+
+    const [ commitmentTiming, setCommitmentTiming ] = useState(/* empty string: */ '');
+    const [ commitmentTimingError, setCommitmentTimingError ] = useState(false);
 
     const [ preferences, setPreferences ] = useState(/* empty string: */ '');
 
@@ -225,6 +246,24 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
 
         // Participative information:
         // -----------------------------------------------------------------------------------------
+
+        if (!commitmentHours || !kCommitmentHours.hasOwnProperty(commitmentHours)) {
+            setCommitmentHoursError(true);
+            validationErrors.push('Please enter your preferred hours of commitment.');
+        } else {
+            setCommitmentHoursError(false);
+            application.commitmentHours =
+                kCommitmentHours[commitmentHours as keyof typeof kCommitmentHours];
+        }
+
+        if (!commitmentTiming || !kCommitmentTiming.hasOwnProperty(commitmentTiming)) {
+            setCommitmentTimingError(true);
+            validationErrors.push('Please enter your preferred timing of commitment.');
+        } else {
+            setCommitmentTimingError(false);
+            application.commitmentTiming =
+                kCommitmentTiming[commitmentTiming as keyof typeof kCommitmentTiming];
+        }
 
         application.preferences = preferences;
 
@@ -370,6 +409,29 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                     <Typography variant="h6">
                         Volunteer participation
                     </Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                    <TextField required select fullWidth
+                               id="participation-hours"
+                               value={commitmentHours}
+                               onChange={changeEvent => setCommitmentHours(changeEvent.target.value)}
+                               error={commitmentHoursError}
+                               label="Preferred hours">
+                        { Object.entries(kCommitmentHours).map(([ value, label ]) =>
+                            <MenuItem key={value} value={value}>{label}</MenuItem> ) }
+                    </TextField>
+                </Grid>
+                <Grid item xs={6}>
+                    <TextField required select fullWidth
+                               id="participation-timing"
+                               value={commitmentTiming}
+                               onChange={changeEvent => setCommitmentTiming(changeEvent.target.value)}
+                               error={commitmentTimingError}
+                               label="Preferred timing">
+                        { Object.entries(kCommitmentTiming).map(([ value, label ]) =>
+                            <MenuItem key={value} value={value}>{label}</MenuItem> ) }
+                    </TextField>
                 </Grid>
 
                 <Grid item xs={12}>

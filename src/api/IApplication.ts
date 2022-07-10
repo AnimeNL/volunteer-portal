@@ -35,6 +35,7 @@ export interface IApplication {
     preferences: string;
 
     available: boolean;
+    credits: boolean;
     hotel: boolean;
     whatsApp: boolean;
 

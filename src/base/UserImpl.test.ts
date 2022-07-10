@@ -224,6 +224,7 @@ describe('UserImpl', () => {
             preferences: 'None',
 
             available: true,
+            credits: true,
             hotel: false,
             whatsApp: true,
 

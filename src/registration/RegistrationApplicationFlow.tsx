@@ -162,6 +162,7 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
     const [ preferences, setPreferences ] = useState(/* empty string: */ '');
 
     const [ available, setAvailable ] = useState(false);
+    const [ credits, setCredits ] = useState(true);
     const [ hotel, setHotel ] = useState(false);
     const [ whatsApp, setWhatsApp ] = useState(false);
 
@@ -268,6 +269,7 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
         application.preferences = preferences;
 
         application.available = !!available;
+        application.credits = !!credits;
         application.hotel = !!hotel;
         application.whatsApp = !!whatsApp;
 
@@ -451,6 +453,12 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                     <FormControlLabel control={<Checkbox checked={available}
                                                          onChange={event => setAvailable(event.target.checked)} />}
                                       label={`Yes, I will be fully available during ${event.name}.`} />
+                </Grid>
+
+                <Grid item xs={12}>
+                    <FormControlLabel control={<Checkbox checked={credits}
+                                                         onChange={event => setCredits(event.target.checked)} />}
+                                      label={`Yes, I'd like to be included in the ${event.name} credit reel.`} />
                 </Grid>
 
                 { hotelEnabled &&

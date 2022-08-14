@@ -46,7 +46,8 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         height: '480px',
     },
     navigation: {
-        backgroundColor: '#dae8cd',
+        backgroundColor: '#a33e00',
+        color: '#ffffff',
         px: 2,
         py: 1,
     },
@@ -217,11 +218,11 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
                             <CurrentTimeDisplay />
                         </Typography>
 
-                        <IconButton onClick={handleRefresh} >
+                        <IconButton onClick={handleRefresh} color="inherit">
                             <RefreshIcon />
                         </IconButton>
 
-                        <IconButton onClick={handleSettings}>
+                        <IconButton onClick={handleSettings} color="inherit">
                             <SettingsIcon />
                         </IconButton>
 

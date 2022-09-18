@@ -21,7 +21,16 @@
         "available": {
           "type": "boolean"
         },
+        "commitmentHours": {
+          "type": "string"
+        },
+        "commitmentTiming": {
+          "type": "string"
+        },
         "covidRequirements": {
+          "type": "boolean"
+        },
+        "credits": {
           "type": "boolean"
         },
         "dateOfBirth": {
@@ -70,8 +79,11 @@
         "phoneNumber",
         "gender",
         "shirtSize",
+        "commitmentHours",
+        "commitmentTiming",
         "preferences",
         "available",
+        "credits",
         "hotel",
         "whatsApp",
         "covidRequirements",
@@ -238,6 +250,76 @@
         "pathname",
         "content",
         "modified"
+      ],
+      "type": "object"
+    },
+    "IDisplay": {
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/IDisplayRequest"
+        },
+        "response": {
+          "$ref": "#/definitions/IDisplayResponse"
+        }
+      },
+      "required": [
+        "request",
+        "response"
+      ],
+      "type": "object"
+    },
+    "IDisplayRequest": {
+      "properties": {
+        "identifier": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "identifier"
+      ],
+      "type": "object"
+    },
+    "IDisplayResponse": {
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "shifts": {
+          "items": {
+            "$ref": "#/definitions/IDisplayResponseShift"
+          },
+          "type": "array"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IDisplayResponseShift": {
+      "properties": {
+        "avatar": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "time": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "role",
+        "time"
       ],
       "type": "object"
     },

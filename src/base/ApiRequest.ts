@@ -12,6 +12,7 @@ const kEndpoints: { [key in ApiName]: string } = {
     IAuth: '/api/auth',
     IAvatar: '/api/avatar',
     IContent: '/api/content',
+    IDisplay: '/api/display',
     IEnvironment: '/api/environment',
     IEvent: '/api/event',
     INardo: '/api/nardo',

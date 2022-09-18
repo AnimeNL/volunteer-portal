@@ -6,6 +6,7 @@ import type { IApplication } from '../api/IApplication';
 import type { IAuth } from '../api/IAuth';
 import type { IAvatar } from '../api/IAvatar';
 import type { IContent } from '../api/IContent';
+import type { IDisplay} from '../api/IDisplay';
 import type { IEnvironment } from '../api/IEnvironment';
 import type { IEvent } from '../api/IEvent';
 import type { INardo } from '../api/INardo';
@@ -41,6 +42,7 @@ interface ApiTypeMapping {
     IAuth: IAuth;
     IAvatar: IAvatar;
     IContent: IContent;
+    IDisplay: IDisplay;
     IEnvironment: IEnvironment;
     IEvent: IEvent;
     INardo: INardo;

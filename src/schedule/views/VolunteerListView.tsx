@@ -14,7 +14,6 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
-import StarsIcon from '@mui/icons-material/Stars';
 import { SxProps, Theme } from '@mui/system';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -67,12 +66,6 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-    },
-    seniorBadge: {
-        color: theme => theme.palette.mode === 'dark' ? '#FFEA00' : '#FBC02D',
-
-        position: 'relative',
-        top: '2px',
     },
     unavailable: {
         backgroundColor: theme => {
@@ -145,13 +138,11 @@ function Volunteer(props: VolunteerProps) {
     }
 
     // The first part in a volunteer's activity composition is their role. Normally this is just a
-    // string, but for Senior and Staff volunteers we give them a badge to highlight their role.
+    // string, but for Senior and Staff volunteers we increase the font width to highlight them.
     const role = volunteer.environments[environment];
     const roleComponent =
         (role.indexOf('taff') !== -1 || role.indexOf('enior') !== -1)
-            ? <Fragment>
-                 <StarsIcon fontSize="inherit" sx={kStyles.seniorBadge} /> <strong>{role}</strong>
-              </Fragment>
+            ? <strong>{role}</strong>
             : role;
 
     // The second part in their composition is their current activity. There are three options that

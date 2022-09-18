@@ -51,6 +51,11 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         overflowY: 'scroll',
         flexGrow: 1,
     },
+    timelineDot: {
+        padding: 0,
+        borderWidth: 0,
+        margin: '6px 0',
+    },
 };
 
 // TODO: This should become part of the API.
@@ -88,16 +93,16 @@ function DisplayTimeline(props: DisplayTimelineProps) {
                     </TimelineOppositeContent>
                     <TimelineSeparator>
                         <TimelineConnector />
-                        <TimelineDot>
-                            <Avatar src={item.avatar} sx={{ width: 24, height: 24 }}>
+                        <TimelineDot sx={kStyles.timelineDot}>
+                            <Avatar src={item.avatar}>
                                 {initials(item.name)}
                             </Avatar>
                         </TimelineDot>
                         <TimelineConnector />
                     </TimelineSeparator>
                     <TimelineContent sx={{ m: 'auto 0' }}>
-                        <Typography variant="h6" component="span">
-                            {item.name}
+                        <Typography variant="subtitle1" component="span">
+                            <strong>{item.name}</strong> ({item.role})
                         </Typography>
                     </TimelineContent>
                 </TimelineItem> )}
@@ -222,7 +227,7 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
                 });
             }
 
-            this.setState({ title, timeline });
+            this.setState({ refreshState: 'success', title, timeline });
         }
     }
 
@@ -283,7 +288,7 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
                 <Snackbar open={refreshState === 'success'} autoHideDuration={4000}
                           onClose={this.resetRefreshState}>
                     <Alert severity="success" variant="filled">
-                        The schedule has been refreshed
+                        The schedule has been updated
                     </Alert>
                 </Snackbar>
 

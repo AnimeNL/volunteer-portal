@@ -138,6 +138,11 @@ export interface ApplicationBarProps {
      * Default title to display in the application bar.
      */
     defaultTitle: string;
+
+    /**
+     * Whether the administration option should be displayed.
+     */
+    showAdministration?: boolean;
 }
 
 // The <ApplicationBar> component is the title bar of our application. It provides three main pieces
@@ -312,16 +317,17 @@ export function ApplicationBar(props: ApplicationBarProps) {
 
                 <Divider />
 
-                <Hidden mdUp>
-                    <MenuItem dense onClick={handleAdministration}>
-                        <ListItemIcon>
-                            <SettingsIcon fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText>
-                            Administration
-                        </ListItemText>
-                    </MenuItem>
-                </Hidden>
+                { props.showAdministration &&
+                    <Hidden mdUp>
+                        <MenuItem dense onClick={handleAdministration}>
+                            <ListItemIcon>
+                                <SettingsIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>
+                                Administration
+                            </ListItemText>
+                        </MenuItem>
+                    </Hidden> }
 
                 <MenuItem dense onClick={signOut}>
                     <ListItemIcon>

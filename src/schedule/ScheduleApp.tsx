@@ -283,7 +283,8 @@ export class ScheduleApp extends Component<ScheduleAppProps, ScheduleAppState>
                 <Box sx={kStyles.root}>
 
                     <ApplicationBar defaultTitle={`${event.name} ${environment.themeTitle}`}
-                                    event={event} />
+                                    event={event}
+                                    showAdministration={user.isAdministrator()} />
 
                     <Stack direction="row" sx={kStyles.container}>
 

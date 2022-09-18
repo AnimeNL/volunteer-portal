@@ -24,7 +24,7 @@ import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import Typography from '@mui/material/Typography';
 
-import type { IDisplayResponse, IDisplayResponseShift } from '../api/IDisplay';
+import type { IDisplayResponse } from '../api/IDisplay';
 
 import { ApiRequestManager, ApiRequestObserver } from '../base/ApiRequestManager';
 import { DateTime } from '../base/DateTime';
@@ -42,7 +42,7 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         height: '480px',
     },
     navigation: {
-        backgroundColor: '#a33e00',
+        backgroundColor: '#1A237E',
         color: '#ffffff',
         px: 2,
         py: 1,
@@ -61,6 +61,9 @@ interface TimelineEntry {
     // Name of the volunteer that will be active during this shift.
     name: string;
 
+    // Role of the volunteer for this shift, i.e. what will they be doing?
+    role: string;
+
     // Start time of the shift, as a DateTime object.
     startTime: DateTime;
 
@@ -70,20 +73,18 @@ interface TimelineEntry {
 
 // Properties made available to the <DisplayTimeline> component.
 interface DisplayTimelineProps {
-    timeline: IDisplayResponseShift[];
+    timeline: TimelineEntry[];
 }
 
 // Component that displays a timeline based on the given |props|. The Material UI timeline component
 // is used. Performance may suffer for areas in which there are a lot of pending shifts.
 function DisplayTimeline(props: DisplayTimelineProps) {
-    // {item.startTime.format('dayTime')}–{item.endTime.format('time')}
-
     return (
         <Timeline sx={{ width: '100%' }}>
             { props.timeline.map(item =>
                 <TimelineItem>
                     <TimelineOppositeContent sx={{ m: 'auto 0' }} color="text.secondary">
-                        time goes here
+                        {item.startTime.format('dayTime')}–{item.endTime.format('time')}
                     </TimelineOppositeContent>
                     <TimelineSeparator>
                         <TimelineConnector />
@@ -134,8 +135,11 @@ interface DisplayAppState {
     // State of the refresh mechanism, which can be called by the device's host.
     refreshState: 'unknown' | 'error' | 'success';
 
-    // The schedule for this display as communicated by the server.
-    display: IDisplayResponse;
+    // The title for this particular display, shared by the server.
+    title: string;
+
+    // The timeline as it should be displayed on the display.
+    timeline: TimelineEntry[];
 }
 
 // The Display App powers the dedicated 7" displays we issue to various locations during the
@@ -144,13 +148,14 @@ interface DisplayAppState {
 export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
                         implements ApiRequestObserver<'IDisplay'> {
 
+    requestManager: ApiRequestManager<'IDisplay'> = new ApiRequestManager('IDisplay', this);
+
     state: DisplayAppState = {
         loading: false,
         refreshState: 'unknown',
 
-        display: {
-            title: 'AnimeCon Volunteering Team',
-        },
+        title: 'Unknown Display (AnimeCon)',
+        timeline: [],
     };
 
     // Called when the <DisplayApp /> component has been mounted. Initializes the data request.
@@ -165,11 +170,15 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
     async refresh() {
         this.setState({ loading: true });
 
-        // TODO: Fetch data from the network.
-        await new Promise(resolve => setTimeout(resolve, 2500));
+        const parameters = new URLSearchParams(document.location.search);
+        const display = parameters.get('display');
+
+        if (display)
+            await this.requestManager.issue({ identifier: display });
+        else
+            this.setState({ refreshState: 'error' });
 
         this.setState({ loading: false });
-        this.onFailedResponse(new Error());
     }
 
     // Request a refresh of the schedule. Safe to call multiple times, whereas calls will be ignored
@@ -194,14 +203,35 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
     }
 
     onSuccessResponse(response: IDisplayResponse): void {
-        this.setState({ refreshState: 'success' });
+        if (response.error) {
+            console.error(response.error);
+            this.setState({ refreshState: 'error' });
+
+        } else {
+            const title = response.title || 'AnimeCon Volunteering Team';
+            const timeline: TimelineEntry[] = [];
+
+            for (const shift of response.shifts!) {
+                timeline.push({
+                    avatar: shift.avatar,
+                    name: shift.name,
+                    role: shift.role,
+
+                    startTime: DateTime.fromUnix(shift.time[0]),
+                    endTime: DateTime.fromUnix(shift.time[1]),
+                });
+            }
+
+            this.setState({ title, timeline });
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     render() {
-        const { display, loading, refreshState } = this.state;
+        const { loading, refreshState, timeline, title } = this.state;
 
+        // TODO: Scroll down to the first active shifts, when the convention is in progress.
         // TODO: Refresh automatically at a particular frequency.
 
         return (
@@ -210,7 +240,7 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
                     <Stack direction="row" alignItems="center" sx={kStyles.navigation}>
 
                         <Typography variant="button" component="h1" sx={{ flexGrow: 1 }}>
-                            {display.title}
+                            {title}
                         </Typography>
 
                         <Typography variant="button" component="p" sx={{ pr: 1 }}>
@@ -223,20 +253,20 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
 
                     </Stack>
 
-                    { loading && <LinearProgress color="error" /> }
+                    { loading && <LinearProgress color="primary" /> }
 
                     <Stack justifyContent="flex-start" alignItems="center" sx={kStyles.scroller}>
 
-                        { (!display.shifts || !display.shifts.length) &&
+                        { !timeline.length &&
                             <>
-                                <EventBusyIcon color="error" sx={{ mt: 20 }} />
+                                <EventBusyIcon color="primary" sx={{ mt: 20 }} />
                                 <Typography variant="subtitle2" sx={{ pt: 2 }}>
                                     No volunteers have been scheduled
                                 </Typography>
                             </> }
 
-                        { (display.shifts && display.shifts.length > 0) &&
-                            <DisplayTimeline timeline={display.shifts} /> }
+                        { timeline.length > 0 &&
+                            <DisplayTimeline timeline={timeline} /> }
 
                     </Stack>
                 </Stack>

@@ -8,7 +8,6 @@ import { useMemo, useState } from 'preact/compat';
 
 import sx from 'mui-sx';
 
-import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -28,7 +27,7 @@ import { DarkModeCapableAlert } from '../components/DarkModeCapableAlert';
 import { DateTime } from '../../base/DateTime';
 import { EventTracker } from '../../base/EventTracker';
 import { Event, EventShift, EventVolunteer } from '../../base/Event';
-import { initials } from '../../base/NameUtilities';
+import { VolunteerAvatar } from '../components/VolunteerAvatar';
 
 // Storage index (in localStorage) for the pinned team. This is a feature for power users who have
 // the ability to display multiple teams in the portal at once.
@@ -74,12 +73,6 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
 
         position: 'relative',
         top: '2px',
-    },
-    unavailableAvatar: {
-        filter: theme => {
-            return theme.palette.mode === 'dark' ? 'grayscale(1) brightness(0.6)'
-                                                 : 'grayscale(1) brightness(0.8)';
-        },
     },
     unavailable: {
         backgroundColor: theme => {
@@ -143,8 +136,6 @@ function Volunteer(props: VolunteerProps) {
     const { dateTime, environment, identifier, volunteerEntry } = props;
     const { currentActivity, upcomingActivity, volunteer } = volunteerEntry;
 
-    // TODO: Visually identify their current occupation
-
     // The |currentActivity| carries all neccesary information to decide the state of this volunteer
     const state = typeof currentActivity !== 'string' ? 'active'
                                                       : currentActivity;
@@ -195,10 +186,7 @@ function Volunteer(props: VolunteerProps) {
                                { condition: state === 'unavailable', sx: kStyles.unavailable }) }>
 
             <ListItemAvatar>
-                <Avatar sx={ state === 'unavailable' ? kStyles.unavailableAvatar : undefined }
-                        alt={volunteer.name} src={volunteer.avatar}>
-                    {initials(volunteer.name)}
-                </Avatar>
+                <VolunteerAvatar disabled={state === 'unavailable'} volunteer={volunteer} />
             </ListItemAvatar>
 
             <ListItemText primary={volunteer.name}

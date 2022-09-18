@@ -8,7 +8,6 @@ import { useCallback } from 'preact/compat';
 
 import sx from 'mui-sx';
 
-import Avatar from '@mui/material/Avatar';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -19,20 +18,13 @@ import grey from '@mui/material/colors/grey';
 
 import { DateTime } from '../../base/DateTime';
 import { Event, EventShift } from '../../base/Event';
-import { initials } from '../../base/NameUtilities';
+import { VolunteerAvatar } from './VolunteerAvatar';
 
 // Type indicating where in the lifecycle the shift is at time of being rendered.
 type ShiftLifecycleState = 'finished' | 'active' | 'default';
 
 // CSS customizations applied to the <ShiftListItem> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
-    avatarPast: {
-        filter: theme => {
-            return theme.palette.mode === 'dark' ? 'grayscale(1) brightness(0.6)'
-                                                 : 'grayscale(1) brightness(0.8)';
-        },
-    },
-
     eventActive: {
         backgroundColor: theme => {
             return theme.palette.mode === 'dark' ? darken(/* green[900]= */ '#1B5E20', .25)
@@ -118,10 +110,7 @@ export function ShiftListItem(props: ShiftListItemProps) {
 
             { display === 'volunteer' &&
                 <ListItemAvatar>
-                    <Avatar sx={ state === 'finished' ? kStyles.avatarPast : undefined }
-                            src={shift.volunteer.avatar}>
-                        {initials(shift.volunteer.name)}
-                    </Avatar>
+                    <VolunteerAvatar disabled={state === 'finished'} volunteer={shift.volunteer} />
                 </ListItemAvatar> }
 
             { display === 'event' &&

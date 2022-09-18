@@ -10,6 +10,7 @@ import Avatar from '@mui/material/Avatar';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
@@ -23,6 +24,9 @@ import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import Typography from '@mui/material/Typography';
 
+import type { IDisplayResponse, IDisplayResponseShift } from '../api/IDisplay';
+
+import { ApiRequestManager, ApiRequestObserver } from '../base/ApiRequestManager';
 import { DateTime } from '../base/DateTime';
 import { initials } from '../base/NameUtilities';
 
@@ -66,18 +70,20 @@ interface TimelineEntry {
 
 // Properties made available to the <DisplayTimeline> component.
 interface DisplayTimelineProps {
-    timeline: TimelineEntry[];
+    timeline: IDisplayResponseShift[];
 }
 
 // Component that displays a timeline based on the given |props|. The Material UI timeline component
 // is used. Performance may suffer for areas in which there are a lot of pending shifts.
 function DisplayTimeline(props: DisplayTimelineProps) {
+    // {item.startTime.format('dayTime')}–{item.endTime.format('time')}
+
     return (
         <Timeline sx={{ width: '100%' }}>
             { props.timeline.map(item =>
                 <TimelineItem>
                     <TimelineOppositeContent sx={{ m: 'auto 0' }} color="text.secondary">
-                        {item.startTime.format('dayTime')}–{item.endTime.format('time')}
+                        time goes here
                     </TimelineOppositeContent>
                     <TimelineSeparator>
                         <TimelineConnector />
@@ -122,45 +128,81 @@ interface DisplayAppProps {
 
 // State maintained by the <DisplayApp> component. Each state update invalidates the layout.
 interface DisplayAppState {
+    // Whether the application is currently fetching content.
+    loading: boolean;
 
+    // State of the refresh mechanism, which can be called by the device's host.
+    refreshState: 'unknown' | 'error' | 'success';
+
+    // The schedule for this display as communicated by the server.
+    display: IDisplayResponse;
 }
 
 // The Display App powers the dedicated 7" displays we issue to various locations during the
 // festival, enabling them to understand which volunteers (if any) are scheduled to appear at which
 // times. While it shares an environment, most configuration is provided by the server.
-export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
+export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
+                        implements ApiRequestObserver<'IDisplay'> {
+
+    state: DisplayAppState = {
+        loading: false,
+        refreshState: 'unknown',
+
+        display: {
+            title: 'AnimeCon Volunteering Team',
+        },
+    };
+
+    // Called when the <DisplayApp /> component has been mounted. Initializes the data request.
+    componentDidMount() {
+        this.refresh();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    // Refreshes the information from the network. This will issue a network request to the API for
+    // the display as it has been configured.
+    async refresh() {
+        this.setState({ loading: true });
+
+        // TODO: Fetch data from the network.
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
+        this.setState({ loading: false });
+        this.onFailedResponse(new Error());
+    }
+
+    // Request a refresh of the schedule. Safe to call multiple times, whereas calls will be ignored
+    // if a refresh is already in progress. (To not hammer the server.)
+    requestRefresh = () => {
+        if (!this.state.loading)
+            this.refresh();
+    };
+
+    // Resets the refresh state for the application, which will hide any snackbars that are being
+    // shown to the user.
+    resetRefreshState = () => {
+        this.setState({ refreshState: 'unknown' });
+    };
+
+    // ---------------------------------------------------------------------------------------------
+    // ApiRequestObserver interface
+    // ---------------------------------------------------------------------------------------------
+
+    onFailedResponse(error: Error): void {
+        this.setState({ refreshState: 'error' });
+    }
+
+    onSuccessResponse(response: IDisplayResponse): void {
+        this.setState({ refreshState: 'success' });
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     render() {
-        // TODO: Display identifier selection
-        // TODO: Fetch display configuration from the API
-        // TODO: Settings menu (behind a passcode)
+        const { display, loading, refreshState } = this.state;
 
-        const display = {
-            accessCode: '1234',
-            timeline: [
-                {
-                    name: 'Volunteer A',
-                    startTime: DateTime.fromUnix(1657364400),
-                    endTime: DateTime.fromUnix(1657371600),
-                },
-                {
-                    name: 'Volunteer B',
-                    startTime: DateTime.fromUnix(1657369800),
-                    endTime: DateTime.fromUnix(1657375200),
-                }
-            ],
-            title: 'Name of location',
-        };
-
-        const [ refreshFailedSnackbarOpen, setRefreshFailedSnackbarOpen ] = useState(false);
-        const [ refreshSuccessSnackbarOpen, setRefreshSuccessSnackbarOpen ] = useState(false);
-
-        // Called when the refresh button is clicked. Content should be reloaded from the network,
-        // after which visual feedback will be issued to the success of the operation.
-        function handleRefresh() {
-            // TODO: Fetch updated configuration from the network
-            // TODO: Display a snackbar to confirm either error or success
-            setRefreshFailedSnackbarOpen(true);
-        }
+        // TODO: Refresh automatically at a particular frequency.
 
         return (
             <Grid container alignItems="center" justifyContent="center" sx={kStyles.root}>
@@ -175,36 +217,41 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
                             <CurrentTimeDisplay />
                         </Typography>
 
-                        <IconButton onClick={handleRefresh} color="inherit">
+                        <IconButton onClick={this.requestRefresh} color="inherit">
                             <RefreshIcon />
                         </IconButton>
 
                     </Stack>
-                    <Stack justifyContent="flex-start" alignItems="center" sx={kStyles.scroller}>
-                        { display.timeline.length > 0 &&
-                            <DisplayTimeline timeline={display.timeline} /> }
 
-                        { !display.timeline.length &&
+                    { loading && <LinearProgress color="error" /> }
+
+                    <Stack justifyContent="flex-start" alignItems="center" sx={kStyles.scroller}>
+
+                        { (!display.shifts || !display.shifts.length) &&
                             <>
-                                <EventBusyIcon htmlColor="#396a1e" sx={{ mt: 20 }} />
+                                <EventBusyIcon color="error" sx={{ mt: 20 }} />
                                 <Typography variant="subtitle2" sx={{ pt: 2 }}>
                                     No volunteers have been scheduled
                                 </Typography>
                             </> }
+
+                        { (display.shifts && display.shifts.length > 0) &&
+                            <DisplayTimeline timeline={display.shifts} /> }
+
                     </Stack>
                 </Stack>
 
                 { /** Snackbars related to the refresh functionality **/ }
 
-                <Snackbar open={refreshFailedSnackbarOpen} autoHideDuration={4000}
-                          onClose={() => setRefreshFailedSnackbarOpen(false)}>
+                <Snackbar open={refreshState === 'error'} autoHideDuration={4000}
+                          onClose={this.resetRefreshState}>
                     <Alert severity="error" variant="filled">
                         Unable to refresh the schedule
                     </Alert>
                 </Snackbar>
 
-                <Snackbar open={refreshSuccessSnackbarOpen} autoHideDuration={4000}
-                          onClose={() => setRefreshSuccessSnackbarOpen(false)}>
+                <Snackbar open={refreshState === 'success'} autoHideDuration={4000}
+                          onClose={this.resetRefreshState}>
                     <Alert severity="success" variant="filled">
                         The schedule has been refreshed
                     </Alert>

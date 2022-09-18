@@ -3,25 +3,17 @@
 // found in the LICENSE file.
 
 import { Component, h } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SettingsIcon from '@mui/icons-material/Settings';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import { SxProps, Theme } from '@mui/system';
-import TextField from '@mui/material/TextField';
 import Timeline from '@mui/lab/Timeline';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
@@ -170,41 +162,6 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
             setRefreshFailedSnackbarOpen(true);
         }
 
-        const accessRequestInputRef = useRef();
-        const [ accessDeniedSnackbarOpen, setAccessDeniedSnackbarOpen ] = useState(false);
-        const [ accessRequestDialogOpen, setAccessRequestDialogOpen ] = useState(false);
-        const [ accessRequestError, setAccessRequestError ] = useState(false);
-        const [ settingsOpen, setSettingsOpen ] = useState(false);
-
-        // Called when the settings button is clicked. Access to the menu is guarded behind an
-        // access code (given through the API) to protect against unintentional access.
-        function handleSettings() {
-            setAccessRequestError(false);
-            setAccessRequestDialogOpen(true);
-        }
-
-        // Called when the access request for accessing settings has been cancelled. All dialogs
-        // will be closed, and an error message will be shown to the user instead.
-        function handleSettingsCancelled() {
-            setAccessRequestDialogOpen(false);
-            setAccessDeniedSnackbarOpen(true);
-        }
-
-        // Called when the access request for accessing settings has been acknowledged and a code
-        // has been entered. User feedback will be shown depending on the code's correctness.
-        function handleSettingsRequested() {
-            if (accessRequestInputRef && accessRequestInputRef.current) {
-                const accessRequestInput = accessRequestInputRef.current as HTMLInputElement;
-                if (accessRequestInput.value && accessRequestInput.value === display.accessCode) {
-                    setAccessRequestDialogOpen(false);
-                    setSettingsOpen(true);
-                    return;
-                }
-            }
-
-            setAccessRequestError(true);
-        }
-
         return (
             <Grid container alignItems="center" justifyContent="center" sx={kStyles.root}>
                 <Stack alignItems="stretch" justifyContent="flex-start" sx={kStyles.container}>
@@ -220,10 +177,6 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
 
                         <IconButton onClick={handleRefresh} color="inherit">
                             <RefreshIcon />
-                        </IconButton>
-
-                        <IconButton onClick={handleSettings} color="inherit">
-                            <SettingsIcon />
                         </IconButton>
 
                     </Stack>
@@ -254,43 +207,6 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState> {
                           onClose={() => setRefreshSuccessSnackbarOpen(false)}>
                     <Alert severity="success" variant="filled">
                         The schedule has been refreshed
-                    </Alert>
-                </Snackbar>
-
-                { /** Dialogs related to the settings functionality  **/ }
-
-                <Dialog open={accessRequestDialogOpen} onClose={handleSettingsCancelled}>
-                    <DialogTitle>
-                        Volunteer Schedule Display Settings
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            An access code is required to access the device's settings.
-                        </DialogContentText>
-                        <TextField autoFocus fullWidth sx={{ mt: 2 }}
-                                   error={accessRequestError} label="Access code" type="number"
-                                   inputRef={accessRequestInputRef} />
-                    </DialogContent>
-                    <DialogActions sx={{ pb: 2, pt: 0, pr: 3 }}>
-                        <Button onClick={handleSettingsCancelled}>Close</Button>
-                        <Button onClick={handleSettingsRequested} variant="contained">Continue</Button>
-                    </DialogActions>
-                </Dialog>
-
-                <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)}>
-                    <DialogContent>
-                        <DialogContentText>
-                            Settings will go here at some point.
-                        </DialogContentText>
-                    </DialogContent>
-                </Dialog>
-
-                { /** Snackbar related to the settings functionality **/ }
-
-                <Snackbar open={accessDeniedSnackbarOpen} autoHideDuration={4000}
-                          onClose={() => setAccessDeniedSnackbarOpen(false)}>
-                    <Alert severity="error" variant="filled">
-                        Access to the settings has been denied
                     </Alert>
                 </Snackbar>
 

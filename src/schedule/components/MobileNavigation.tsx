@@ -69,7 +69,7 @@ export function MobileNavigation(props: NavigationProps) {
     }
 
     return (
-        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2 }} elevation={3}>
             <BottomNavigation onChange={handleNavigation} value={props.active}>
                 <BottomNavigationAction label="Overview"
                                         value="overview"

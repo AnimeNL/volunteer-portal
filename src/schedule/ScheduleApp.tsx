@@ -71,6 +71,8 @@ const kStyles: Record<string, SystemStyleObject<Theme>> = {
             return theme.palette.mode === 'light' ? '#F5F5F5'   // Gray 50
                                                   : '#212121';  // Gray 900
         },
+
+        colorScheme: 'light only',
     },
 }
 

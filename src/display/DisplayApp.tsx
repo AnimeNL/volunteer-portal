@@ -28,7 +28,11 @@ import type { IDisplayResponse } from '../api/IDisplay';
 
 import { ApiRequestManager, ApiRequestObserver } from '../base/ApiRequestManager';
 import { DateTime } from '../base/DateTime';
+import { Timer } from '../base/Timer';
 import { initials } from '../base/NameUtilities';
+
+// Interval, in milliseconds, between which we should request timeline updates from the network.
+const kRefreshTimerIntervalMs = 15 /* =minutes */ * 60 * 1000;
 
 // Customized styling for the <WelcomeApp> component.
 const kStyles: { [key: string]: SxProps<Theme> } = {
@@ -153,7 +157,11 @@ interface DisplayAppState {
 export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
                         implements ApiRequestObserver<'IDisplay'> {
 
-    requestManager: ApiRequestManager<'IDisplay'> = new ApiRequestManager('IDisplay', this);
+    // The request manager is responsible for fetching information from the API.
+    #requestManager: ApiRequestManager<'IDisplay'>;
+
+    // Timer responsible for refreshing the event information from the network.
+    #refreshEventTimer: Timer;
 
     state: DisplayAppState = {
         loading: false,
@@ -162,6 +170,13 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
         title: 'Unknown Display (AnimeCon)',
         timeline: [],
     };
+
+    constructor() {
+        super();
+
+        this.#requestManager = new ApiRequestManager('IDisplay', this);
+        this.#refreshEventTimer = new Timer(this.requestRefresh);
+    }
 
     // Called when the <DisplayApp /> component has been mounted. Initializes the data request.
     componentDidMount() {
@@ -179,10 +194,11 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
         const display = parameters.get('display');
 
         if (display)
-            await this.requestManager.issue({ identifier: display });
+            await this.#requestManager.issue({ identifier: display });
         else
             this.setState({ refreshState: 'error' });
 
+        this.#refreshEventTimer.start(kRefreshTimerIntervalMs);
         this.setState({ loading: false });
     }
 
@@ -237,7 +253,6 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
         const { loading, refreshState, timeline, title } = this.state;
 
         // TODO: Scroll down to the first active shifts, when the convention is in progress.
-        // TODO: Refresh automatically at a particular frequency.
 
         return (
             <Grid container alignItems="center" justifyContent="center" sx={kStyles.root}>

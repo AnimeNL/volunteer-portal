@@ -11,6 +11,7 @@ import EventBusyIcon from '@mui/icons-material/EventBusy';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
@@ -51,6 +52,9 @@ const kStyles: { [key: string]: SxProps<Theme> } = {
         px: 2,
         py: 1,
     },
+    pastItem: {
+        filter: 'grayscale(1) opacity(0.6)',
+    },
     scroller: {
         overflowY: 'scroll',
         flexGrow: 1,
@@ -78,6 +82,9 @@ interface TimelineEntry {
 
     // End time of the shift, as a DateTime object.
     endTime: DateTime;
+
+    // State of the timeline entry.
+    state: 'unknown' | 'pending' | 'active' | 'past';
 }
 
 // Properties made available to the <DisplayTimeline> component.
@@ -91,8 +98,12 @@ function DisplayTimeline(props: DisplayTimelineProps) {
     return (
         <Timeline sx={{ width: '100%' }}>
             { props.timeline.map(item =>
-                <TimelineItem>
+                <TimelineItem sx={ item.state === 'past' ? kStyles.pastItem : undefined }>
                     <TimelineOppositeContent sx={{ m: 'auto 0' }} color="text.secondary">
+                        { item.state === 'active' &&
+                            <PlayCircleIcon color="warning"
+                                            fontSize="inherit"
+                                            sx={{ position: 'relative', top: 2, left: -4 }} /> }
                         {item.startTime.format('dayTime')}–{item.endTime.format('time')}
                     </TimelineOppositeContent>
                     <TimelineSeparator>
@@ -144,6 +155,9 @@ interface DisplayAppState {
     // State of the refresh mechanism, which can be called by the device's host.
     refreshState: 'unknown' | 'error' | 'success';
 
+    // The date and time at which the state was last updated.
+    dateTime: DateTime;
+
     // The title for this particular display, shared by the server.
     title: string;
 
@@ -167,6 +181,7 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
         loading: false,
         refreshState: 'unknown',
 
+        dateTime: DateTime.local(),
         title: 'Unknown Display (AnimeCon)',
         timeline: [],
     };
@@ -240,17 +255,41 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
 
                     startTime: DateTime.fromUnix(shift.time[0]),
                     endTime: DateTime.fromUnix(shift.time[1]),
+                    state: 'unknown',
                 });
             }
 
-            this.setState({ refreshState: 'success', title, timeline });
+            this.updateTimelineState(timeline);
+            this.setState({ refreshState: 'success', title });
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
+    // Updates the timeline state, either based on |timeline| or the current locally stored state. A
+    // timer will be scheduled to automagically update the timeline state again once required.
+    updateTimelineState(inputTimeline?: TimelineEntry[]): void {
+        const dateTime = DateTime.local();
+        const timeline = inputTimeline ?? this.state.timeline;
+
+        for (let index = 0; index < timeline.length; ++index) {
+            const { startTime, endTime } = timeline[index];
+
+            if (dateTime.isBefore(startTime))
+                timeline[index].state = 'pending';
+            else if (dateTime.isBefore(endTime))
+                timeline[index].state = 'active';
+            else
+                timeline[index].state = 'past';
+        }
+
+        this.setState({ dateTime, timeline });
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     render() {
-        const { loading, refreshState, timeline, title } = this.state;
+        const { dateTime, loading, refreshState, timeline, title } = this.state;
 
         // TODO: Scroll down to the first active shifts, when the convention is in progress.
 

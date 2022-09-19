@@ -32,6 +32,9 @@ import { DateTime } from '../base/DateTime';
 import { Timer } from '../base/Timer';
 import { initials } from '../base/NameUtilities';
 
+// Maximum value of int32-1, which gives us a timestamp far into 2038.
+const kMaximumNextUpdateUnixTime = 2147483646;
+
 // Interval, in milliseconds, between which we should request timeline updates from the network.
 const kRefreshTimerIntervalMs = 15 /* =minutes */ * 60 * 1000;
 
@@ -174,6 +177,9 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
     // The request manager is responsible for fetching information from the API.
     #requestManager: ApiRequestManager<'IDisplay'>;
 
+    // Timer responsible for refreshing the scheduled shifts on the display.
+    #refreshDisplayTimer: Timer;
+
     // Timer responsible for refreshing the event information from the network.
     #refreshEventTimer: Timer;
 
@@ -190,6 +196,8 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
         super();
 
         this.#requestManager = new ApiRequestManager('IDisplay', this);
+
+        this.#refreshDisplayTimer = new Timer(this.updateTimelineState);
         this.#refreshEventTimer = new Timer(this.requestRefresh);
     }
 
@@ -268,9 +276,11 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
 
     // Updates the timeline state, either based on |timeline| or the current locally stored state. A
     // timer will be scheduled to automagically update the timeline state again once required.
-    updateTimelineState(inputTimeline?: TimelineEntry[]): void {
+    updateTimelineState = (inputTimeline?: TimelineEntry[]) => {
         const dateTime = DateTime.local();
         const timeline = inputTimeline ?? this.state.timeline;
+
+        let nextUpdate = DateTime.fromUnix(kMaximumNextUpdateUnixTime);
 
         // (1) Decide the activity state for all of the entries on the timeline.
         for (let index = 0; index < timeline.length; ++index) {
@@ -282,6 +292,11 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
                 timeline[index].state = 'active';
             else
                 timeline[index].state = 'past';
+
+            if (startTime.isBefore(nextUpdate))
+                nextUpdate = startTime;
+            else if (endTime.isBefore(nextUpdate))
+                nextUpdate = endTime;
         }
 
         // (2) Sort the timeline to list the active and soonest shifts at the top, moving past
@@ -297,10 +312,17 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
                           : lhs.endTime.valueOf() - rhs.endTime.valueOf();
         });
 
-        // (3) Schedule a timer to update the timeline states again.
+        // (3) Schedule a timer to update the timeline states again. Skip this step if there are no
+        // future updates, which can happen when the display is used after the convention ends.
+        if (nextUpdate.unix() !== kMaximumNextUpdateUnixTime) {
+            const absoluteDiff = nextUpdate.moment().diff(DateTime.local().moment());
+            const updateMs = Math.min(Math.max(absoluteDiff, 16), 60 * 60 * 1000);
+
+            this.#refreshDisplayTimer.start(updateMs);
+        }
 
         this.setState({ dateTime, timeline });
-    }
+    };
 
     // ---------------------------------------------------------------------------------------------
 

@@ -272,6 +272,7 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
         const dateTime = DateTime.local();
         const timeline = inputTimeline ?? this.state.timeline;
 
+        // (1) Decide the activity state for all of the entries on the timeline.
         for (let index = 0; index < timeline.length; ++index) {
             const { startTime, endTime } = timeline[index];
 
@@ -283,15 +284,28 @@ export class DisplayApp extends Component<DisplayAppProps, DisplayAppState>
                 timeline[index].state = 'past';
         }
 
+        // (2) Sort the timeline to list the active and soonest shifts at the top, moving past
+        // shifts to the bottom. This avoids us having to scroll.
+        timeline.sort((lhs, rhs) => {
+            if (lhs.state === 'past' && rhs.state !== 'past')
+                return 1;
+            if (lhs.state !== 'past' && rhs.state === 'past')
+                return -1;
+
+            const result = lhs.startTime.valueOf() - rhs.startTime.valueOf();
+            return result ? result
+                          : lhs.endTime.valueOf() - rhs.endTime.valueOf();
+        });
+
+        // (3) Schedule a timer to update the timeline states again.
+
         this.setState({ dateTime, timeline });
     }
 
     // ---------------------------------------------------------------------------------------------
 
     render() {
-        const { dateTime, loading, refreshState, timeline, title } = this.state;
-
-        // TODO: Scroll down to the first active shifts, when the convention is in progress.
+        const { loading, refreshState, timeline, title } = this.state;
 
         return (
             <Grid container alignItems="center" justifyContent="center" sx={kStyles.root}>

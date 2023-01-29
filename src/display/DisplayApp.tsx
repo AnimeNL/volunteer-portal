@@ -98,6 +98,10 @@ interface DisplayTimelineProps {
 // Component that displays a timeline based on the given |props|. The Material UI timeline component
 // is used. Performance may suffer for areas in which there are a lot of pending shifts.
 function DisplayTimeline(props: DisplayTimelineProps) {
+    // TODO: Fixme following @mui/lab update
+    return <></>
+
+/**
     return (
         <Timeline sx={{ width: '100%' }}>
             { props.timeline.map(item =>
@@ -126,6 +130,7 @@ function DisplayTimeline(props: DisplayTimelineProps) {
                 </TimelineItem> )}
         </Timeline>
     );
+**/
 }
 
 // Component that displays the current time of the application, in a manner that maintains a timer

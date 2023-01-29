@@ -27,9 +27,6 @@
         "commitmentTiming": {
           "type": "string"
         },
-        "covidRequirements": {
-          "type": "boolean"
-        },
         "credits": {
           "type": "boolean"
         },
@@ -86,7 +83,6 @@
         "credits",
         "hotel",
         "whatsApp",
-        "covidRequirements",
         "gdprRequirements"
       ],
       "type": "object"

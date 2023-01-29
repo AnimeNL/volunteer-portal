@@ -229,7 +229,6 @@ describe('UserImpl', () => {
             whatsApp: true,
 
             // Requirements:
-            covidRequirements: true,
             gdprRequirements: true,
 
         })).toBeNull();

@@ -166,9 +166,6 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
     const [ hotel, setHotel ] = useState(false);
     const [ whatsApp, setWhatsApp ] = useState(false);
 
-    const [ covidRequirements, setCovidRequirements ] = useState(false);
-    const [ covidRequirementsError, setCovidRequirementsError ] = useState(false);
-
     const [ gdprRequirements, setGdprRequirements ] = useState(false);
     const [ gdprRequirementsError, setGdprRequirementsError ] = useState(false);
 
@@ -275,14 +272,6 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
 
         // Requirements:
         // -----------------------------------------------------------------------------------------
-
-        if (!covidRequirements) {
-            setCovidRequirementsError(true);
-            validationErrors.push('Please indicate that you will comply with the COVID-19 requirements.');
-        } else {
-            setCovidRequirementsError(false);
-            application.covidRequirements = true;
-        }
 
         if (!gdprRequirements) {
             setGdprRequirementsError(true);
@@ -486,12 +475,6 @@ export function RegistrationApplicationFlow(props: RegistrationAppProps) {
                     </Typography>
                 </Grid>
 
-                <Grid item xs={12}>
-                    <FormControlLabel control={<Checkbox checked={covidRequirements}
-                                                         onChange={event => setCovidRequirements(event.target.checked)} />}
-                                      sx={covidRequirementsError ? { color: 'error.main' } : {}}
-                                      label="Yes, I will comply with the COVID-19 requirements." />
-                </Grid>
                 <Grid item xs={12}>
                     <FormControlLabel control={<Checkbox checked={gdprRequirements}
                                                          onChange={event => setGdprRequirements(event.target.checked)} />}

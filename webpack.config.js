@@ -119,7 +119,7 @@ module.exports = {
         new MomentLocalesPlugin({ localesToKeep: [ 'en-gb' ] }),
         new MomentTimezoneDataPlugin({
             matchZones: /^Europe\//,
-            startYear: 2020,
+            startYear: 2022,
         }),
 
         new CleanWebpackPlugin(),

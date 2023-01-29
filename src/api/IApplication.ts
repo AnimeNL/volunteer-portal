@@ -40,7 +40,6 @@ export interface IApplication {
     whatsApp: boolean;
 
     // Requirements:
-    covidRequirements: boolean;
     gdprRequirements: boolean;
 }
 

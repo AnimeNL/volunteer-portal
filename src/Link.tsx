@@ -9,11 +9,11 @@ import { route } from 'preact-router';
 import { TypographyProps, default as Typography } from '@mui/material/Typography';
 
 // Properties accepted by the <Link> component.
-export type LinkProps = h.JSX.HTMLAttributes<HTMLAnchorElement> & TypographyProps;
+export type LinkProps = React.ComponentPropsWithoutRef<'a'> & TypographyProps;
 
 // Implementation of a <Link> component, backed by a regular anchor elements, that supports both
 // internal and external navigations without having to consider that at input time.
-export const Link = forwardRef((props: LinkProps, forwardedRef: Ref<any>) => {
+export const Link = forwardRef((props: LinkProps, forwardedRef: React.Ref<any>) => {
     const { color, href, onClick, target, ...rest } = props;
 
     const internalClickHandler: React.MouseEventHandler<HTMLAnchorElement> = event => {
@@ -36,7 +36,7 @@ export const Link = forwardRef((props: LinkProps, forwardedRef: Ref<any>) => {
     };
 
     return <Typography color={color || 'primary'}
-                       component="a"
+                       component='a'
                        href={href}
                        ref={forwardedRef}
                        target={target}

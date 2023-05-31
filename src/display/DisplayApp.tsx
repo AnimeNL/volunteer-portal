@@ -32,6 +32,17 @@ import { DateTime } from '../base/DateTime';
 import { Timer } from '../base/Timer';
 import { initials } from '../base/NameUtilities';
 
+// https://github.com/mui/material-ui/issues/35287
+declare global {
+    namespace React {
+      interface DOMAttributes<T> {
+        onResize?: ReactEventHandler<T> | undefined;
+        onResizeCapture?: ReactEventHandler<T> | undefined;
+        nonce?: string | undefined;
+      }
+    }
+  }
+
 // Maximum value of int32-1, which gives us a timestamp far into 2038.
 const kMaximumNextUpdateUnixTime = 2147483646;
 
@@ -98,10 +109,6 @@ interface DisplayTimelineProps {
 // Component that displays a timeline based on the given |props|. The Material UI timeline component
 // is used. Performance may suffer for areas in which there are a lot of pending shifts.
 function DisplayTimeline(props: DisplayTimelineProps) {
-    // TODO: Fixme following @mui/lab update
-    return <></>
-
-/**
     return (
         <Timeline sx={{ width: '100%' }}>
             { props.timeline.map(item =>
@@ -130,7 +137,6 @@ function DisplayTimeline(props: DisplayTimelineProps) {
                 </TimelineItem> )}
         </Timeline>
     );
-**/
 }
 
 // Component that displays the current time of the application, in a manner that maintains a timer

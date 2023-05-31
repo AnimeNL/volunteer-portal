@@ -81,10 +81,12 @@ export function VolunteerAvatar(props: VolunteerAvatarProps) {
 
     // Senior Stewards are able to take charge of events and often are leading, therefore we want to
     // highlight their presence at particula revents as well.
-    } else if (volunteer.environments.hasOwnProperty('Stewards')
+    } else if ((volunteer.environments.hasOwnProperty('Stewards')
                    && (volunteer.environments.Stewards === 'Senior' ||
                        volunteer.environments.Stewards === 'Staff' ||
-                       volunteer.environments.Stewards === 'Core Staff')) {
+                       volunteer.environments.Stewards === 'Core Staff')) ||
+               (volunteer.environments.hasOwnProperty('Gophers')
+                   && volunteer.environments.Gophers === 'Staff')) {
         return (
             <Badge anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
                    badgeContent={ <OfflineBoltIcon /> } color="info"

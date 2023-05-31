@@ -17,6 +17,7 @@ const kEducationalMessages = [
     'You can quickly call one of the senior volunteers via a button on their schedules.',
     'Each of your shifts comes with clear notes in the volunteer portal.',
     'Available senior volunteers will be highlighted on this overview page.',
+    'There will be beer in the Volunteer Lounge at 21:00 and 00:00 on Friday and Saturday!',
 ];
 
 // Educational messages that can be displayed on the portal for senior volunteers.

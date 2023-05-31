@@ -113,6 +113,15 @@ export function ContentTheme(props: ContentThemeProps) {
         switch (effectiveDarkModeState) {
             case 'dark':
                 applicationTheme = createTheme({
+                    breakpoints: {
+                        values: {
+                            xs: 0,
+                            sm: 600,
+                            md: 840,
+                            lg: 1200,
+                            xl: 1536,
+                        },
+                    },
                     components: {
                         MuiAppBar: {
                             styleOverrides: {
@@ -143,6 +152,15 @@ export function ContentTheme(props: ContentThemeProps) {
             case 'light':
             default:
                 applicationTheme = createTheme({
+                    breakpoints: {
+                        values: {
+                            xs: 0,
+                            sm: 600,
+                            md: 840,
+                            lg: 1200,
+                            xl: 1536,
+                        },
+                    },
                     palette: {
                         primary: { main: environment.themeColor },
                         mode: effectiveDarkModeState,
